@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Crypto - TitanTrades</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/crypto-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="crypto-portal-container">
+        <header class="portal-header">
+            <button class="back-btn" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i>
+                Back to Dashboard
+            </button>
+            <h1>Buy Cryptocurrency</h1>
+            <div class="user-balance">
+                <span>Available Balance: $<span id="userBalance">0.00</span></span>
+            </div>
+        </header>
+
+        <main class="portal-main">
+            <div class="purchase-form-container">
+                <div class="crypto-selection">
+                    <h2>Select Cryptocurrency</h2>
+                    <div class="crypto-grid" id="cryptoGrid">
+                        <!-- Crypto options will be populated here -->
+                    </div>
+                </div>
+
+                <div class="purchase-form" id="purchaseForm" style="display: none;">
+                    <h2>Purchase Details</h2>
+                    <div class="selected-crypto" id="selectedCrypto">
+                        <!-- Selected crypto info -->
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="purchaseAmount">Amount to Spend (USD)</label>
+                        <input type="number" id="purchaseAmount" placeholder="Enter amount" min="1" step="0.01">
+                        <div class="amount-suggestions">
+                            <button class="amount-btn" data-amount="50">$50</button>
+                            <button class="amount-btn" data-amount="100">$100</button>
+                            <button class="amount-btn" data-amount="250">$250</button>
+                            <button class="amount-btn" data-amount="500">$500</button>
+                        </div>
+                    </div>
+
+                    <div class="purchase-preview" id="purchasePreview">
+                        <!-- Purchase preview will be shown here -->
+                    </div>
+
+                    <div class="payment-method">
+                        <h3>Payment Method</h3>
+                        <div class="payment-options">
+                            <label class="payment-option">
+                                <input type="radio" name="payment" value="balance" checked>
+                                <span>Account Balance</span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment" value="card">
+                                <span>Credit/Debit Card</span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment" value="bank">
+                                <span>Bank Transfer</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn-secondary" onclick="resetForm()">Reset</button>
+                        <button class="btn-primary" id="confirmPurchaseBtn">Confirm Purchase</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="market-info">
+                <h2>Market Overview</h2>
+                <div class="crypto-prices" id="cryptoPrices">
+                    <!-- Real-time crypto prices -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Purchase Confirmation Modal -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirm Purchase</h3>
+                <span class="close" id="closeConfirmationModal">&times;</span>
+            </div>
+            <div class="modal-body" id="confirmationDetails">
+                <!-- Confirmation details -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="cancelPurchase">Cancel</button>
+                <button class="btn-primary" id="finalConfirmBtn">Confirm & Buy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content success">
+            <div class="modal-header">
+                <h3><i class="fas fa-check-circle"></i> Purchase Successful!</h3>
+            </div>
+            <div class="modal-body" id="successDetails">
+                <!-- Success details -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/crypto-purchase-portal.js"></script>
+<script src="js/ai-support-chat.js"></script>
+</body>
+</html>

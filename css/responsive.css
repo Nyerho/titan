@@ -1,0 +1,2195 @@
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .main-content {
+        margin-left: 0;
+        padding: 1.5rem;
+    }
+    
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-container {
+        padding: 0 1rem;
+    }
+    
+    .main-content {
+        padding: 1rem;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+    }
+    
+    .dashboard-section {
+        padding: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+    }
+    
+    /* Allow visibility if anything momentarily exceeds width */
+    html, body {
+        overflow-x: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Neutralize any decorative pseudo-elements that may widen/clamp the layout */
+    .news-achievements::before,
+    .news-achievements::after {
+        content: none !important;
+        display: none !important;
+    }
+
+    /* News & Achievements — robust mobile overflow fix */
+    body .news-achievements,
+    body .news-achievements .container {
+        width: 100% !important;
+        max-width: 100vw !important;        /* clamp to viewport width */
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+        overflow: visible !important; /* avoid clipping */
+    }
+
+    /* Collapse any desktop grid to single flow and remove gap that can cause overflow */
+    body .news-achievements .news-achievements-content {
+        display: grid !important;           /* single column grid */
+        grid-template-columns: 1fr !important;  /* single column */
+        grid-auto-flow: row !important;
+        gap: 0 !important;                      /* remove large gaps on mobile */
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        min-width: 0 !important;             /* critical: allow shrink */
+    }
+
+    /* Make each card stretch full width and allow shrinking */
+    body .news-achievements .news-section,
+    body .news-achievements .achievements-section {
+        position: static !important;
+        float: none !important;
+        transform: none !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;                /* critical: allow shrink */
+        margin: 0 0 12px 0 !important;
+        padding: 16px !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+    }
+
+    /* Clamp media inside cards */
+    body .news-achievements img,
+    body .news-achievements svg,
+    body .news-achievements video,
+    body .news-achievements canvas {
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+
+    /* Prevent long strings/links from expanding width */
+    body .news-achievements a,
+    body .news-achievements p,
+    body .news-achievements h1,
+    body .news-achievements h2,
+    body .news-achievements h3,
+    body .news-achievements h4,
+    body .news-achievements h5,
+    body .news-achievements h6 {
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+    }
+
+    /* Ensure nested elements never push beyond viewport */
+    body .news-achievements * {
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+        box-sizing: border-box !important;
+    }
+
+    /* If you have code/pre blocks with long lines, ensure they wrap */
+    body .news-achievements pre,
+    body .news-achievements code {
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+    }
+    
+    /* Choose Where To Go Next — robust mobile overflow fix (scoped) */
+    body .choose-next,
+    body .choose-next .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+    }
+
+    body .choose-next .next-options {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        min-width: 0 !important;
+    }
+
+    body .choose-next .next-card {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important; /* allow shrink */
+        margin: 0 !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+    }
+
+    body .choose-next img,
+    body .choose-next svg,
+    body .choose-next video,
+    body .choose-next canvas {
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+
+    body .choose-next * {
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+        box-sizing: border-box !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-container {
+        padding: 0 0.5rem;
+    }
+    
+    .main-content {
+        padding: 0.5rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    header.auth-header .navbar-brand img {
+        max-height: 24px;
+    }
+    
+    header.auth-header .brand-text {
+        font-size: 15px;
+    }
+}
+
+
+
+/* Tablet Breakpoint */
+@media (max-width: 1024px) {
+    .trading-interface {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        max-height: 300px;
+    }
+    
+    .left-sidebar {
+        order: 1;
+    }
+    
+    .main-content {
+        order: 2;
+    }
+    
+    .right-sidebar {
+        order: 3;
+    }
+}
+
+/* Mobile Breakpoint */
+@media (max-width: 768px) {
+    /* Mobile navigation: off-canvas via transform, no nested .nav-menu */
+    .nav-menu {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        flex-direction: column;
+        text-align: center;
+        background-color: rgba(26, 26, 46, 0.98);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 27px rgba(0, 0, 0, 0.15);
+        border-radius: 0 0 20px 20px;
+        padding: 2rem 0;
+        z-index: 1000;
+        transition: transform 0.3s ease;
+        transform: translateX(-100%); /* off-canvas */
+    }
+    .nav-menu.active {
+        transform: translateX(0);
+    }
+    .hamburger {
+        display: flex !important;  /* ensure visible on mobile */
+        cursor: pointer;
+        z-index: 1001;
+    }
+    
+    /* Professional Trading Tools — robust mobile overflow fix */
+    .tools-preview,
+    .tools-preview .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: calc(12px + env(safe-area-inset-left)) !important;
+        padding-right: calc(12px + env(safe-area-inset-right)) !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+    }
+
+    .tools-content {
+        display: grid !important;
+        grid-template-columns: 1fr !important; /* single column on phones */
+        gap: 16px !important;                  /* smaller gap to avoid overflow */
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;               /* critical: allow container shrink */
+    }
+
+    .tools-content > *,
+    .tools-text,
+    .tools-visual {
+        min-width: 0 !important;               /* critical: allow child shrink */
+        box-sizing: border-box !important;
+    }
+
+    .tools-visual img {
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+
+    .tools-text h2,
+    .tools-text p {
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+    }
+    
+    /* Auth header — Bootstrap mobile support */
+    header.auth-header,
+    body[class*="auth"] header {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 8px 12px;
+        box-sizing: border-box;
+    }
+
+    header.auth-header .navbar-brand img {
+        max-height: 28px;
+    }
+
+    header.auth-header .brand-text {
+        font-size: 16px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Dashboard header — mobile layout and sizing */
+    header.dashboard-header,
+    .dashboard-header,
+    #dashboard-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        padding: 8px 12px !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* 1) Toggle button: placed first (left) */
+    .dashboard-header .mobile-toggle,
+    .dashboard-header .menu-toggle,
+    .dashboard-header .toggle {
+        order: 0 !important;
+        flex: 0 0 auto !important;
+        font-size: 16px !important;
+        padding: 6px 10px !important;
+    }
+
+    /* 2) Logo */
+    .dashboard-header .logo,
+    .dashboard-header .brand-logo,
+    .dashboard-header img[class*="logo"] {
+        order: 1 !important;
+        flex: 0 0 auto !important;
+        max-width: 24vw !important; /* cap logo size on mobile */
+        height: auto !important;
+        object-fit: contain !important;
+        display: block !important;
+    }
+
+    /* 3) Central Tradehub text/brand */
+    .dashboard-header .brand,
+    .dashboard-header .site-title,
+    .dashboard-header .title {
+        order: 2 !important;
+        flex: 1 1 auto !important;
+        font-size: 16px !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        min-width: 0 !important;
+    }
+
+    /* 4) KYC status */
+    .dashboard-header .kyc-status,
+    .dashboard-header .kyc {
+        order: 3 !important;
+        flex: 0 0 auto !important;
+        font-size: 14px !important;
+        line-height: 1.2 !important;
+    }
+
+    /* 5) Logout button */
+    .dashboard-header .logout,
+    .dashboard-header .logout-btn,
+    .dashboard-header .btn-logout {
+        order: 4 !important;
+        flex: 0 0 auto !important;
+        font-size: 14px !important;
+        padding: 6px 10px !important;
+    }
+
+    /* General safety: allow children to shrink */
+    .dashboard-header * {
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* CentralTradeHub header mobile layout */
+    .centraltradehub-header .header-container{display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;box-sizing:border-box}
+    .centraltradehub-header .mobile-toggle{order:0}
+    .centraltradehub-header .logo-section{order:1;display:flex;align-items:center;gap:8px;min-width:0}
+    .centraltradehub-header .dashboard-logo{max-width:28vw;height:auto}
+    .centraltradehub-header .brand-logo{font-size:16px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .centraltradehub-header .brand-tagline{display:none}
+    .centraltradehub-header .user-info{order:2;display:flex;align-items:center;gap:8px;margin-left:auto}
+    .centraltradehub-header .user-email,.centraltradehub-header .user-name{display:none}
+    .centraltradehub-header .logout-btn{padding:6px 10px;font-size:14px;line-height:1.2}
+    .container-fluid.dashboard-container .d-md-none{display:none!important}
+    
+    /* Auth header — mobile guard */
+    body[class*="auth"] header,
+    header.auth-header,
+    .auth-header,
+    body[class*="auth"] header .container,
+    header.auth-header .container,
+    .auth-header .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+        min-width: 0 !important;
+        left: auto !important;
+        right: auto !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    body[class*="auth"] header img[class*="logo"],
+    header.auth-header .logo img,
+    .auth-header .logo img {
+        display: block !important;
+        max-width: 32vw !important;
+        height: auto !important;
+        object-fit: contain !important;
+    }
+
+    body[class*="auth"] header .nav,
+    body[class*="auth"] header .nav-list,
+    header.auth-header nav,
+    .auth-header nav,
+    header.auth-header .nav-list,
+    .auth-header .nav-list {
+        flex-wrap: wrap !important;
+    }
+    
+    .auth-header .container,
+    .auth-header .navbar,
+    .auth-header nav,
+    .auth-header .nav,
+    .auth-header .nav-list {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+    
+    .auth-header .brand-logo {
+        font-size: 16px;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Optional: hide non-essential items to avoid horizontal overflow if present */
+    .auth-header .brand-tagline,
+    .auth-header .tagline {
+        display: none;
+    }
+    
+    /* Liquidity Providers — robust mobile overflow fix (scoped) */
+    body .providers,
+    body .liquidity-providers,
+    body .providers .container,
+    body .liquidity-providers .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+    }
+
+    body .providers .providers-row .track,
+    body .liquidity-providers .providers-row .track {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    body .providers .providers-row .track-dup,
+    body .liquidity-providers .providers-row .track-dup {
+        display: none !important;
+    }
+
+    body .providers .provider-logo,
+    body .liquidity-providers .provider-logo {
+        display: block !important;
+        max-width: 140px !important;
+        width: 100% !important;
+        height: auto !important;
+        object-fit: contain !important;
+    }
+
+    /* If the section uses a grid/flex listing of provider logos */
+    body .providers .providers-grid,
+    body .liquidity-providers .providers-grid,
+    body .providers .providers-track,
+    body .liquidity-providers .providers-track {
+        display: grid !important; /* or flex; keep as grid for predictability */
+        grid-template-columns: 1fr 1fr !important; /* phones: 1–2 columns; adjust as needed */
+        gap: 16px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    body .providers * ,
+    body .liquidity-providers * {
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    body .providers img,
+    body .providers svg,
+    body .liquidity-providers img,
+    body .liquidity-providers svg {
+        display: block !important;
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    /* News & Achievements mobile overflow fix */
+    .news-achievements,
+    .news-achievements .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Collapse any desktop grid to single flow and remove gap that can cause overflow */
+    .news-achievements .news-achievements-content {
+        display: block !important;           /* collapse to single column */
+        width: 100% !important;
+        max-width: 100% !important;
+        gap: 0 !important;
+        min-width: 0 !important;             /* allow shrink within container */
+    }
+
+    /* Make each card stretch full width and allow shrinking */
+    .news-achievements .news-section,
+    .news-achievements .achievements-section {
+        position: static !important;
+        float: none !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 0 12px 0 !important;
+        padding: 16px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Ensure all content within the section can wrap and shrink */
+    .news-achievements * {
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+    }
+
+    /* Final guard: if a parent still causes overflow, hide horizontal scroll on mobile */
+    html, body {
+        overflow-x: hidden;
+    }
+    
+    /* Liquidity Providers — mobile fix: restore flex and item sizing */
+    .providers-logos { display: flex !important; flex-direction: column !important; width: 100% !important; gap: 12px !important; overflow: hidden !important; }
+    .providers-logos .providers-row-1,
+    .providers-logos .providers-row-2 { display: inline-flex !important; gap: 12px !important; animation-play-state: running !important; }
+    .providers-logos .provider-logo { width: auto !important; flex: 0 0 auto !important; }
+    
+    /* WHY CHOOSE CENTRAL — single-column, full-width, no clipping */
+    .why-choose-us {
+        margin: 0 !important;
+        width: 100% !important;
+        position: static !important;
+        left: auto !important;
+        right: auto !important;
+        transform: none !important;
+        scroll-margin-top: 88px !important; /* avoid fixed navbar overlap */
+        overflow-x: hidden !important;
+    }
+    .why-choose-us .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+    }
+    .why-choose-us .section-header {
+        margin-bottom: 24px !important;
+    }
+
+    /* Features grid to single-column */
+    .choose-us-features {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        align-items: stretch !important;
+        justify-items: stretch !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    .choose-us-features > * {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        clear: both !important;
+        min-width: 0 !important;
+        height: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Bonus section stack */
+    .bonus-section {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        text-align: center !important;
+        align-items: stretch !important;
+        justify-items: stretch !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+    .bonus-section > * {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        min-width: 0 !important;
+        height: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Media safety */
+    .why-choose-us img,
+    .why-choose-us svg,
+    .why-choose-us video,
+    .why-choose-us canvas {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+
+    /* Global mobile overflow prevention */
+    html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+    img, svg, video, canvas {
+        max-width: 100%;
+        height: auto;
+        display: block;
+    }
+    .container {
+        width: 100%;
+        max-width: 100%;
+        padding-left: 12px;
+        padding-right: 12px;
+        margin: 0 auto;
+    }
+
+    /* Stack all multi-column sections to a single column */
+    .features-grid,
+    .choose-us-features,
+    .bonus-section,
+    .tools-content,
+    .education-categories,
+    .about-content,
+    .about-stats,
+    .next-options,
+    .providers-logos {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+        justify-items: stretch;
+        align-items: stretch;
+    }
+
+    /* Make each card/span full width and remove side gaps */
+    .features-grid .feature-card,
+    .choose-us-features .feature-stat,
+    .bonus-section .bonus-card,
+    .bonus-section .bonus-info,
+    .tools-content .tools-text,
+    .tools-content .tools-visual,
+    .education-categories .education-card,
+    .about-content .about-text,
+    .about-stats .stat-card,
+    .next-options .next-card,
+    .providers-logos .provider-logo {
+        display: block;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        clear: both;
+        align-self: stretch;
+        min-width: 0; /* prevent content overflow */
+        box-sizing: border-box;
+    }
+    
+    /* Trading Education Center: full-width, single-column, no clipping, no overlap */
+    .education-section,
+    .education-categories {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        justify-items: stretch !important;
+        align-items: stretch !important;
+        scroll-margin-top: 80px !important; /* prevent fixed nav overlap */
+    }
+
+    .education-section > *,
+    .education-categories > * {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        min-width: 0 !important;           /* allow text/media to wrap properly */
+        box-sizing: border-box !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .education-card {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        margin: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+    }
+
+    .education-card img,
+    .education-card svg,
+    .education-card video,
+    .education-card canvas {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+    
+    /* Trading Education Center: fix container, content, and grid to full-width single-column */
+    #education,
+    .education-section,
+    .education-content,
+    .education-categories {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        scroll-margin-top: 80px !important; /* align under fixed nav */
+    }
+
+    /* .education-content may carry multi-column/flex — normalize to block on mobile */
+    .education-content {
+        display: block !important;
+    }
+
+    /* Cards container: enforce single-column grid */
+    .education-categories {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        justify-items: stretch !important;
+        align-items: stretch !important;
+    }
+
+    /* Cards: fill width, remove floats/margins, and prevent clipping */
+    .education-categories > *,
+    .education-card {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        min-width: 0 !important;            /* allow content to shrink/wrap within container */
+        box-sizing: border-box !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        overflow-wrap: anywhere !important;  /* avoid long text pushing width */
+        word-break: break-word !important;
+        padding-left: 12px !important;       /* consistent inner spacing */
+        padding-right: 12px !important;
+    }
+
+    /* Media inside cards must not overflow horizontally */
+    .education-card img,
+    .education-card svg,
+    .education-card video,
+    .education-card canvas {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+
+    /* Flags: stack vertically to avoid wrap offsets */
+    .market-flags {
+        position: static;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .market-flags .flag-item {
+        width: 100%;
+        margin: 0;
+    }
+
+    /* Prevent image overflow inside cards */
+    .feature-card img,
+    .education-card img,
+    .tools-visual img,
+    .security-visual img,
+    .next-card .card-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        max-width: 100%;
+    }
+
+    /* Mobile safe area and anchor fixes */
+    body.mobile-chat-safe-area {
+        padding-bottom: calc(100px + env(safe-area-inset-bottom));
+    }
+    section, footer {
+        scroll-margin-bottom: 120px;
+    }
+
+    .hamburger {
+        display: flex;
+        cursor: pointer;
+        z-index: 1001;
+    }
+    
+    .hamburger .bar {
+        transition: all 0.3s ease;
+    }
+
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+
+    .hamburger.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
+
+    /* Hero Section Mobile */
+    .hero-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        text-align: center;
+        padding: 3rem 0;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        max-width: 280px;
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:active,
+    .btn-secondary:active {
+        transform: scale(0.98);
+    }
+
+    .hero-stats {
+        justify-content: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-item {
+        min-width: 120px;
+        padding: 1rem;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+    }
+
+    /* Market Ticker Mobile */
+    .market-ticker {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 15px;
+        margin: 1rem;
+    }
+
+    .ticker-item {
+        min-width: auto;
+        justify-content: space-between;
+        padding: 1.2rem;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .ticker-item:active {
+        transform: scale(0.98);
+    }
+
+    /* Sections Mobile */
+    .virtual-assets,
+    .forex-trading,
+    .indices-trading,
+    .mobile-platforms {
+        padding: 60px 0;
+    }
+    
+    .assets-content,
+    .forex-content,
+    .indices-content,
+    .platforms-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        text-align: center;
+    }
+    
+    .assets-text h2,
+    .forex-text h2,
+    .indices-text h2,
+    .platforms-header h2 {
+        font-size: 2.2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .features-stats,
+    .forex-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        justify-content: center;
+    }
+    
+    .stat-box {
+        padding: 1.5rem;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+    }
+
+    .indices-features {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .market-flags {
+        position: static;
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        gap: 0.5rem;
+    }
+    
+    .flag-item {
+        margin-left: 0;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .flag-item:active {
+        transform: scale(0.95);
+    }
+
+    /* Platform Tabs Mobile */
+    .platform-tabs {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .platform-tab {
+        width: 100%;
+        max-width: 300px;
+        padding: 1rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .platform-tab:active {
+        transform: scale(0.98);
+    }
+    
+    .platform-info h3 {
+        font-size: 1.8rem;
+    }
+
+    /* Features Grid Mobile */
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .feature-card {
+        padding: 2rem 1.5rem;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card:active {
+        transform: translateY(-2px);
+    }
+
+    /* Tools Preview Mobile */
+    .tools-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        text-align: center;
+    }
+    
+    .tools-list {
+        text-align: left;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    /* Footer Mobile */
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        text-align: center;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .footer-links {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    /* Trading Platform Mobile */
+    .platform-controls {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+        padding: 1rem;
+    }
+    
+    .account-info {
+        align-items: center;
+        text-align: center;
+        padding: 1rem;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .trading-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .trading-interface {
+        flex-direction: column;
+        height: auto;
+        gap: 1rem;
+    }
+    
+    .sidebar {
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    
+    .sidebar.collapsed {
+        display: none;
+    }
+    
+    .main-content {
+        padding: 1rem;
+    }
+    
+    #trading-chart {
+        height: 300px;
+    }
+    
+    .watchlist-item {
+        padding: 1rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .watchlist-item:active {
+        transform: scale(0.98);
+    }
+    
+    .order-form {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 1rem;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+    
+    .chart-controls {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+    
+    .trading-panels {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* iPhone 14 Pro Max, Samsung Galaxy S23 Ultra */
+@media (max-width: 430px) {
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .hero-title {
+        font-size: 2.2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        padding: 0.9rem 1.5rem;
+        font-size: 0.95rem;
+    }
+}
+
+/* iPhone SE, Small Android Phones */
+@media (max-width: 375px) {
+    .container {
+        padding: 0 0.75rem;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+        line-height: 1.1;
+    }
+
+    .hero-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .assets-text h2,
+    .forex-text h2,
+    .indices-text h2 {
+        font-size: 1.8rem;
+    }
+
+    .nav-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .btn-admin {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+        width: 100%;
+    }
+    
+    .hero-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        width: 100%;
+        padding: 0.8rem;
+    }
+    
+    .market-ticker {
+        padding: 0.5rem;
+        margin: 0.5rem;
+    }
+    
+    .ticker-item {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    .features-stats {
+        gap: 0.75rem;
+    }
+    
+    .stat-box {
+        padding: 1rem;
+    }
+    
+    .forex-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .indices-features {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .platform-features {
+        justify-content: center;
+    }
+    
+    .feature-card {
+        padding: 1.5rem 1rem;
+    }
+    
+    .tools-list {
+        font-size: 0.9rem;
+    }
+    
+    .footer-section h4 {
+        font-size: 1.1rem;
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
+    
+    .trading-sidebar {
+        padding: 0.75rem;
+    }
+    
+    .main-trading-area {
+        height: 300px;
+        padding: 0.75rem;
+    }
+}
+
+/* Landscape Mobile - Modern Phones */
+@media (max-width: 768px) and (orientation: landscape) {
+    .hero-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        text-align: left;
+        padding: 2rem 0;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .trading-interface {
+        flex-direction: row;
+        height: calc(100vh - 70px);
+    }
+    
+    .trading-sidebar {
+        width: 280px;
+        height: calc(100vh - 70px);
+        order: 1;
+        overflow-y: auto;
+    }
+    
+    .main-trading-area {
+        order: 2;
+        height: calc(100vh - 70px);
+        flex: 1;
+    }
+    
+    .nav-menu {
+        flex-direction: row;
+        position: static;
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+        width: auto;
+    }
+    
+    .nav-menu li {
+        margin: 0 1rem;
+    }
+    
+    .hamburger {
+        display: none;
+    }
+}
+
+/* Tablet Landscape */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+    .features-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .trading-interface {
+        flex-direction: row;
+    }
+    
+    .trading-sidebar {
+        width: 300px;
+        order: 1;
+    }
+    
+    .main-trading-area {
+        order: 2;
+        flex: 1;
+    }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .btn-primary,
+    .btn-secondary,
+    .platform-tab,
+    .feature-card,
+    .ticker-item,
+    .watchlist-item {
+        min-height: 44px; /* Apple's recommended touch target size */
+    }
+    
+    .nav-menu a {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Remove hover effects on touch devices */
+    .feature-card:hover,
+    .btn-primary:hover,
+    .btn-secondary:hover {
+        transform: none;
+    }
+    
+    /* Add active states for better touch feedback */
+    .btn-primary:active,
+    .btn-secondary:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .hero-image,
+    .assets-image,
+    .forex-image,
+    .indices-image {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-primary: #0a0a0f;
+        --bg-secondary: #1a1a2e;
+        --text-primary: #ffffff;
+        --text-secondary: #b0b0b0;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .navbar,
+    .hamburger,
+    .hero-buttons,
+    .btn-primary,
+    .btn-secondary,
+    .join-btn,
+    .trade-btn,
+    .market-ticker,
+    .trading-interface {
+        display: none;
+    }
+    
+    body {
+        background: var(--bg-primary, #0f172a);
+        color: var(--text-primary, #ffffff);
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+    
+    .hero-title,
+    .section-title,
+    h2, h3 {
+        color: black;
+        page-break-after: avoid;
+    }
+    
+    .container {
+        width: 100%;
+        max-width: none;
+        padding: 0;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .feature-card {
+        border: 1px solid #ccc;
+        page-break-inside: avoid;
+    }
+}
+
+/* Full width mobile layout fixes */
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    background: #0f1419 !important;
+    color: #ffffff;
+    font-size: 12pt;
+    line-height: 1.4;
+}
+
+.container {
+    max-width: 100%;
+    padding: 0 10px; /* Minimal padding for readability */
+    margin: 0;
+}
+
+.nav-container {
+    padding: 0 15px; /* Slightly more padding for navigation */
+}
+
+.hero-container {
+    padding: 3rem 15px; /* Reduce hero padding */
+}
+
+/* Remove extra margins from sections */
+.virtual-assets,
+.forex-trading,
+.indices-trading,
+.mobile-platforms,
+.global-presence,
+.introducing-brokers,
+.education-section {
+    padding: 40px 10px; /* Reduce section padding */
+}
+
+/* Market ticker full width */
+.market-ticker {
+    margin: 1rem 0; /* Remove side margins */
+    border-radius: 0; /* Remove border radius for full width */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+/* Extra small devices (Galaxy S9+, iPhone X, etc.) */
+@media (max-width: 414px) {
+    .container {
+        padding: 0 8px; /* Even less padding for very small screens */
+    }
+    
+    .nav-container {
+        padding: 0 10px;
+    }
+    
+    .hero-container {
+        padding: 2rem 10px;
+    }
+    
+    section {
+        width: 100vw !important;
+        margin-left: calc(-50vw + 50%) !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    /* Very small screens: neutralize remaining width hacks and ensure full width */
+    #about, [id="about"], [id^="about"], [id*="about"],
+    #choose, [id="choose"], [id^="choose"], [id*="choose"],
+    #tools, [id="tools"], [id^="tools"], [id*="tools"],
+    #providers, [id="providers"], [id^="providers"], [id*="providers"],
+    #next, [id="next"], [id^="next"], [id*="next"],
+    .about-section, .choose-section, .tools-section, .providers-section, .next-section,
+    [class*="about"], [class*="choose"], [class*="tools"], [class*="providers"], [class*="next"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        transform: none !important;
+        overflow-x: hidden !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Final Mobile Overrides — Education + Providers + Nav collapse safety */
+
+    /* Ensure Bootstrap collapse nav doesn't overlay or clip content */
+    .navbar-collapse .nav-menu {
+        position: static !important;
+        transform: none !important;
+        width: 100% !important;
+        left: auto !important;
+        right: auto !important;
+    }
+    .navbar-toggler.hamburger {
+        display: inline-flex !important;
+        z-index: 1001;
+    }
+
+    /* Global container prevention for horizontal overflow */
+    html, body {
+        overflow-x: hidden !important;
+    }
+    section, .section, .container, .row {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+    
+    /* Why Choose Central Trade Hub — Platform Features (minimal fix) */
+    .features,
+    .features .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        position: static !important;
+        transform: none !important;
+        overflow-x: hidden !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+    }
+    .features .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    .features-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+    .features-grid > * {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        min-width: 0 !important;
+        height: auto !important;
+        box-sizing: border-box !important;
+    }
+    .features img,
+    .features svg {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+    
+    /* ABOUT: strong final override to neutralize any residual width hacks */
+    #about.about-section {
+        margin: 0 !important;
+        width: 100% !important;
+        position: static !important;
+        left: auto !important;
+        right: auto !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        scroll-margin-top: 88px !important; /* avoid fixed navbar overlap */
+    }
+    #about .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+    }
+    #about .about-content {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        align-items: start !important;
+    }
+    #about .values-grid {
+        grid-template-columns: 1fr !important;
+    }
+    #about .about-stats {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+    #about .about-content > *,
+    #about .about-stats > * {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+        box-sizing: border-box !important;
+    }
+    #about img, #about svg, #about video {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+    
+    /* About Central Trade Hub — single-column, full-width, no clipping */
+    #about, .about-section, .about-content {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        scroll-margin-top: 88px !important; /* align below fixed navbar */
+    }
+
+    /* Force children to full width and remove floats/fixed heights */
+    .about-content > *,
+    .about-stats > * {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        clear: both !important;
+        min-width: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+    }
+
+    /* Stats/cards single column */
+    .about-stats {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        align-items: stretch !important;
+        justify-items: stretch !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Media inside About must not overflow */
+    #about img, #about svg, #about video, #about canvas,
+    .about-content img, .about-stats img {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+    
+    /* ABOUT CENTRAL TRADE HUB — Aggressive single-column mobile fix */
+    #about {
+        scroll-margin-top: 88px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Stack Bootstrap grid to a single column and remove side gutters */
+    #about .row {
+        --bs-gutter-x: 0;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    #about [class^="col-"], #about [class*=" col-"] {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* Common wrappers: single-column grid */
+    #about :is(.about-content, .about-stats, .about-features, .about-cards) {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        align-items: stretch !important;
+        justify-items: stretch !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Children fill width; remove floats and fixed heights */
+    #about :is(.about-content, .about-stats, .about-features, .about-cards) > * {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        clear: both !important;
+        min-width: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+    }
+
+    /* Neutralize transforms/negative margins causing clipping */
+    #about :is(div, section, article, aside, header, footer, main, ul, li, figure) {
+        transform: none !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        position: static !important;
+    }
+
+    /* Media responsive inside About */
+    #about img, #about svg, #about video, #about canvas {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+
+    /* FINAL mobile overrides for About, Choose, Tools, Providers, Next */
+    /* Ensure section wrappers are full-width and align below fixed navbar */
+    #about, [id="about"], [id^="about"], [id*="about"],
+    #choose, [id="choose"], [id^="choose"], [id*="choose"],
+    #tools, [id="tools"], [id^="tools"], [id*="tools"],
+    #providers, [id="providers"], [id^="providers"], [id*="providers"],
+    #next, [id="next"], [id^="next"], [id*="next"],
+    .about-section, .choose-section, .tools-section, .providers-section, .next-section,
+    [class*="about"], [class*="choose"], [class*="tools"], [class*="providers"], [class*="next"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        scroll-margin-top: 88px !important; /* avoid overlap with fixed navbar */
+        transform: none !important;          /* neutralize 100vw/translate hacks */
+    }
+
+    /* Force single-column stacking for common inner wrappers */
+    .about-content,
+    .about-stats,
+    .choose-us-features,
+    .choose-cards,
+    .tools-content,
+    .tools-grid,
+    .tools-cards,
+    .providers-content,
+    .providers-logos,
+    .next-options {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        align-items: stretch !important;
+        justify-items: stretch !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Children fill width, no floats, no fixed heights */
+    .about-content > *,
+    .about-stats > *,
+    .choose-us-features > *,
+    .choose-cards > *,
+    .tools-content > *,
+    .tools-grid > *,
+    .tools-cards > *,
+    .providers-content > *,
+    .providers-logos > *,
+    .next-options > * {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        clear: both !important;
+        min-width: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+    }
+
+    /* Media inside those sections must not overflow horizontally */
+    #about img, #about svg, #about video, #about canvas,
+    #choose img, #choose svg, #choose video, #choose canvas,
+    #tools img, #tools svg, #tools video, #tools canvas,
+    #providers img, #providers svg, #providers video, #providers canvas,
+    #next img, #next svg, #next video, #next canvas,
+    .about-content img, .choose-us-features img, .tools-content img, .providers-logos img, .next-options img {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+
+    /* Providers: allow marquee but keep within section (no page-wide overflow) */
+    .providers-logos,
+    .providers-marquee,
+    .providers-row,
+    .providers-track,
+    .track {
+        overflow-x: hidden !important;
+        white-space: nowrap !important;
+        transform: translateZ(0) !important; /* keep GPU-accelerated animations */
+    }
+
+    /* About Central Trade Hub */
+    #about, .about-section, .about-content {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        align-items: start !important;
+        overflow: visible !important;
+    }
+    .about-stats, .about-features, .about-cards {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        overflow: visible !important;
+    }
+    .about-content > *, .about-stats > *, .about-features > *, .about-cards > * {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+    #about { scroll-margin-top: 80px !important; }
+
+    /* Why Choose Central */
+    #choose, .choose-section, .choose-us, .choose-us-features, .choose-cards {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        overflow: visible !important;
+    }
+    .choose-us-features > *, .choose-cards > * {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+    #choose { scroll-margin-top: 80px !important; }
+
+    /* Professional Trading Tools */
+    #tools, .tools-section, .tools-content, .tools-grid, .tools-cards {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        overflow: visible !important;
+    }
+    .tools-content > *, .tools-grid > *, .tools-cards > * {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+    #tools { scroll-margin-top: 80px !important; }
+
+    /* Liquidity Providers */
+    #providers, .providers-section, .providers-content, .providers-logos {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        overflow: visible !important;
+    }
+    .providers-logos > * {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+    .providers-logos img, .providers-logos svg {
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+    /* Neutralize marquee/ticker overflow if present */
+    .providers-logos, .providers-marquee, .marquee-track {
+        overflow-x: hidden !important;
+        white-space: normal !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    /* Liquidity Providers: allow marquee on mobile */
+    .liquidity-providers .providers-marquee,
+    .liquidity-providers .providers-row,
+    .liquidity-providers .track {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        transform: translateZ(0); /* keep GPU-accelerated */
+    }
+
+    /* Ensure images don't cause page-wide overflow */
+    .liquidity-providers .provider-logo {
+        max-width: none !important;
+        height: var(--providers-height) !important;
+    }
+    #providers { scroll-margin-top: 80px !important; }
+
+    /* Choose Where To Go Next */
+    #next, .next-section, .next-options {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        overflow: visible !important;
+    }
+    .next-options > * {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+    .next-options .option-card {
+        min-width: 0 !important;
+    }
+    #next { scroll-margin-top: 80px !important; }
+
+    /* Media should always be responsive on mobile */
+    img, svg, video, canvas {
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+
+    /* Buttons wrap nicely on small screens */
+    .btn, .btn-primary, .btn-outline-light, .btn-outline-info {
+        max-width: 100% !important;
+        white-space: normal !important;
+        overflow: visible !important;
+    }
+
+    /* Catch-all for any element whose id/class includes "education" */
+    #education,
+    [id*="education"],
+    .education-section,
+    .education-content,
+    .education-categories {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+
+        /* Prevent clipping/overlap under fixed navbar */
+        scroll-margin-top: 80px !important;
+
+        /* Neutralize position hacks on mobile */
+        position: relative !important;
+        left: auto !important;
+        right: auto !important;
+        transform: none !important;
+
+        /* Prevent horizontal overflow/clipping */
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+
+    /* Children inside education: full-width, no floats/margins, no clipping */
+    [id*="education"] > *,
+    .education-section > *,
+    .education-content > *,
+    .education-categories > * {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        float: none !important;
+        min-width: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        box-sizing: border-box !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    /* Media inside education must be responsive and constrained */
+    [id*="education"] img,
+    [class*="education"] img,
+    [id*="education"] svg,
+    [id*="education"] video,
+    [id*="education"] canvas {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+    }
+
+    /* Liquidity Providers — restore flex + animation on mobile (override grid) */
+    .providers-logos {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 12px !important;
+        overflow: hidden !important;
+    }
+    .providers-logos .providers-row-1,
+    .providers-logos .providers-row-2 {
+        display: flex !important;
+        gap: 12px !important;
+        will-change: transform !important;
+        animation-play-state: running !important;
+    }
+    .providers-logos > * {
+        flex: 0 0 auto !important;
+    }
+}
+
+/* Extra-small screens: aggressively neutralize width/margin hacks */
+@media (max-width: 414px) {
+    /* Professional Trading Tools — XS safety */
+    #tools,
+    #tools .container,
+    .tools-preview,
+    .tools-preview .container,
+    .tools,
+    .tools .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        position: static !important;
+        transform: none !important;
+        overflow-x: hidden !important;
+    }
+    .tools-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    
+    #education,
+    [id*="education"],
+    #about, .about-section, .about-content,
+    #choose, .choose-section, .choose-us, .choose-us-features,
+    #tools, .tools-section, .tools-content, .tools-grid, .tools-cards,
+    #providers, .providers-section, .providers-content, .providers-logos, .providers-marquee, .marquee-track,
+    #next, .next-section, .next-options,
+    .why-choose-us, .why-choose-us .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        transform: none !important;
+        overflow-x: hidden !important;
+    }
+}
+
+/* Responsive Designs */

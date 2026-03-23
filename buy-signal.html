@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Signal - TitanTrades</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/utilities.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .buy-signal-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .signal-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+        
+        .signal-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .signal-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .signals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .signal-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .signal-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+        }
+        
+        .signal-type {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .signal-buy {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+        
+        .signal-sell {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+        
+        .signal-hold {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+            color: white;
+        }
+        
+        .currency-pair {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .signal-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .detail-item {
+            text-align: center;
+        }
+        
+        .detail-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+        
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .signal-confidence {
+            background: linear-gradient(90deg, #e3f2fd, #bbdefb);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .confidence-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #2196F3);
+            transition: width 0.3s ease;
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .premium-banner {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #333;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .premium-banner h3 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .upgrade-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            margin-top: 1rem;
+        }
+        
+        .upgrade-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        @media (max-width: 768px) {
+            .buy-signal-container {
+                padding: 1rem;
+            }
+            
+            .signal-header h1 {
+                font-size: 2rem;
+            }
+            
+            .signals-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .back-button {
+                position: static;
+                display: block;
+                width: fit-content;
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="buy-signal-container">
+        <div class="back-button-container" style="margin-bottom: 2rem;">
+            <a href="dashboard.html" class="back-button" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.15); color: white; border: 2px solid rgba(255, 255, 255, 0.2); padding: 0.75rem 1.5rem; border-radius: 50px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; backdrop-filter: blur(10px);">
+                <i class="fas fa-arrow-left"></i>
+                Back to Dashboard
+            </a>
+        </div>
+        
+        <div class="signal-header">
+            <h1><i class="fas fa-signal"></i> Trading Signals</h1>
+            <p>Real-time market analysis and trading recommendations</p>
+        </div>
+        
+        <div class="premium-banner">
+            <h3><i class="fas fa-crown"></i> Premium Signals Available</h3>
+            <p>Upgrade to access advanced signals with 95% accuracy rate</p>
+            <button class="upgrade-btn" onclick="window.location.href='upgrade-plan.html'">
+                Upgrade Now
+            </button>
+        </div>
+        
+        <div class="signals-grid" id="signalsGrid">
+            <!-- Signals will be populated by JavaScript -->
+        </div>
+    </div>
+    
+    <script src="js/ai-support-chat.js"></script>
+    <script>
+        // Sample signal data
+        const signals = [
+            {
+                type: 'buy',
+                pair: 'EUR/USD',
+                entry: '1.0850',
+                target: '1.0920',
+                stopLoss: '1.0800',
+                confidence: 85
+            },
+            {
+                type: 'sell',
+                pair: 'GBP/JPY',
+                entry: '185.50',
+                target: '184.20',
+                stopLoss: '186.80',
+                confidence: 78
+            },
+            {
+                type: 'hold',
+                pair: 'USD/CAD',
+                entry: '1.3650',
+                target: '1.3720',
+                stopLoss: '1.3580',
+                confidence: 92
+            }
+        ];
+        
+        function renderSignals() {
+            const grid = document.getElementById('signalsGrid');
+            grid.innerHTML = signals.map(signal => `
+                <div class="signal-card">
+                    <div class="signal-type signal-${signal.type}">
+                        ${signal.type.toUpperCase()}
+                    </div>
+                    <div class="currency-pair">${signal.pair}</div>
+                    <div class="signal-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Entry</div>
+                            <div class="detail-value">${signal.entry}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Target</div>
+                            <div class="detail-value">${signal.target}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Stop Loss</div>
+                            <div class="detail-value">${signal.stopLoss}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Time</div>
+                            <div class="detail-value">${new Date().toLocaleTimeString()}</div>
+                        </div>
+                    </div>
+                    <div class="signal-confidence">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Confidence</span>
+                            <span style="font-weight: 600;">${signal.confidence}%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${signal.confidence}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        document.addEventListener('DOMContentLoaded', renderSignals);
+    </script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Verification Portal - Mirror Trade</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/kyc-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/kyc-styles.css">
+    <!-- Expose KYC storage helpers to window for use in kyc-portal.js -->
+    <script type="module">
+      import { uploadKyc, getUserKycList } from "./js/kyc-storage.js";
+      window.uploadKyc = uploadKyc;
+      window.getUserKycList = getUserKycList;
+    </script>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <header class="kyc-header">
+        <div class="container">
+            <div class="header-content">
+                <button class="back-btn" onclick="window.location.href='dashboard.html'">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Dashboard</span>
+                </button>
+                <div class="header-title">
+                    <h1>KYC Verification</h1>
+                    <p>Secure your account with identity verification</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="kyc-main">
+        <div class="container">
+            <!-- KYC Status Card -->
+            <div class="kyc-status-card">
+                <div class="status-header">
+                    <div class="status-icon" id="statusIcon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="status-info">
+                        <h2 id="statusTitle">Verification Pending</h2>
+                        <p id="statusDescription">Complete your KYC verification to unlock all features</p>
+                    </div>
+                    <div class="status-badge" id="statusBadge">
+                        <span class="badge pending">Pending</span>
+                    </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-steps">
+                        <div class="step" id="step1">
+                            <div class="step-circle">1</div>
+                            <span>Personal Info</span>
+                        </div>
+                        <div class="step" id="step2">
+                            <div class="step-circle">2</div>
+                            <span>Document Upload</span>
+                        </div>
+                        <div class="step" id="step3">
+                            <div class="step-circle">3</div>
+                            <span>Verification</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Benefits Section -->
+            <div class="benefits-section">
+                <h3><i class="fas fa-star"></i> Benefits of KYC Verification</h3>
+                <div class="benefits-grid">
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h4>Enhanced Security</h4>
+                            <p>Protect your account with verified identity</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h4>Higher Limits</h4>
+                            <p>Increase your trading and withdrawal limits</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h4>Premium Features</h4>
+                            <p>Access advanced trading tools and features</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h4>Priority Support</h4>
+                            <p>Get faster customer support response</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Required Documents section -->
+            <div class="requirements-section">
+                <h3><i class="fas fa-list-check"></i> Required Documents</h3>
+                <div class="requirements-list">
+                    <!-- Only Government-issued ID -->
+                    <div class="requirement-item">
+                        <div class="requirement-icon">
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                        <div class="requirement-content">
+                            <h4>Government-issued ID (Front & Back)</h4>
+                            <p>Passport, Driver's License, or National ID Card</p>
+                            <!-- Front/Back file inputs -->
+                            <!-- KYC Upload Section -->
+                            <div class="container my-4">
+                              <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                  <div class="card bg-dark text-white border-secondary">
+                                    <div class="card-header border-secondary">
+                                      <h5 class="mb-0">KYC Verification — Government ID</h5>
+                                    </div>
+                                    <div class="card-body">
+                                      <p class="text-muted">Upload clear images of the front and back of your government-issued ID.</p>
+                                  
+                                      <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                          <label class="form-label" for="idFrontFileInput">ID Front</label>
+                                          <input type="file" id="idFrontFileInput" class="form-control" accept="image/*" />
+                                          <span id="idFrontFileName" class="text-muted d-block mt-2">No file selected</span>
+                                          <img id="idFrontPreview" alt="Front Preview" class="img-fluid mt-2 border" style="display:none;" />
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                          <label class="form-label" for="idBackFileInput">ID Back</label>
+                                          <input type="file" id="idBackFileInput" class="form-control" accept="image/*" />
+                                          <span id="idBackFileName" class="text-muted d-block mt-2">No file selected</span>
+                                          <img id="idBackPreview" alt="Back Preview" class="img-fluid mt-2 border" style="display:none;" />
+                                        </div>
+                                      </div>
+                              
+                                      <div class="d-flex justify-content-end">
+                                        <button id="submitVerificationBtn" type="button" class="btn btn-primary" disabled onclick="submitVerification()">
+                                          Submit for Verification
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                              <!-- Remove duplicate button block -->
+                              <!-- <div class="actions" style="margin-top:16px;">
+                                <button id="submitVerificationBtn" type="button" disabled onclick="submitVerification()">Submit for Verification</button>
+                              </div> -->
+                            </div>
+                        </div>
+                        <div class="requirement-status" id="docStatus1">
+                            <i class="fas fa-clock text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-section">
+                <div class="action-buttons">
+                    <!-- Replace inline onclick with an id-only button -->
+                    <button id="start-kyc-btn" type="button">Start KYC Verification</button>
+                    <button class="btn btn-secondary" id="continueVerificationBtn" onclick="continueKYCVerification()" style="display: none;">
+                        <i class="fas fa-arrow-right"></i>
+                        <span>Continue Verification</span>
+                    </button>
+                    <button class="btn btn-outline" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-home"></i>
+                        <span>Go to Dashboard</span>
+                    </button>
+                </div>
+                
+                <div class="help-section">
+                    <p><i class="fas fa-info-circle"></i> Need help? Contact our <a href="#" onclick="openSupportChat()">support team</a></p>
+                </div>
+            </div>
+
+            <!-- Verification Modal -->
+            <div class="modal" id="verificationModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>KYC Verification Process</h3>
+                        <button class="modal-close" onclick="closeVerificationModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="verification-steps">
+                            <div class="step-content" id="stepContent">
+                                <!-- Dynamic content will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Tail of kyc-portal.html (cleanup) -->
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Processing your verification...</p>
+            </div>
+        </div>
+    
+        <!-- Only one script include -->
+        <script type="module" src="js/kyc-portal.js"></script>
+    </body>
+    </html>
+    
+   

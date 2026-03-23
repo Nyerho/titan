@@ -1,0 +1,149 @@
+/* Dashboard Section Navigation Styles */
+.dashboard-section {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.dashboard-section.active {
+    display: block;
+}
+
+.section-header {
+    margin-bottom: 2rem;
+}
+
+.section-header h2 {
+    color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.section-header p {
+    color: #888;
+    margin: 0;
+}
+
+/* Portfolio Section */
+.portfolio-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Markets Section */
+.market-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.market-card {
+    background: #1e1e2e;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #2d2d44;
+}
+
+.market-card h3 {
+    color: #fff;
+    margin-bottom: 1rem;
+}
+
+.market-card .price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #00d4ff;
+    margin-bottom: 0.5rem;
+}
+
+.market-card .change.positive {
+    color: #00ff88;
+}
+
+.market-card .change.negative {
+    color: #ff4757;
+}
+
+/* Analytics Section */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.analytics-card {
+    background: #1e1e2e;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #2d2d44;
+    text-align: center;
+}
+
+/* Education Section */
+.education-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.education-card {
+    background: #1e1e2e;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid #2d2d44;
+}
+
+.education-card h3 {
+    color: #fff;
+    margin-bottom: 1rem;
+}
+
+.education-card p {
+    color: #888;
+    margin-bottom: 1.5rem;
+}
+
+/* History Section */
+.history-filters {
+    margin-bottom: 1.5rem;
+}
+
+.filter-select {
+    background: #1e1e2e;
+    border: 1px solid #2d2d44;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Debug styles */
+.dashboard-section {
+    display: none !important;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.dashboard-section.active {
+    display: block !important;
+}
+
+/* Ensure menu items are clickable */
+.menu-item {
+    cursor: pointer;
+    pointer-events: all;
+}
+
+.menu-item:hover {
+    background-color: rgba(0, 212, 255, 0.1);
+}

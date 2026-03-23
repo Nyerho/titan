@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication - TitanTrades</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/mobile-performance.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Bootstrap CSS (auth page only) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="auth-body">
+    <!-- Navigation -->
+    <nav class="auth-header navbar navbar-dark bg-dark navbar-expand-md">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+                <img src="assets/images/logo.png" alt="TitanTrades" class="img-fluid" style="max-height:32px;">
+                <span class="brand-text">TitanTrades</span>
+            </a>
+    
+            <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#authNav" aria-controls="authNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+    
+            <div class="collapse navbar-collapse justify-content-end mt-2 mt-md-0" id="authNav">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item"><a href="index.html" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="platform.html" class="nav-link">Platform</a></li>
+                    <li class="nav-item"><a href="index.html#markets" class="nav-link">Markets</a></li>
+                    <li class="nav-item"><a href="education.html" class="nav-link">Education</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <div class="auth-background">
+            <div class="auth-overlay"></div>
+            <div class="floating-elements">
+                <div class="floating-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="floating-icon"><i class="fas fa-coins"></i></div>
+                <div class="floating-icon"><i class="fas fa-trending-up"></i></div>
+                <div class="floating-icon"><i class="fab fa-bitcoin"></i></div>
+            </div>
+        </div>
+        
+        <div class="auth-content">
+            <!-- New Image Section -->
+            <div class="auth-image-section">
+                <img src="assets/images/log.jpg" alt="TitanTrades" class="auth-logo-display">
+                <div class="auth-image-text">
+                    <h3>Welcome to TitanTrades</h3>
+                    <p>Your gateway to professional trading. Join thousands of traders who trust our platform for secure, fast, and reliable trading experiences.</p>
+                </div>
+            </div>
+            
+            <div class="auth-card">
+                <!-- Tab Navigation -->
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Login
+                    </button>
+                    <button class="auth-tab" data-tab="register">
+                        <i class="fas fa-user-plus"></i>
+                        Register
+                    </button>
+                </div>
+
+                <!-- Login Form -->
+                <div class="auth-form-container active" id="login-form">
+                    <div class="auth-header">
+                        <h2>Welcome Back</h2>
+                        <p>Sign in to your TitanTrades account</p>
+                    </div>
+                    
+                    <form class="auth-form" id="loginForm">
+                        <div class="form-group">
+                            <label for="loginEmail">
+                                <i class="fas fa-envelope"></i>
+                                Email Address
+                            </label>
+                            <input type="email" id="loginEmail" name="email" required>
+                            <span class="form-error" id="loginEmailError"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="loginPassword">
+                                <i class="fas fa-lock"></i>
+                                Password
+                            </label>
+                            <div class="password-input">
+                                <input type="password" id="loginPassword" name="password" required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span class="form-error" id="loginPasswordError"></span>
+                        </div>
+                        
+                        <div class="form-options">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="rememberMe" name="rememberMe">
+                                <span class="checkmark"></span>
+                                Remember me
+                            </label>
+                            <a href="#" class="forgot-link" onclick="showForgotPassword()">Forgot Password?</a>
+                        </div>
+                        
+                        <button type="submit" class="auth-btn primary">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Sign In
+                        </button>
+
+                        <button type="button" class="auth-btn secondary" id="demoLoginBtn">
+                            <i class="fas fa-bolt"></i>
+                            Continue as Demo
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Register Form -->
+                <div class="auth-form-container" id="register-form">
+                    <div class="auth-header">
+                        <h2>Create Account</h2>
+                        <p>Join TitanTrades and start trading today</p>
+                    </div>
+                    
+                    <form class="auth-form" id="registerForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">
+                                    <i class="fas fa-user"></i>
+                                    First Name
+                                </label>
+                                <input type="text" id="firstName" name="firstName" required>
+                                <span class="form-error" id="firstNameError"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">
+                                    <i class="fas fa-user"></i>
+                                    Last Name
+                                </label>
+                                <input type="text" id="lastName" name="lastName" required>
+                                <span class="form-error" id="lastNameError"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="registerEmail">
+                                <i class="fas fa-envelope"></i>
+                                Email Address
+                            </label>
+                            <input type="email" id="registerEmail" name="email" required>
+                            <span class="form-error" id="registerEmailError"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">
+                                <i class="fas fa-phone"></i>
+                                Phone Number
+                            </label>
+                            <input type="tel" id="phone" name="phone" required>
+                            <span class="form-error" id="phoneError"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="country">
+                                <i class="fas fa-globe"></i>
+                                Country
+                            </label>
+                            <select id="country" name="country" required onchange="updateCountryCode()">
+                                <option value="">Select Country</option>
+                                <option value="AF">Afghanistan (+93)</option>
+                                <option value="AL">Albania (+355)</option>
+                                <option value="DZ">Algeria (+213)</option>
+                                <option value="AR">Argentina (+54)</option>
+                                <option value="AU">Australia (+61)</option>
+                                <option value="AT">Austria (+43)</option>
+                                <option value="BD">Bangladesh (+880)</option>
+                                <option value="BE">Belgium (+32)</option>
+                                <option value="BR">Brazil (+55)</option>
+                                <option value="BG">Bulgaria (+359)</option>
+                                <option value="CA">Canada (+1)</option>
+                                <option value="CL">Chile (+56)</option>
+                                <option value="CN">China (+86)</option>
+                                <option value="CO">Colombia (+57)</option>
+                                <option value="CR">Costa Rica (+506)</option>
+                                <option value="HR">Croatia (+385)</option>
+                                <option value="CZ">Czech Republic (+420)</option>
+                                <option value="DK">Denmark (+45)</option>
+                                <option value="EG">Egypt (+20)</option>
+                                <option value="EE">Estonia (+372)</option>
+                                <option value="FI">Finland (+358)</option>
+                                <option value="FR">France (+33)</option>
+                                <option value="DE">Germany (+49)</option>
+                                <option value="GH">Ghana (+233)</option>
+                                <option value="GR">Greece (+30)</option>
+                                <option value="HK">Hong Kong (+852)</option>
+                                <option value="HU">Hungary (+36)</option>
+                                <option value="IS">Iceland (+354)</option>
+                                <option value="IN">India (+91)</option>
+                                <option value="ID">Indonesia (+62)</option>
+                                <option value="IE">Ireland (+353)</option>
+                                <option value="IL">Israel (+972)</option>
+                                <option value="IT">Italy (+39)</option>
+                                <option value="JP">Japan (+81)</option>
+                                <option value="KE">Kenya (+254)</option>
+                                <option value="KR">South Korea (+82)</option>
+                                <option value="LV">Latvia (+371)</option>
+                                <option value="LT">Lithuania (+370)</option>
+                                <option value="MY">Malaysia (+60)</option>
+                                <option value="MX">Mexico (+52)</option>
+                                <option value="NL">Netherlands (+31)</option>
+                                <option value="NZ">New Zealand (+64)</option>
+                                <option value="NG">Nigeria (+234)</option>
+                                <option value="NO">Norway (+47)</option>
+                                <option value="PK">Pakistan (+92)</option>
+                                <option value="PE">Peru (+51)</option>
+                                <option value="PH">Philippines (+63)</option>
+                                <option value="PL">Poland (+48)</option>
+                                <option value="PT">Portugal (+351)</option>
+                                <option value="RO">Romania (+40)</option>
+                                <option value="RU">Russia (+7)</option>
+                                <option value="SA">Saudi Arabia (+966)</option>
+                                <option value="SG">Singapore (+65)</option>
+                                <option value="SK">Slovakia (+421)</option>
+                                <option value="SI">Slovenia (+386)</option>
+                                <option value="ZA">South Africa (+27)</option>
+                                <option value="ES">Spain (+34)</option>
+                                <option value="LK">Sri Lanka (+94)</option>
+                                <option value="SE">Sweden (+46)</option>
+                                <option value="CH">Switzerland (+41)</option>
+                                <option value="TW">Taiwan (+886)</option>
+                                <option value="TH">Thailand (+66)</option>
+                                <option value="TR">Turkey (+90)</option>
+                                <option value="UA">Ukraine (+380)</option>
+                                <option value="AE">United Arab Emirates (+971)</option>
+                                <option value="GB">United Kingdom (+44)</option>
+                                <option value="US">United States (+1)</option>
+                                <option value="VE">Venezuela (+58)</option>
+                                <option value="VN">Vietnam (+84)</option>
+                            </select>
+                            <span class="form-error" id="countryError"></span>
+                        </div>
+                        
+                        <div class="form-group" id="countryCodeGroup" style="display: none;">
+                            <label for="countryCode">
+                                <i class="fas fa-phone-alt"></i>
+                                Country Code
+                            </label>
+                            <input type="text" id="countryCode" name="countryCode" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="mirrorTradeCode">
+                                <i class="fas fa-copy"></i>
+                                Mirror Trade Code (Optional)
+                            </label>
+                            <input type="text" id="mirrorTradeCode" name="mirrorTradeCode" placeholder="Enter 4-digit MTC code if provided by admin" maxlength="4">
+                            <small class="form-help">Leave blank if you don't have a Mirror Trade Code</small>
+                            <span class="form-error" id="mirrorTradeCodeError"></span>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="registerPassword">
+                                    <i class="fas fa-lock"></i>
+                                    Password
+                                </label>
+                                <div class="password-input">
+                                    <input type="password" id="registerPassword" name="password" required>
+                                    <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <span class="form-error" id="registerPasswordError"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword">
+                                    <i class="fas fa-lock"></i>
+                                    Confirm Password
+                                </label>
+                                <div class="password-input">
+                                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                                    <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <span class="form-error" id="confirmPasswordError"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                                <span class="checkmark"></span>
+                                I agree to the <a href="terms.html" class="terms-link">Terms of Service</a> and <a href="privacy.html" class="terms-link">Privacy Policy</a>
+                            </label>
+                            <span class="form-error" id="agreeTermsError"></span>
+                        </div>
+                        
+                        <button type="submit" class="auth-btn primary">
+                            <i class="fas fa-user-plus"></i>
+                            Create Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-key"></i> Reset Password</h2>
+                <span class="close" onclick="closeForgotPassword()">&times;</span>
+            </div>
+            <form id="forgotPasswordForm" class="auth-form">
+                <div class="form-group">
+                    <label for="resetEmail">
+                        <i class="fas fa-envelope"></i>
+                        Email Address
+                    </label>
+                    <input type="email" id="resetEmail" name="email" required placeholder="Enter your email address">
+                    <span class="form-error" id="resetEmailError"></span>
+                </div>
+                <button type="submit" class="auth-btn primary">
+                    <i class="fas fa-paper-plane"></i>
+                    Send Reset Link
+                </button>
+            </form>
+            <div class="modal-footer">
+                <p>Remember your password? <a href="#" onclick="closeForgotPassword()">Back to Login</a></p>
+            </div>
+        </div>
+    </div>
+    <!-- Scripts -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/firebase-auth.js"></script>
+    <script type="module" src="js/firebase-database.js"></script>
+    <script type="module" src="js/auth-integration.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <!-- Bootstrap JavaScript (required for navbar toggler) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    
+    <!-- Smartsupp Live Chat script -->
+    <script type="text/javascript">
+    var _smartsupp = _smartsupp || {};
+    _smartsupp.key = '5a12e502e39d89519fbf29c7014792f8d6540920';
+    window.smartsupp||(function(d) {
+      var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+      s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+      c.type='text/javascript';c.charset='utf-8';c.async=true;
+      c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+    })(document);
+    </script>
+    <noscript> Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
+</body>
+</html>

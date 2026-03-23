@@ -1,0 +1,5 @@
+[33m23fee22[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m  solves withdrwal and user management issue
+[33m4eb1f78[m Fix withdrawal page errors and user management loading issues
+[33mb7ab247[m Update trading platform: Add submitWithdrawal function and complete system synchronization
+[33m308914a[m Enhanced admin panel: integrated manual balance adjustment, fixed trade forms, resolved duplicate user management
+[33m8a034e9[m Complete advanced financial management system with manual balance adjustments

@@ -1,0 +1,92 @@
+/* Enhanced Mobile Navigation */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+    
+    .nav-menu {
+        position: fixed;
+        left: -100%;
+        top: 70px;
+        flex-direction: column;
+        background-color: var(--primary-color);
+        width: 100%;
+        text-align: center;
+        transition: 0.3s;
+        box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+        z-index: 999;
+    }
+    
+    .nav-menu.active {
+        left: 0;
+    }
+    
+    .nav-menu li {
+        margin: 1rem 0;
+    }
+    
+    .hamburger {
+        display: block;
+        cursor: pointer;
+    }
+    
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+    
+    .hamburger.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+    
+    .hamburger.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
+    
+    /* Auth Forms Mobile Optimization */
+    .auth-container {
+        padding: 1rem;
+        min-height: 100vh;
+    }
+    
+    .auth-card {
+        margin: 1rem 0;
+        padding: 1.5rem;
+    }
+    
+    .auth-form input,
+    .auth-form select,
+    .auth-form textarea {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    /* Platform Mobile Optimization */
+    .platform-container {
+        padding: 0.5rem;
+    }
+    
+    .trading-interface {
+        flex-direction: column;
+    }
+    
+    .chart-container {
+        height: 300px;
+        margin-bottom: 1rem;
+    }
+    
+    /* Modal Mobile Fixes */
+    .modal-content {
+        width: 95%;
+        margin: 5% auto;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+/* Touch-friendly buttons */
+@media (hover: none) and (pointer: coarse) {
+    .btn, .auth-btn, .platform-btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px 24px;
+    }
+}

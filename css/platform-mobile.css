@@ -1,0 +1,220 @@
+/* Platform Mobile Responsiveness */
+@media (max-width: 1024px) {
+    .trading-container {
+        flex-direction: column;
+        height: auto;
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+    
+    .left-sidebar, .right-sidebar {
+        width: 100%;
+        min-width: unset;
+        order: 2;
+    }
+    
+    .main-content {
+        order: 1;
+        min-height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .platform-body {
+        padding-top: 60px;
+    }
+    
+    .trading-container {
+        padding: 0.25rem;
+        gap: 0.25rem;
+    }
+    
+    .sidebar {
+        padding: 0.75rem;
+    }
+    
+    .main-content {
+        padding: 0.75rem;
+    }
+
+    .mobile-controls {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+    
+    /* Hide sidebars by default on mobile */
+    .left-sidebar, .right-sidebar {
+        display: none;
+    }
+    
+    .left-sidebar.active, .right-sidebar.active {
+        display: block;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        height: calc(100vh - 60px);
+        overflow-y: auto;
+    }
+    
+    /* Mobile toggle buttons */
+    .mobile-sidebar-toggle {
+        display: block;
+        background: #16213e;
+        color: #ffffff;
+        border: none;
+        padding: 0.5rem 1rem;
+        margin: 0.25rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    
+    .mobile-sidebar-toggle:hover {
+        background: #1e2a4a;
+    }
+    
+    /* Trading interface adjustments */
+    .trading-interface {
+        flex-direction: column;
+    }
+    
+    .order-form {
+        margin-bottom: 1rem;
+    }
+    
+    .order-tabs {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .tab-button {
+        flex: 1;
+        min-width: 80px;
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+    }
+    
+    .form-group {
+        margin-bottom: 0.75rem;
+    }
+    
+    .form-group label {
+        font-size: 0.9rem;
+    }
+    
+    .form-group input {
+        padding: 0.75rem;
+        font-size: 1rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .btn-buy, .btn-sell {
+        padding: 1rem;
+        font-size: 1rem;
+        min-height: 48px;
+    }
+    
+    /* Chart adjustments */
+    .chart-container {
+        height: 300px;
+        margin-bottom: 1rem;
+    }
+    
+    /* Market data adjustments */
+    .market-stats {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .stat-card {
+        padding: 0.75rem;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+    }
+    
+    /* Portfolio adjustments */
+    .portfolio-summary {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-card {
+        padding: 0.75rem;
+    }
+    
+    /* Positions table */
+    .positions-table {
+        overflow-x: auto;
+    }
+    
+    .positions-table table {
+        min-width: 600px;
+    }
+    
+    /* Order book adjustments */
+    .order-book {
+        font-size: 0.8rem;
+    }
+    
+    .order-book-item {
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .trading-container {
+        padding: 0.125rem;
+    }
+    
+    .main-content, .sidebar {
+        padding: 0.5rem;
+        border-radius: 4px;
+    }
+    
+    .tab-button {
+        padding: 0.5rem 0.125rem;
+        font-size: 0.75rem;
+    }
+    
+    .form-group input {
+        padding: 0.625rem;
+    }
+    
+    .btn-buy, .btn-sell {
+        padding: 0.875rem;
+        font-size: 0.9rem;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+    
+    .stat-value {
+        font-size: 1rem;
+    }
+    
+    .order-book {
+        font-size: 0.75rem;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .btn, .tab-button, .mobile-sidebar-toggle {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .close-position-btn {
+        min-height: 32px;
+        min-width: 32px;
+    }
+}

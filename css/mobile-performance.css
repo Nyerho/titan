@@ -1,0 +1,96 @@
+/* Mobile Performance Optimizations */
+
+/* Disable heavy effects on mobile devices */
+@media (max-width: 768px) {
+    /* Remove backdrop filters on mobile */
+    .nav-menu,
+    .stat-item,
+    .ticker-item,
+    .stat-box,
+    .user-menu,
+    .auth-card,
+    .auth-content,
+    .floating-icon {
+        backdrop-filter: none !important;
+        background: rgba(26, 26, 46, 0.95) !important;
+    }
+    
+    /* Simplify animations */
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.1s !important;
+    }
+    
+    /* Remove transforms on mobile */
+    .btn-primary:active,
+    .btn-secondary:active,
+    .ticker-item:active,
+    .flag-item:active,
+    .platform-tab:active {
+        transform: none !important;
+    }
+    
+    /* Optimize hero section */
+    .hero {
+        background: #1a1a2e !important;
+        min-height: auto !important;
+    }
+    
+    /* Remove floating animations */
+    .floating-icon,
+    .crypto-gift,
+    .chart-animation {
+        animation: none !important;
+        transform: none !important;
+    }
+    
+    /* Simplify market ticker */
+    .market-ticker {
+        animation: none !important;
+    }
+    
+    /* Remove blur effects */
+    .blur-bg,
+    .backdrop-blur {
+        backdrop-filter: none !important;
+        filter: none !important;
+    }
+    
+    /* Optimize container padding */
+    .container {
+        padding: 0 10px !important;
+    }
+    
+    /* Remove hover effects on touch devices */
+    .btn-primary:hover,
+    .btn-secondary:hover,
+    .nav-link:hover {
+        transform: none !important;
+    }
+}
+
+/* Extra performance boost for older devices */
+@media (max-width: 480px) {
+    /* Force hardware acceleration off */
+    * {
+        transform: none !important;
+        will-change: auto !important;
+        backface-visibility: visible !important;
+    }
+    
+    /* Reduce visual complexity */
+    .hero-container {
+        gap: 1rem !important;
+    }
+    
+    .hero-title {
+        font-size: 2rem !important;
+    }
+    
+    /* Simplify navigation */
+    .nav-menu {
+        background: #1a1a2e !important;
+        box-shadow: none !important;
+    }
+}

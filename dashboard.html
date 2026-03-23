@@ -1,0 +1,2725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - TitanTrades</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/ai-support-chat.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Bootstrap Override for Dark Theme -->
+    <style>
+        body {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+        }
+        .container, .container-fluid {
+            background-color: transparent !important;
+        }
+        .card {
+            background-color: #1e293b !important;
+            border-color: #475569 !important;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase compat SDKs (needed by non-module scripts like user-state.js and any compat usage) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+    <!-- Module config runs early and exposes window.firebaseConfig + window.sdk -->
+    <script type="module" src="js/firebase-config.js"></script>
+    
+    <!-- user-state uses global config + compat -->
+    <script src="js/user-state.js"></script>
+    
+    <!-- Firebase and JavaScript Dependencies -->
+    <script type="module" src="js/firebase-database.js"></script>
+    <script type="module" src="js/crypto-service.js"></script>
+    <script type="module" src="js/wallet-service.js"></script>
+    <script type="module" src="js/market-news.js"></script>
+    <script type="module" src="js/ai-support-chat.js"></script>
+    <script type="module" src="js/dashboard.js"></script>
+</head>
+<body class="dashboard-page" onload="checkUserState()">
+    <!-- TitanTrades Header -->
+    <header class="centraltradehub-header">
+        <div class="header-container">
+            <!-- Mobile Sidebar Toggle (moved to header) -->
+            <div class="mobile-toggle d-md-none">
+                <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="logo-section">
+                <a href="index.html" class="logo-link">
+                    <img src="assets/images/logo.png" alt="TitanTrades" class="dashboard-logo">
+                    <div class="logo-text">
+                        <h1 class="brand-logo">TitanTrades</h1>
+                        <p class="brand-tagline">Trade bigger and get paid faster.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="user-info">
+                <!-- KYC Status Indicator -->
+                <div class="kyc-status-indicator" id="kycStatusIndicator">
+                    <div class="kyc-badge" id="kycBadge">
+                        <i class="fas fa-user-check"></i>
+                        <span class="kyc-text" id="kycStatusText">KYC</span>
+                    </div>
+                </div>
+                <span class="user-email" id="userEmail" data-user-field="email">Loading...</span>
+                <span class="user-name" id="dashboard-user-name" data-user-field="displayName">Loading...</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid px-3 px-lg-4 py-3">
+        <div class="row g-3">
+            <aside class="col-12 col-md-4 col-lg-3 dashboard-sidebar collapse d-md-block" id="sidebarMenu">
+                <div class="position-sticky pt-3">
+                    <nav class="sidebar-nav">
+                        <a href="#" class="nav-item active d-flex align-items-center" data-section="wallet">
+                            <i class="fas fa-wallet me-2"></i>
+                            <span>Wallet</span>
+                        </a>
+                        <a href="platform.html" class="nav-item d-flex align-items-center" data-section="trading">
+                            <i class="fas fa-chart-line me-2"></i>
+                            <span>Trading</span>
+                        </a>
+                        <a href="trading-bots.html" class="nav-item d-flex align-items-center" data-section="trading-bots">
+                            <i class="fas fa-robot me-2"></i>
+                            <span>Trading Bots</span>
+                        </a>
+                        <a href="prop-accounts.html" class="nav-item d-flex align-items-center" data-section="prop-accounts">
+                            <i class="fas fa-building-columns me-2"></i>
+                            <span>Prop Accounts</span>
+                        </a>
+                        <a href="history.html" class="nav-item d-flex align-items-center" data-section="history">
+                            <i class="fas fa-history me-2"></i>
+                            <span>History</span>
+                        </a>
+                        <a href="funding.html" class="nav-item d-flex align-items-center" data-section="funding">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            <span>Funding</span>
+                        </a>
+                        <a href="withdrawal.html" class="nav-item d-flex align-items-center" data-section="withdrawal">
+                            <i class="fas fa-minus-circle me-2"></i>
+                            <span>Withdrawal</span>
+                        </a>
+                        <a href="kyc-portal.html" class="nav-item d-flex align-items-center" data-section="kyc">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            <span>KYC</span>
+                        </a>
+                        <a href="account.html" class="nav-item d-flex align-items-center" data-section="account">
+                            <i class="fas fa-user-cog me-2"></i>
+                            <span>Accounts</span>
+                        </a>
+                        <a href="platform.html#analytics" class="nav-item d-flex align-items-center" data-section="analytics">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            <span>Analytics</span>
+                        </a>
+                        <a href="index.html#contact" class="nav-item d-flex align-items-center" data-section="support">
+                            <i class="fas fa-question-circle me-2"></i>
+                            <span>Support</span>
+                        </a>
+                    </nav>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="dashboard-main">
+        <!-- Trading Interface Section -->
+        <div class="trading-interface">
+            <div class="user-profile">
+                <div class="profile-avatar">
+                    <span class="avatar-initial">E</span>
+                </div>
+                <span class="user-name" id="trading-user-name" data-user-field="displayName">User</span>
+                <button class="download-btn">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+            
+            <div class="wallet-balance-section">
+                <h2 class="balance-title">Wallet Balance</h2>
+                <div class="balance-amount-large">
+                    <span class="currency-large">USD</span>
+                    <span class="amount-large" id="walletBalance">0.00</span>
+                </div>
+            </div>
+            
+            <div class="trading-pairs">
+                <div class="pair-item">
+                    <span class="pair-name">US 100 Cash CFD</span>
+                    <span class="pair-price" id="us100Price">24,095.0</span>
+                    <span class="pair-change negative" id="us100Change">-110.5 (-0.45%)</span>
+                </div>
+                <div class="pair-item">
+                    <span class="pair-name">EUR to USD</span>
+                    <span class="pair-price" id="eurUsdPrice">1.17331</span>
+                    <span class="pair-change negative" id="eurUsdChange">-0.00009 (-0.01%)</span>
+                </div>
+            </div>
+            
+            <div class="greeting-section" style="display: none;">
+                <p class="greeting-text">Good Afternoon</p>
+            </div>
+            
+            <!-- Removed transaction-cards section with Received and Deposit placeholders -->
+            
+            <div class="trading-tabs">
+                <button class="tab-btn active" data-category="indices">Indices</button>
+                <button class="tab-btn" data-category="forex">Forex</button>
+                <button class="tab-btn" data-category="crypto">Crypto</button>
+                <button class="tab-btn" data-category="commodities">Commodities</button>
+                <button class="tab-btn" data-category="bonds">Bonds</button>
+            </div>
+            
+            <!-- Market Overview Chart Section -->
+            <!-- Market Overview Chart Section -->
+            <div class="market-overview-section">
+                <div class="chart-header">
+                    <h3>Market Overview</h3>
+                    <div class="chart-controls">
+                        <select id="assetSelector" class="asset-selector">
+                            <option value="S&P 500">S&P 500</option>
+                        </select>
+                        <button id="exportChartBtn" class="export-btn">
+                            <i class="fas fa-download"></i>
+                            Export Chart
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div id="lightweight-chart-container" class="lightweight-chart-wrapper"></div>
+                </div>
+                <div class="timeframe-selector">
+                    <button class="timeframe-btn active" data-timeframe="1D">1D</button>
+                    <button class="timeframe-btn" data-timeframe="1W">1W</button>
+                    <button class="timeframe-btn" data-timeframe="1M">1M</button>
+                    <button class="timeframe-btn" data-timeframe="3M">3M</button>
+                    <button class="timeframe-btn" data-timeframe="1Y">1Y</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crypto Portfolio Section -->
+        <div class="crypto-portfolio-section">
+            <div class="portfolio-header">
+                <div class="portfolio-title">
+                    <h3>Crypto Portfolio</h3>
+                    <div class="portfolio-actions">
+                        <button class="connect-wallet-btn" id="connectWalletBtn" onclick="window.location.href='wallet-portal.html'">
+                            <i class="fas fa-wallet"></i>
+                            Connect wallet
+                        </button>
+                        <button class="buy-crypto-btn" id="buyCryptoBtn" onclick="window.location.href='crypto-purchase-portal.html'">
+                            <i class="fas fa-plus"></i>
+                            Buy Crypto
+                        </button>
+                    </div>
+                </div>
+                <div class="no-trade-available">
+                    <span class="no-trade-text">No trade available</span>
+                </div>
+            </div>
+            
+            <div class="crypto-portfolio-table">
+                <div class="portfolio-table-header">
+                    <div class="header-cell">AMOUNT</div>
+                    <div class="header-cell">COIN</div>
+                    <div class="header-cell">STATUS</div>
+                </div>
+                
+                <div class="portfolio-table-body" id="cryptoPortfolioBody">
+                    <!-- Crypto portfolio items will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Transactions Leaderboard -->
+        <div class="leaderboard-section">
+            <div class="leaderboard-header">
+                <h3>Live Transactions</h3>
+                <div class="leaderboard-status">
+                    <span class="status-indicator active"></span>
+                    <span class="status-text">Live</span>
+                </div>
+            </div>
+            <div class="leaderboard-container">
+                <div class="leaderboard-scroll" id="leaderboardScroll">
+                    <!-- Live transactions will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Welcome Message -->
+        <div class="welcome-section">
+            <h2>Welcome back!</h2>
+            <p>Please enter your details to continue trading.</p>
+        </div>
+
+        <!-- Key Features Banner -->
+        <div class="features-banner">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>100% Profit Split</h3>
+                    <p>Keep all your profits</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>No Time Limits</h3>
+                    <p>Trade at your own pace</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-week"></i>
+                </div>
+                <div class="feature-content">
+                    <h3>Fast Withdrawals</h3>
+                    <p>Get paid faster</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wallet Section -->
+        <div class="wallet-section">
+            <div class="wallet-header d-flex justify-content-between align-items-center mb-3">
+                <h3>Financial Overview</h3>
+                <button class="refresh-btn btn btn-outline-primary">
+                    <i class="fas fa-sync-alt me-1"></i>
+                    Refresh
+                </button>
+            </div>
+            
+            <!-- Account Balance Display -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="balance-display">
+                        <div class="balance-amount">
+                            <span class="currency">$</span>
+                            <span class="amount" id="accountBalance">0.00</span>
+                        </div>
+                        <div class="balance-status">
+                            <span class="status-indicator"></span>
+                            <span class="status-text">Account Balance</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Financial Details Grid -->
+            <div class="row financial-details-grid">
+                <!-- Received Profits Display -->
+                <div class="col-md-6 mb-3">
+                    <div class="balance-display profits-display">
+                        <div class="balance-amount">
+                            <span class="currency">$</span>
+                            <span class="amount" id="receivedProfits">0.00</span>
+                        </div>
+                        <div class="balance-status">
+                            <span class="status-indicator profits-indicator"></span>
+                            <span class="status-text">Received (Profits)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Total Deposits Display -->
+                <div class="col-md-6 mb-3">
+                    <div class="balance-display deposits-display">
+                        <div class="balance-amount">
+                            <span class="currency">$</span>
+                            <span class="amount" id="totalDeposits">0.00</span>
+                        </div>
+                        <div class="balance-status">
+                            <span class="status-indicator deposits-indicator"></span>
+                            <span class="status-text">Total Deposits</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trading Actions -->
+        <div class="trading-actions">
+            <div class="row g-2">
+                <div class="col-lg-4 col-md-6 col-12">
+                    <button class="action-btn primary btn btn-primary w-100" onclick="window.location.href='platform.html'">
+                        <i class="fas fa-plus me-1"></i>
+                        Start Trading
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <button class="action-btn secondary btn btn-outline-secondary w-100" onclick="window.location.href='history.html'">
+                            <i class="fas fa-history me-1"></i>
+                            Transaction History
+                        </button>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <button class="action-btn secondary btn btn-outline-secondary w-100" onclick="window.location.href='withdrawal.html'">
+                            <i class="fas fa-minus-circle me-1"></i>
+                            Withdrawal
+                        </button>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <button class="action-btn secondary btn btn-outline-secondary w-100" onclick="window.location.href='funding.html'">
+                            <i class="fas fa-plus-circle me-1"></i>
+                            Deposit
+                        </button>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <button class="action-btn secondary btn btn-outline-secondary w-100" onclick="window.location.href='kyc-portal.html'">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            KYC Verification
+                        </button>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <button class="action-btn secondary btn btn-outline-secondary w-100" onclick="window.location.href='platform.html#analytics'">
+                            <i class="fas fa-chart-bar me-1"></i>
+                            View Analytics
+                        </button>
+                    </div>
+                    <div class="col-12">
+                        <button class="action-btn secondary btn btn-outline-info w-100" onclick="window.location.href='index.html#contact'">
+                            <i class="fas fa-question-circle me-1"></i>
+                            Support
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            <div class="row">
+                <!-- Recent Activity -->
+                <div class="col-lg-6 col-12 mb-4">
+                    <div class="activity-section">
+                        <h3>Recent Activity</h3>
+                        <div class="activity-list">
+                            <div class="activity-item d-flex align-items-center">
+                                <div class="activity-icon me-3">
+                                    <i class="fas fa-arrow-up text-success"></i>
+                                </div>
+                                <div class="activity-details flex-grow-1">
+                                    <span class="activity-type d-block">Profit Earned</span>
+                                    <span class="activity-time text-muted">2 hours ago</span>
+                                </div>
+                                <div class="activity-amount text-success">
+                                    +$0.00
+                                </div>
+                            </div>
+                            <div class="activity-item d-flex align-items-center">
+                                <div class="activity-icon me-3">
+                                    <i class="fas fa-chart-line text-primary"></i>
+                                </div>
+                                <div class="activity-details flex-grow-1">
+                                    <span class="activity-type d-block">Trade Opened</span>
+                                    <span class="activity-time text-muted">5 hours ago</span>
+                                </div>
+                                <div class="activity-amount">
+                                    EUR/USD
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market News Section -->
+                <div class="col-lg-6 col-12 mb-4">
+                    <div class="market-news-section">
+                        <div class="news-header d-flex justify-content-between align-items-center flex-wrap mb-3">
+                            <h3>Market News</h3>
+                            <div class="news-controls d-flex align-items-center gap-2">
+                                <button class="refresh-news-btn btn btn-primary btn-sm" id="refreshNewsBtn">
+                                    <i class="fas fa-sync-alt me-1"></i>
+                                    <span class="d-none d-sm-inline">Refresh</span>
+                                </button>
+                                <div class="news-filter">
+                                    <select class="form-select form-select-sm" id="newsTopicFilter">
+                                        <option value="general">General</option>
+                                        <option value="forex">Forex</option>
+                                        <option value="crypto">Crypto</option>
+                                        <option value="earnings">Earnings</option>
+                                        <option value="ipo">IPO</option>
+                                        <option value="mergers_and_acquisitions">M&A</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="news-loading d-none" id="newsLoading">
+                            <div class="d-flex align-items-center justify-content-center p-4">
+                                <div class="spinner-border spinner-border-sm me-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span>Loading latest market news...</span>
+                            </div>
+                        </div>
+                        <div class="news-list" id="marketNewsList">
+                            <!-- Market news items will be populated here -->
+                        </div>
+                        <div class="news-error d-none" id="newsError">
+                            <div class="alert alert-warning" role="alert">
+                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                Unable to load market news. Please try again later.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+      <!-- AI Support Chat will be initialized by JavaScript -->
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+<script src="balance-fix-simple.js"></script>
+</body>
+</html>

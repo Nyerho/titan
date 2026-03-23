@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Admin collection - only admins can read/write
+    match /admin/{document} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Users collection - admins can manage, users can read own data
+    match /users/{userId} {
+      allow read, write: if isAdmin();
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
+    }
+    
+    // Withdrawals - admins can manage, users can create and read own
+    match /withdrawals/{withdrawalId} {
+      allow read, write: if isAdmin();
+      allow create: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // Transactions - admins can read all, users can read own
+    match /transactions/{transactionId} {
+      allow read, write: if isAdmin();
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // Chat conversations - admins can read all, users can manage own
+    match /conversations/{conversationId} {
+      allow read, write: if isAdmin();
+      allow read, write: if request.auth != null && request.auth.uid in resource.data.participants;
+    }
+    
+    // Chat messages - same as conversations
+    match /conversations/{conversationId}/messages/{messageId} {
+      allow read, write: if isAdmin();
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.senderId;
+    }
+    
+    // KYC documents - admins can read all, users can manage own
+    match /kyc/{userId} {
+      allow read, write: if isAdmin();
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Helper function to check admin role
+    function isAdmin() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}

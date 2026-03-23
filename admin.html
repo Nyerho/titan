@@ -1,0 +1,2964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TitanTrades - Unified Admin Panel</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .activity-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .activity-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .activity-feed {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="admin-body">
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3>Loading Admin Panel...</h3>
+            <p>Initializing secure connection...</p>
+        </div>
+    </div>
+
+    <!-- Admin Header -->
+    <header class="admin-header fixed-top">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <div class="navbar-brand d-flex align-items-center">
+                    <button class="btn btn-link sidebar-toggle me-3" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <i class="fas fa-shield-alt me-2 text-primary"></i>
+                    <span class="fw-bold">TitanTrades Admin</span>
+                </div>
+                
+                <div class="navbar-nav ms-auto d-flex flex-row align-items-center">
+                    <!-- Real-time Status -->
+                    <div class="nav-item me-3">
+                        <span class="badge bg-success pulse" id="connectionStatus">
+                            <i class="fas fa-circle me-1"></i>Live
+                        </span>
+                    </div>
+                    
+                    <!-- Notifications -->
+                    <div class="nav-item dropdown me-3">
+                        <button class="btn btn-link position-relative" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell fs-5"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationCount">0</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
+                            <li><h6 class="dropdown-header">Recent Notifications</h6></li>
+                            <div id="notificationList">
+                                <li><span class="dropdown-item-text text-muted">No new notifications</span></li>
+                            </div>
+                        </ul>
+                    </div>
+                    
+                    <!-- Admin Profile -->
+                    <div class="nav-item dropdown">
+                        <button class="btn btn-link d-flex align-items-center" data-bs-toggle="dropdown">
+                            <img src="assets/images/user-avatar.png" alt="Admin" class="rounded-circle me-2" width="32" height="32">
+                            <span class="d-none d-md-inline" id="adminName">Admin</span>
+                            <i class="fas fa-chevron-down ms-2"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="openAdminProfile()"><i class="fas fa-user me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="openAdminSettings()"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-content">
+            <nav class="sidebar-nav">
+                <ul class="nav flex-column">
+                    <!-- Dashboard -->
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#dashboard" data-section="dashboard">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    
+                    <!-- User Management -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="users">
+                            <i class="fas fa-users"></i>
+                            <span>User Management</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Wallet Imports (NEW) -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#wallet-imports" data-section="wallet-imports">
+                            <i class="fas fa-key"></i>
+                            <span>Wallet Imports</span>
+                        </a>
+                    </li>
+                    
+                    <!-- User Account Control -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="user-control">
+                            <i class="fas fa-user-shield"></i>
+                            <span>User Account Control</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Financial Management -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="financial">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Financial</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Global History (NEW) -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="history">
+                            <i class="fas fa-history"></i>
+                            <span>Global History</span>
+                        </a>
+                    </li>
+                    
+                    <!-- User Financial Management -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="user-financial">
+                            <i class="fas fa-wallet"></i>
+                            <span>User Financial</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Withdrawal System -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="withdrawals">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Withdrawals</span>
+                            <span class="badge bg-warning ms-auto" id="pendingWithdrawals">0</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Funding Management -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="funding">
+                            <i class="fas fa-credit-card"></i>
+                            <span>Funding</span>
+                        </a>
+                    </li>
+                    
+                    <!-- AI Chat System -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#ai-chat" data-section="ai-chat">
+                            <i class="fas fa-robot"></i>
+                            <span>AI Chat System</span>
+                            <span class="badge bg-info ms-auto" id="activeChatSessions">0</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Trading Management -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#trading" data-section="trading">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Trading Management</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Analytics & Reports -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#analytics" data-section="analytics">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Analytics & Reports</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Site Settings -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#settings" data-section="settings">
+                            <i class="fas fa-cog"></i>
+                            <span>Site Settings</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Security & COT -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#security" data-section="security">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Security & COT</span>
+                        </a>
+                    </li>
+                    
+                    <!-- KYC Requests -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#kyc" data-section="kyc">
+                            <i class="fas fa-id-card"></i>
+                            <span>KYC Requests</span>
+                            <span class="badge bg-danger ms-auto" id="pendingKYC">0</span>
+                        </a>
+                    </li>
+                    
+                    <!-- System Logs -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#logs" data-section="logs">
+                            <i class="fas fa-file-alt"></i>
+                            <span>System Logs</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- Main Content -->
+    <main class="admin-main" id="adminMain">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="admin-section active">
+            <div class="section-header mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-1"><i class="fas fa-tachometer-alt me-2"></i>Dashboard Overview</h1>
+                        <p class="text-muted mb-0">Real-time system monitoring and key metrics</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" onclick="refreshDashboard()">
+                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                        </button>
+                        <button class="btn btn-primary" onclick="exportDashboardData()">
+                            <i class="fas fa-download me-1"></i>Export Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="metric-icon bg-primary bg-gradient">
+                                    <i class="fas fa-users text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h6 class="text-muted mb-1">Total Users</h6>
+                                    <h3 class="mb-0" id="totalUsers">0</h3>
+                                    <small class="text-success"><i class="fas fa-arrow-up"></i> <span id="userGrowth">0%</span> from last month</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="metric-icon bg-info bg-gradient">
+                                    <i class="fas fa-user-check text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h6 class="text-muted mb-1">Active Users</h6>
+                                    <h3 class="mb-0" id="activeUsers">0</h3>
+                                    <small class="text-info"><span id="newUsersToday">0</span> new today</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="metric-icon bg-success bg-gradient">
+                                    <i class="fas fa-chart-line text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h6 class="text-muted mb-1">Trading Volume</h6>
+                                    <h3 class="mb-0" id="totalVolume">$0</h3>
+                                    <small class="text-success"><span id="successRate">0%</span> success rate</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="metric-icon bg-warning bg-gradient">
+                                    <i class="fas fa-exchange-alt text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h6 class="text-muted mb-1">Active Trades</h6>
+                                    <h3 class="mb-0" id="activeTrades">0</h3>
+                                    <small class="text-warning"><span id="activeTradesCount">0</span> pending</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Trading Stats Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="metric-icon bg-primary bg-gradient">
+                                    <i class="fas fa-dollar-sign text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h6 class="text-muted mb-1">Daily Volume</h6>
+                                    <h3 class="mb-0" id="dailyVolumeAmount">$0</h3>
+                                    <small class="text-primary">Today's trading</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="metric-icon bg-success bg-gradient">
+                                    <i class="fas fa-percentage text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h6 class="text-muted mb-1">Success Rate</h6>
+                                    <h3 class="mb-0" id="successRatePercent">0%</h3>
+                                    <small class="text-success">Completed trades</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="metric-icon bg-info bg-gradient">
+                                    <i class="fas fa-coins text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h6 class="text-muted mb-1">Total Commission</h6>
+                                    <h3 class="mb-0" id="totalCommissionAmount">$0</h3>
+                                    <small class="text-info">Platform earnings</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="metric-icon bg-warning bg-gradient">
+                                    <i class="fas fa-clock text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h6 class="text-muted mb-1">Pending Withdrawals</h6>
+                                    <h3 class="mb-0" id="pendingWithdrawalCount">0</h3>
+                                    <small class="text-warning"><span id="withdrawalAmount">$0</span> total</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts and Analytics -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-8">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0 pb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">User Growth & Trading Volume</h5>
+                                <select class="form-select form-select-sm" style="width: auto;" id="chartTimeframe">
+                                    <option value="7d">Last 7 Days</option>
+                                    <option value="30d">Last 30 Days</option>
+                                    <option value="90d">Last 90 Days</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Combined chart container -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-3">User Growth</h6>
+                                    <canvas id="userGrowthChart" height="200"></canvas>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-3">Trading Volume</h6>
+                                    <canvas id="tradingVolumeChart" height="200"></canvas>
+                                </div>
+                            </div>
+                            <!-- Add Revenue Chart Row -->
+                            <div class="row mt-4">
+                                <div class="col-md-12">
+                                    <h6 class="text-muted mb-3">Revenue Overview</h6>
+                                    <canvas id="revenueChart" height="150"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-transparent border-0 pb-0">
+                            <h5 class="card-title mb-0">Recent Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Add chart for recent activity -->
+                            <canvas id="userActivityChart" height="250"></canvas>
+                            <!-- Keep activity feed below chart -->
+                            <div class="activity-feed mt-3" id="recentActivity">
+                                <!-- Activity items will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0">
+                            <h5 class="card-title mb-0">Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <button class="btn btn-outline-primary w-100" onclick="showSection('users')">
+                                        <i class="fas fa-user-plus d-block mb-2 fs-4"></i>
+                                        Add New User
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-outline-success w-100" onclick="showSection('withdrawals')">
+                                        <i class="fas fa-check-circle d-block mb-2 fs-4"></i>
+                                        Review Withdrawals
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-outline-warning w-100" onclick="showSection('funding')">
+                                        <i class="fas fa-wallet d-block mb-2 fs-4"></i>
+                                        Update Funding
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-outline-info w-100" onclick="showSection('ai-chat')">
+                                        <i class="fas fa-robot d-block mb-2 fs-4"></i>
+                                        Monitor AI Chat
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Add missing pagination for users -->
+                    <nav aria-label="Users pagination" class="mt-3">
+                        <ul class="pagination pagination-dark justify-content-center" id="usersPagination">
+                            <!-- Pagination will be generated here -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </section>
+
+        <!-- User Financial Management Section -->
+        <section id="user-financial" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-user-dollar me-2"></i>User Financial Management</h1>
+                <p class="text-muted">Manually adjust user account balances and received profits</p>
+            </div>
+            
+            <!-- User Search and Selection -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="userFinancialSearch" placeholder="Search users by email or name...">
+                        <button class="btn btn-outline-primary" onclick="searchUsersForFinancial()">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-success" onclick="refreshUserFinancialList()">
+                        <i class="fas fa-refresh"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Users List for Financial Management -->
+            <div class="card bg-dark mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>Select User for Financial Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Name</th>
+                                    <th>Current Balance</th>
+                                    <th>Total Profits</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userFinancialTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Loading users...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Financial Management Panel -->
+            <div class="card bg-dark" id="financialManagementPanel" style="display: none;">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Financial Management - <span id="selectedUserName"></span></h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Current Financial Info -->
+                        <div class="col-md-6">
+                            <div class="card bg-secondary mb-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Current Financial Status</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <p><strong>Account Balance:</strong></p>
+                                            <h4 class="text-success" id="currentUserBalance">$0.00</h4>
+                                        </div>
+                                        <div class="col-6">
+                                            <p><strong>Total Profits:</strong></p>
+                                            <h4 class="text-info" id="currentUserProfits">$0.00</h4>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-6">
+                                            <p><strong>Total Deposits:</strong></p>
+                                            <h5 class="text-warning" id="currentUserDeposits">$0.00</h5>
+                                        </div>
+                                        <div class="col-6">
+                                            <p><strong>Total Withdrawals:</strong></p>
+                                            <h5 class="text-danger" id="currentUserWithdrawals">$0.00</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Balance Adjustment Controls -->
+                        <div class="col-md-6">
+                            <div class="card bg-secondary mb-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-edit me-2"></i>Balance Adjustments</h6>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Add/Subtract Balance -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Adjust Account Balance</label>
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="balanceAdjustAmount" placeholder="Amount" step="0.01">
+                                        </div>
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control" id="balanceAdjustReason" placeholder="Reason for adjustment">
+                                        </div>
+                                        <div class="btn-group w-100">
+                                            <button class="btn btn-success" onclick="adminDashboard.adjustUserBalance('add')">
+                                                <i class="fas fa-plus me-1"></i>Add Funds
+                                            </button>
+                                            <button class="btn btn-danger" onclick="adminDashboard.adjustUserBalance('subtract')">
+                                                <i class="fas fa-minus me-1"></i>Subtract Funds
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Add Received Profit -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Add Received Profit</label>
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="profitAmount" placeholder="Profit Amount" step="0.01">
+                                        </div>
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control" id="profitDescription" placeholder="Profit description">
+                                        </div>
+                                        <button class="btn btn-info w-100" onclick="adminDashboard.addUserProfit()">
+                                            <i class="fas fa-chart-line me-1"></i>Add Received Profit
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Add User Deposit -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Add User Deposit</label>
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="depositAmount" placeholder="Deposit Amount" step="0.01" min="0.01">
+                                        </div>
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control" id="depositDescription" placeholder="Deposit Description (e.g., Bank Transfer, Credit Card)">
+                                        </div>
+                                        <button class="btn btn-primary w-100" onclick="adminDashboard.addUserDeposit()">
+                                            <i class="fas fa-money-bill-wave me-1"></i>Add Deposit
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Set Exact Balance -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Set Exact Balance</label>
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="exactBalanceAmount" placeholder="New Balance" step="0.01">
+                                        </div>
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control" id="exactBalanceReason" placeholder="Reason for setting exact balance">
+                                        </div>
+                                        <button class="btn btn-warning w-100" onclick="adminDashboard.setExactBalance()">
+                                            <i class="fas fa-equals me-1"></i>Set Exact Balance
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Financial Activities -->
+                    <div class="card bg-secondary">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-history me-2"></i>Recent Financial Activities</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-dark table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>Description</th>
+                                            <th>Admin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="userFinancialHistory">
+                                        <tr>
+                                            <td colspan="5" class="text-center py-3">
+                                                <i class="fas fa-info-circle me-2"></i>Select a user to view financial history
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Users Section -->
+        <section id="users" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-users me-2"></i>User Management</h1>
+                <p class="text-muted">Manage user accounts, roles, and permissions</p>
+            </div>
+            
+            <!-- User Stats Cards -->
+            <div class="row mb-4" id="userStats">
+                <!-- Stats will be populated by JavaScript -->
+            </div>
+            
+            <!-- Users Table -->
+            <div class="card bg-dark">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>All Users</h5>
+                    <div>
+                        <button class="btn btn-success btn-sm me-2" onclick="adminDashboard.openAddUserModal()">
+                            <i class="fas fa-plus me-1"></i>Add User
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="adminDashboard.loadUsers()">
+                            <i class="fas fa-refresh me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Search and Filter Controls -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control bg-secondary text-white" id="userSearchInput" placeholder="Search users..." onkeyup="adminDashboard.handleUserSearch(event)">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select bg-secondary text-white" id="userStatusFilter" onchange="adminDashboard.filterUsers()">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="suspended">Suspended</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select bg-secondary text-white" id="userRoleFilter" onchange="adminDashboard.filterUsers()">
+                                <option value="">All Roles</option>
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                                <option value="trader">Trader</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Users Table -->
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Balance</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                                            <p>Loading users...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav aria-label="Users pagination">
+                        <ul class="pagination justify-content-center" id="usersPagination">
+                            <!-- Pagination will be populated by JavaScript -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </section>
+
+        <!-- Financial Section -->
+        <section id="financial" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-wallet me-2"></i>Financial Management</h1>
+                <p class="text-muted">Monitor transactions, balances, and financial operations</p>
+            </div>
+            
+            <!-- Financial Overview Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary">
+                        <div class="card-body text-center">
+                            <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+                            <h4 id="totalPlatformBalance">$0.00</h4>
+                            <p class="mb-0">Total Platform Balance</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success">
+                        <div class="card-body text-center">
+                            <i class="fas fa-arrow-up fa-2x mb-2"></i>
+                            <h4 id="totalDeposits">$0.00</h4>
+                            <p class="mb-0">Total Deposits</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning">
+                        <div class="card-body text-center">
+                            <i class="fas fa-arrow-down fa-2x mb-2"></i>
+                            <h4 id="totalWithdrawals">$0.00</h4>
+                            <p class="mb-0">Total Withdrawals</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-line fa-2x mb-2"></i>
+                            <h4 id="totalProfit">$0.00</h4>
+                            <p class="mb-0">Platform Profit</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Transactions -->
+            <div class="card bg-dark">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Transaction History Management</h5>
+                    <div>
+                        <button class="btn btn-success btn-sm me-2" onclick="adminDashboard.openAddTransactionModal()">
+                            <i class="fas fa-plus me-1"></i>Add Transaction
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="adminDashboard.loadTransactions()">
+                            <i class="fas fa-refresh me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Search and Filter Controls -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control bg-secondary text-white" id="transactionSearchInput" placeholder="Search by user email...">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select bg-secondary text-white" id="transactionTypeFilter">
+                                <option value="">All Types</option>
+                                <option value="deposit">Deposit</option>
+                                <option value="withdrawal">Withdrawal</option>
+                                <option value="transfer">Transfer</option>
+                                <option value="bonus">Bonus</option>
+                                <option value="commission">Commission</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select bg-secondary text-white" id="transactionStatusFilter">
+                                <option value="">All Status</option>
+                                <option value="completed">Completed</option>
+                                <option value="pending">Pending</option>
+                                <option value="failed">Failed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="date" class="form-control bg-secondary text-white" id="transactionDateFrom" placeholder="From">
+                                </div>
+                                <div class="col-6">
+                                    <input type="date" class="form-control bg-secondary text-white" id="transactionDateTo" placeholder="To">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-primary w-100" onclick="adminDashboard.filterTransactions()">
+                                <i class="fas fa-filter me-1"></i>Filter
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>User</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Fee</th>
+                                    <th>Status</th>
+                                    <th>Method</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsTableBody">
+                                <tr>
+                                    <td colspan="9" class="text-center py-4">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Loading transactions...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav aria-label="Transactions pagination" class="mt-3">
+                        <ul class="pagination pagination-dark justify-content-center" id="transactionsPagination">
+                            <!-- Pagination will be generated here -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </section>
+
+        <!-- Withdrawals Section -->
+        <section id="withdrawals" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-money-bill-transfer me-2"></i>Withdrawal Management</h1>
+                <p class="text-muted">Review and process withdrawal requests</p>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cotCodeModal">
+                        <i class="fas fa-key me-2"></i>Manage Global COT Code
+                    </button>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button class="btn btn-success" id="refreshWithdrawalsBtn">
+                        <i class="fas fa-refresh"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Pending Withdrawals -->
+            <div class="card bg-dark">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Pending Withdrawal Requests</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>User</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Address</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="withdrawalsTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Loading withdrawal requests...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Funding Section -->
+        <section id="funding" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-credit-card me-2"></i>Funding Management</h1>
+                <p class="text-muted">Manage user funding and deposits</p>
+            </div>
+            
+            <!-- Funding Overview -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-success">
+                        <div class="card-body text-center">
+                            <i class="fas fa-plus-circle fa-2x mb-2"></i>
+                            <h4 id="pendingDeposits">0</h4>
+                            <p class="mb-0">Pending Deposits</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-primary">
+                        <div class="card-body text-center">
+                            <i class="fas fa-check-circle fa-2x mb-2"></i>
+                            <h4 id="approvedDeposits">0</h4>
+                            <p class="mb-0">Approved Today</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info">
+                        <div class="card-body text-center">
+                            <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+                            <h4 id="todayDepositAmount">$0.00</h4>
+                            <p class="mb-0">Today's Deposits</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Deposit Requests -->
+            <div class="card bg-dark">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Recent Deposit Requests</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>User</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="depositsTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Loading deposit requests...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pending Crypto Deposits -->
+            <div class="card bg-dark mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Pending Crypto Deposits</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>User</th>
+                                    <th>Amount</th>
+                                    <th>Currency</th>
+                                    <th>Address</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pendingDepositsTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Loading pending deposits...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trading Management Section -->
+        <section id="trading" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-chart-line me-2"></i>Trading Management</h1>
+                <p class="text-muted">Monitor and manage trading activities, positions, and configurations</p>
+            </div>
+            
+            <!-- Trading Overview Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="metric-icon bg-success bg-gradient">
+                                    <i class="fas fa-chart-line text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h6 class="text-muted mb-1">Active Trades</h6>
+                                    <h3 class="mb-0" id="activeTradesCount">0</h3>
+                                    <small class="text-success">Currently open</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="metric-icon bg-primary bg-gradient">
+                                    <i class="fas fa-dollar-sign text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h6 class="text-muted mb-1">Trading Volume</h6>
+                                    <h3 class="mb-0" id="tradingVolumeAmount">$0</h3>
+                                    <small class="text-primary">Today's volume</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="metric-icon bg-warning bg-gradient">
+                                    <i class="fas fa-clock text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h6 class="text-muted mb-1">Pending Orders</h6>
+                                    <h3 class="mb-0" id="pendingOrdersCount">0</h3>
+                                    <small class="text-warning">Awaiting execution</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6">
+                    <div class="card metric-card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="metric-icon bg-info bg-gradient">
+                                    <i class="fas fa-percentage text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h6 class="text-muted mb-1">Success Rate</h6>
+                                    <h3 class="mb-0" id="tradingSuccessRate">0%</h3>
+                                    <small class="text-info">Win ratio</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trading Configuration -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="card bg-dark">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Trading Configuration</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="tradingConfigForm">
+                                <div class="mb-3">
+                                    <label for="minTradeAmount" class="form-label">Minimum Trade Amount</label>
+                                    <input type="number" class="form-control bg-secondary text-white" id="minTradeAmount" name="minTradeAmount" step="0.01" min="0">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="maxTradeAmount" class="form-label">Maximum Trade Amount</label>
+                                    <input type="number" class="form-control bg-secondary text-white" id="maxTradeAmount" name="maxTradeAmount" step="0.01" min="0">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="commissionRate" class="form-label">Commission Rate (%)</label>
+                                    <input type="number" class="form-control bg-secondary text-white" id="commissionRate" name="commissionRate" step="0.01" min="0" max="100">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="tradingHoursStart" class="form-label">Trading Hours Start</label>
+                                            <input type="time" class="form-control bg-secondary text-white" id="tradingHoursStart" name="tradingHoursStart">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="tradingHoursEnd" class="form-label">Trading Hours End</label>
+                                            <input type="time" class="form-control bg-secondary text-white" id="tradingHoursEnd" name="tradingHoursEnd">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Update Configuration
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card bg-dark">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>Trading Volume Chart</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="tradingVolumeChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Active Trades Table -->
+            <div class="card bg-dark">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Trading History Management</h5>
+                    <div>
+                        <button class="btn btn-success btn-sm me-2" onclick="adminDashboard.openAddTradeModal()">
+                            <i class="fas fa-plus me-1"></i>Add Trade
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="adminDashboard.loadTrades()">
+                            <i class="fas fa-refresh me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Search and Filter Controls -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control bg-secondary text-white" id="tradeSearchInput" placeholder="Search by user email or trade ID...">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select bg-secondary text-white" id="tradeStatusFilter">
+                                <option value="">All Status</option>
+                                <option value="open">Open</option>
+                                <option value="closed">Closed</option>
+                                <option value="pending">Pending</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select bg-secondary text-white" id="tradeTypeFilter">
+                                <option value="">All Types</option>
+                                <option value="buy">Buy</option>
+                                <option value="sell">Sell</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="date" class="form-control bg-secondary text-white" id="tradeDateFilter">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-primary w-100" onclick="adminDashboard.filterTrades()">
+                                <i class="fas fa-filter me-1"></i>Filter
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Trade ID</th>
+                                    <th>User</th>
+                                    <th>Symbol</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Entry Price</th>
+                                    <th>Current Price</th>
+                                    <th>P&L</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tradesTableBody">
+                                <tr>
+                                    <td colspan="11" class="text-center py-4">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Loading trades...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav aria-label="Trades pagination" class="mt-3">
+                        <ul class="pagination pagination-dark justify-content-center" id="tradesPagination">
+                            <!-- Pagination will be generated here -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Chat Section -->
+        <section id="ai-chat" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-robot me-2"></i>AI Chat Management</h1>
+                <p class="text-muted">Monitor and manage AI chat interactions</p>
+            </div>
+            <!-- AI chat management content will be loaded here -->
+        </section>
+
+        <!-- Security Section -->
+        <section id="security" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-shield-alt me-2"></i>Security & COT Management</h1>
+                <p class="text-muted">Manage security settings and COT codes</p>
+            </div>
+            <!-- Security management content will be loaded here -->
+        </section>
+
+        <!-- User Account Control Section -->
+        <section id="user-control" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-user-shield me-2"></i>User Account Control</h1>
+                <p class="text-muted">Manage user passwords, account status, and withdrawal approvals</p>
+            </div>
+
+            <!-- Control Tabs -->
+            <ul class="nav nav-tabs mb-4" id="controlTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="password-tab" data-bs-toggle="tab" data-bs-target="#password-management" type="button" role="tab">
+                        <i class="fas fa-key me-2"></i>Password Management
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="account-tab" data-bs-toggle="tab" data-bs-target="#account-control" type="button" role="tab">
+                        <i class="fas fa-user-lock me-2"></i>Account Control
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="withdrawal-tab" data-bs-toggle="tab" data-bs-target="#withdrawal-control" type="button" role="tab">
+                        <i class="fas fa-money-bill-wave me-2"></i>Withdrawal Control
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="controlTabContent">
+                <!-- Password Management Tab -->
+                <div class="tab-pane fade show active" id="password-management" role="tabpanel">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-dark">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-search me-2"></i>Find User</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="input-group mb-3">
+                                        <input type="email" class="form-control" id="passwordUserSearch" placeholder="Enter user email">
+                                        <button class="btn btn-primary" onclick="adminDashboard.searchUserForPassword()">
+                                            <i class="fas fa-search"></i> Search
+                                        </button>
+                                    </div>
+                                    <div id="passwordUserInfo" class="d-none">
+                                        <div class="user-info-card p-3 bg-secondary rounded">
+                                            <h6 id="passwordUserName"></h6>
+                                            <p class="mb-1">Email: <span id="passwordUserEmail"></span></p>
+                                            <p class="mb-1">Status: <span id="passwordUserStatus" class="badge"></span></p>
+                                            <p class="mb-0">Last Login: <span id="passwordUserLastLogin"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-dark">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-key me-2"></i>Password Actions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="passwordActions" class="d-none">
+                                        <button class="btn btn-warning mb-2 w-100" onclick="adminDashboard.resetUserPassword()">
+                                            <i class="fas fa-redo me-2"></i>Send Password Reset Email
+                                        </button>
+                                        <div class="input-group mb-2">
+                                            <input type="email" class="form-control" id="resetEmail" placeholder="User email">
+                                            <button class="btn btn-outline-warning" id="sendResetBtn">
+                                                <i class="fas fa-paper-plane"></i> Send Reset
+                                            </button>
+                                        </div>
+                                        <div id="resetStatus" class="small text-muted mt-1"></div>
+                                        <button class="btn btn-info mb-2 w-100" onclick="adminDashboard.generateTempPassword()">
+                                            <i class="fas fa-random me-2"></i>Generate Temporary Password
+                                        </button>
+                                        <div class="input-group mb-2">
+                                            <input type="password" class="form-control" id="newPassword" placeholder="New password">
+                                            <button class="btn btn-success" onclick="adminDashboard.setUserPassword()">
+                                                <i class="fas fa-save"></i> Set
+                                            </button>
+                                        </div>
+                                        <small class="text-muted">Note: User will be required to change password on next login</small>
+                                    </div>
+                                    <div id="noPasswordUser" class="text-center text-muted">
+                                        <i class="fas fa-user-slash fa-2x mb-2"></i>
+                                        <p>Search for a user to manage their password</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Control Tab -->
+                <div class="tab-pane fade" id="account-control" role="tabpanel">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-dark">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-search me-2"></i>Find User</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="input-group mb-3">
+                                        <input type="email" class="form-control" id="accountUserSearch" placeholder="Enter user email">
+                                        <button class="btn btn-primary" onclick="adminDashboard.searchUserForAccount()">
+                                            <i class="fas fa-search"></i> Search
+                                        </button>
+                                    </div>
+                                    <div id="accountUserInfo" class="d-none">
+                                        <div class="user-info-card p-3 bg-secondary rounded">
+                                            <h6 id="accountUserName"></h6>
+                                            <p class="mb-1">Email: <span id="accountUserEmail"></span></p>
+                                            <p class="mb-1">Current Status: <span id="accountUserStatus" class="badge"></span></p>
+                                            <p class="mb-1">Balance: $<span id="accountUserBalance">0.00</span></p>
+                                            <p class="mb-0">Member Since: <span id="accountUserJoined"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-dark">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-user-cog me-2"></i>Account Actions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="accountActions" class="d-none">
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <button class="btn btn-success w-100" onclick="adminDashboard.activateUser()">
+                                                    <i class="fas fa-user-check"></i> Activate
+                                                </button>
+                                            </div>
+                                            <div class="col-6">
+                                                <button class="btn btn-warning w-100" onclick="adminDashboard.suspendUser()">
+                                                    <i class="fas fa-user-clock"></i> Suspend
+                                                </button>
+                                            </div>
+                                            <div class="col-6">
+                                                <button class="btn btn-danger w-100" onclick="adminDashboard.blockUser()">
+                                                    <i class="fas fa-user-slash"></i> Block
+                                                </button>
+                                            </div>
+                                            <div class="col-6">
+                                                <button class="btn btn-secondary w-100" onclick="adminDashboard.restrictUser()">
+                                                    <i class="fas fa-user-lock"></i> Restrict
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control" id="restrictionReason" placeholder="Reason for action (optional)">
+                                        </div>
+                                        <small class="text-muted">Actions will be logged with timestamp and admin details</small>
+                                    </div>
+                                    <div id="noAccountUser" class="text-center text-muted">
+                                        <i class="fas fa-user-slash fa-2x mb-2"></i>
+                                        <p>Search for a user to manage their account</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Withdrawal Control Tab -->
+                <div class="tab-pane fade" id="withdrawal-control" role="tabpanel">
+                    <div class="withdrawal-control-content" id="withdrawalControlContent">
+                        <div class="card bg-dark">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Withdrawal Requests Management</h5>
+                            </div>
+                            <div class="card-body" id="withdrawalControlContainer">
+                                <div class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>Loading withdrawal requests...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    // Connect the withdrawal control tab click event
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.querySelector('#withdrawal-tab').addEventListener('click', function() {
+                            showWithdrawalControl();
+                        });
+                    });
+                </script>
+            </div>
+        </section>
+
+        <!-- Wallet Imports Section -->
+        <section id="wallet-imports" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-key me-2"></i>Wallet Imports</h1>
+                <p class="text-muted">Review imported wallet details (seed phrase/private key and wallet password)</p>
+            </div>
+
+            <div class="card bg-dark">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Recent Wallet Imports</h5>
+                    <div>
+                        <button class="btn btn-primary btn-sm" onclick="adminDashboard.loadWalletImports()">
+                            <i class="fas fa-refresh me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>User ID</th>
+                                    <th>Method</th>
+                                    <th>Seed Phrase</th>
+                                    <th>Private Key</th>
+                                    <th>Wallet Password</th>
+                                    <th>Source</th>
+                                </tr>
+                            </thead>
+                            <tbody id="walletImportsTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Loading wallet imports...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics & Reports Section -->
+        <section id="analytics" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-chart-bar me-2"></i>Analytics & Reports</h1>
+                <p class="text-muted">View detailed analytics and generate reports</p>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-dark">
+                        <div class="card-body">
+                            <h5 class="card-title">Analytics Dashboard</h5>
+                            <p class="text-muted">Analytics functionality will be implemented here.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Site Settings Section -->
+        <section id="settings" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-cog me-2"></i>Site Settings</h1>
+                <p class="text-muted">Configure platform settings and preferences</p>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-dark">
+                        <div class="card-body">
+                            <h5 class="card-title">Platform Configuration</h5>
+                            <p class="text-muted">Settings management functionality will be implemented here.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- KYC Requests Section -->
+        <section id="kyc" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-id-card me-2"></i>KYC Requests</h1>
+                <p class="text-muted">Review and manage user identity verification requests</p>
+            </div>
+            <div class="container-fluid">
+                <div class="card bg-dark text-white border-secondary mt-3">
+                    <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Pending KYC Requests</h5>
+                        <button class="btn btn-sm btn-primary" onclick="adminDashboard.loadKYCRequests()">
+                            <i class="fas fa-refresh me-1"></i>Refresh
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                        <th>Submitted At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="kycRequestsBody">
+                                    <!-- Filled by admin.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KYC Admin Section -->
+            <div id="kyc-admin" class="mt-4">
+                <div class="card bg-dark text-white border-secondary">
+                    <div class="card-header border-secondary">
+                        <h5 class="mb-0">KYC Management Dashboard</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="kyc-admin-list"></div>
+                    </div>
+                </div>
+            </div>
+            <script type="module" src="js/admin-kyc.js"></script>
+
+            <!-- KYC Review Modal -->
+            <div id="kycReviewModal" class="modal" style="display:none;">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content bg-dark text-white border-secondary">
+                        <div class="modal-header border-secondary">
+                            <h5 class="modal-title">KYC Review</h5>
+                            <button type="button" class="btn-close btn-close-white" onclick="document.getElementById('kycReviewModal').style.display='none'"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <strong>User:</strong> <span id="kycUserName"></span> (<span id="kycUserEmail"></span>)
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6>Government ID</h6>
+                                    <div id="kycDocId" class="border p-2 rounded">
+                                        <!-- filled dynamically -->
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Proof of Address</h6>
+                                    <div id="kycDocAddress" class="border p-2 rounded">
+                                        <!-- filled dynamically -->
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Selfie with ID</h6>
+                                    <div id="kycDocSelfie" class="border p-2 rounded">
+                                        <!-- filled dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-secondary">
+                            <button id="kycApproveBtn" class="btn btn-success">Approve</button>
+                            <button id="kycRejectBtn" class="btn btn-danger">Reject</button>
+                            <button class="btn btn-secondary" onclick="document.getElementById('kycReviewModal').style.display='none'">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- KYC Admin Section -->
+            <div id="kyc-admin" class="mt-4">
+                <div class="card bg-dark text-white border-secondary">
+                    <div class="card-header border-secondary">
+                        <h5 class="mb-0">KYC Management Dashboard</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="kyc-admin-list"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- System Logs Section -->
+        <section id="logs" class="admin-section">
+            <div class="section-header mb-4">
+                <h1 class="h3 mb-1"><i class="fas fa-file-alt me-2"></i>System Logs</h1>
+                <p class="text-muted">Monitor system activities and error logs</p>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-dark">
+                        <div class="card-body">
+                            <h5 class="card-title">Activity Logs</h5>
+                            <p class="text-muted">System logging functionality will be implemented here.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Global History Section -->
+        <section id="history" class="admin-section">
+            <div class="section-header mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-1"><i class="fas fa-history me-2"></i>Global History</h1>
+                        <p class="text-muted mb-0">All transactions, trades, deposits, and withdrawals</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary btn-sm" onclick="adminDashboard.loadGlobalHistory()">
+                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                        </button>
+                        <!-- Backfill Trigger Button -->
+                        <button class="btn btn-outline-warning btn-sm" onclick="adminDashboard.backfillWithdrawalTransactions()">
+                            <i class="fas fa-database me-1"></i>Backfill Withdrawal Transactions
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-dark">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Activity Feed</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Category</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>User</th>
+                                    <th>User ID</th>
+                                    <th>ID</th>
+                                </tr>
+                            </thead>
+                            <tbody id="globalHistoryTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Loading history...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- User Details Modal -->
+    <div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="userDetailsModalLabel">User Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Tab Navigation -->
+                    <ul class="nav nav-tabs mb-3" id="userDetailsTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">Profile</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="financial-tab" data-bs-toggle="tab" data-bs-target="#financial" type="button" role="tab">Financial</button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="userDetailsTabContent">
+                        <!-- Profile Tab -->
+                        <div class="tab-pane fade show active" id="profile" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Name:</strong> <span id="userDetailName"></span></p>
+                                    <p><strong>Email:</strong> <span id="userDetailEmail"></span></p>
+                                    <p><strong>Role:</strong> <span id="userDetailRole"></span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Status:</strong> <span id="userDetailStatus"></span></p>
+                                    <p><strong>Balance:</strong> <span id="userDetailBalance"></span></p>
+                                    <p><strong>Created:</strong> <span id="userDetailCreated"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Financial Tab -->
+                        <div class="tab-pane fade" id="financial" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card bg-secondary">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-wallet me-2"></i>Account Balance</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <h4 class="text-success" id="currentBalance">$0.00</h4>
+                                            <small class="text-muted">Current account balance</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-secondary">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Financial Stats</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-1"><strong>Total Deposits:</strong> <span id="totalDeposits">$0.00</span></p>
+                                            <p class="mb-0"><strong>Total Withdrawals:</strong> <span id="totalWithdrawals">$0.00</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Manual Balance Adjustment Section -->
+                            <div class="card bg-secondary mt-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-edit me-2"></i>Manual Balance Adjustment</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="adjustmentAmount" class="form-label">Amount ($)</label>
+                                                <input type="number" class="form-control bg-dark text-white" id="adjustmentAmount" step="0.01" min="0" placeholder="Enter amount">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="adjustmentReason" class="form-label">Reason</label>
+                                                <input type="text" class="form-control bg-dark text-white" id="adjustmentReason" placeholder="Reason for adjustment">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-success" id="addFundsBtn">
+                                            <i class="fas fa-plus me-1"></i>Add Funds
+                                        </button>
+                                        <button type="button" class="btn btn-danger" id="subtractFundsBtn">
+                                            <i class="fas fa-minus me-1"></i>Subtract Funds
+                                        </button>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            All balance adjustments are logged for audit purposes.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId">
+                        <div class="mb-3">
+                            <label for="editUserFirstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control bg-secondary text-white" id="editUserFirstName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserLastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control bg-secondary text-white" id="editUserLastName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control bg-secondary text-white" id="editUserEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserRole" class="form-label">Role</label>
+                            <select class="form-select bg-secondary text-white" id="editUserRole">
+                                <option value="user">User</option>
+                                <option value="premium">Premium</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserStatus" class="form-label">Status</label>
+                            <select class="form-select bg-secondary text-white" id="editUserStatus">
+                                <option value="active">Active</option>
+                                <option value="pending">Pending</option>
+                                <option value="suspended">Suspended</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserBalance" class="form-label">Balance</label>
+                            <input type="number" class="form-control bg-secondary text-white" id="editUserBalance" step="0.01">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveUserChanges">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COT Code Modal -->
+    <div class="modal fade" id="cotCodeModal" tabindex="-1" aria-labelledby="cotCodeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="cotCodeModalLabel">Manage Global COT Code</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        This is a single global COT code used by all users for withdrawals.
+                    </div>
+                    <div class="mb-3">
+                        <label for="currentGlobalCot" class="form-label">Current Global COT Code</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-secondary text-white" id="currentGlobalCot" readonly>
+                            <button class="btn btn-outline-primary" type="button" id="copyGlobalCot">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newGlobalCot" class="form-label">New COT Code</label>
+                        <input type="text" class="form-control bg-secondary text-white" id="newGlobalCot" placeholder="Enter new COT code (min 4 chars)" maxlength="20">
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <strong>Last Updated:</strong> <span id="cotLastUpdated">Never</span><br>
+                            <strong>Updated By:</strong> <span id="cotUpdatedBy">N/A</span>
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" id="generateRandomGlobalCot">
+                        <i class="fas fa-random"></i> Generate Random
+                    </button>
+                    <button type="button" class="btn btn-primary" id="updateGlobalCot">
+                        <i class="fas fa-save"></i> Update Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer">
+        <!-- Toasts will be added here dynamically -->
+    </div>
+
+    <!-- Add/Edit Trade Modal -->
+    <div class="modal fade" id="addEditTradeModal" tabindex="-1" aria-labelledby="addEditTradeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="addEditTradeModalLabel">Add New Trade</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addEditTradeForm">
+                        <input type="hidden" id="tradeId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tradeUserEmail" class="form-label">User Email *</label>
+                                    <input type="email" class="form-control bg-secondary text-white" id="tradeUserEmail" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tradeSymbol" class="form-label">Symbol *</label>
+                                    <input type="text" class="form-control bg-secondary text-white" id="tradeSymbol" placeholder="e.g., EURUSD, BTCUSD" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tradeType" class="form-label">Trade Type *</label>
+                                    <select class="form-select bg-secondary text-white" id="tradeType" required>
+                                        <option value="">Select Type</option>
+                                        <option value="buy">Buy</option>
+                                        <option value="sell">Sell</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tradeAmount" class="form-label">Amount *</label>
+                                    <input type="number" class="form-control bg-secondary text-white" id="tradeAmount" step="0.01" min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tradeEntryPrice" class="form-label">Entry Price *</label>
+                                    <input type="number" class="form-control bg-secondary text-white" id="tradeEntryPrice" step="0.00001" min="0" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tradeExitPrice" class="form-label">Exit Price</label>
+                                    <input type="number" class="form-control bg-secondary text-white" id="tradeExitPrice" step="0.00001" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tradeCurrentPrice" class="form-label">Current Price</label>
+                                    <input type="number" class="form-control bg-secondary text-white" id="tradeCurrentPrice" step="0.00001" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tradeDate" class="form-label">Trade Date</label>
+                                    <input type="datetime-local" class="form-control bg-secondary text-white" id="tradeDate">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tradeStopLoss" class="form-label">Stop Loss</label>
+                                    <input type="number" class="form-control bg-secondary text-white" id="tradeStopLoss" step="0.00001" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tradeTakeProfit" class="form-label">Take Profit</label>
+                                    <input type="number" class="form-control bg-secondary text-white" id="tradeTakeProfit" step="0.00001" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tradeStatus" class="form-label">Status *</label>
+                                    <select class="form-select bg-secondary text-white" id="tradeStatus" required>
+                                        <option value="">Select Status</option>
+                                        <option value="open">Open</option>
+                                        <option value="closed">Closed</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tradeLeverage" class="form-label">Leverage</label>
+                                    <input type="number" class="form-control bg-secondary text-white" id="tradeLeverage" min="1" max="1000" value="1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="tradeNotes" class="form-label">Notes</label>
+                            <textarea class="form-control bg-secondary text-white" id="tradeNotes" rows="3" placeholder="Optional notes about this trade"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="adminDashboard.saveTradeRecord()">Save Trade</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Transaction Modal -->
+    <div class="modal fade" id="addEditTransactionModal" tabindex="-1" aria-labelledby="addEditTransactionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="addEditTransactionModalLabel">Add New Transaction</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addEditTransactionForm">
+                        <input type="hidden" id="transactionId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transactionUserEmail" class="form-label">User Email *</label>
+                                    <input type="email" class="form-control bg-secondary text-white" id="transactionUserEmail" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transactionType" class="form-label">Transaction Type *</label>
+                                    <select class="form-select bg-secondary text-white" id="transactionType" required>
+                                        <option value="">Select Type</option>
+                                        <option value="deposit">Deposit</option>
+                                        <option value="withdrawal">Withdrawal</option>
+                                        <option value="transfer">Transfer</option>
+                                        <option value="bonus">Bonus</option>
+                                        <option value="commission">Commission</option>
+                                        <option value="refund">Refund</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transactionAmount" class="form-label">Amount *</label>
+                                    <input type="number" class="form-control bg-secondary text-white" id="transactionAmount" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transactionFee" class="form-label">Fee</label>
+                                    <input type="number" class="form-control bg-secondary text-white" id="transactionFee" step="0.01" min="0" value="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transactionStatus" class="form-label">Status *</label>
+                                    <select class="form-select bg-secondary text-white" id="transactionStatus" required>
+                                        <option value="">Select Status</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="failed">Failed</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transactionMethod" class="form-label">Payment Method</label>
+                                    <select class="form-select bg-secondary text-white" id="transactionMethod">
+                                        <option value="">Select Method</option>
+                                        <option value="bank_transfer">Bank Transfer</option>
+                                        <option value="credit_card">Credit Card</option>
+                                        <option value="crypto">Cryptocurrency</option>
+                                        <option value="paypal">PayPal</option>
+                                        <option value="skrill">Skrill</option>
+                                        <option value="neteller">Neteller</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transactionReference" class="form-label">Reference ID</label>
+                                    <input type="text" class="form-control bg-secondary text-white" id="transactionReference" placeholder="External reference ID">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transactionDate" class="form-label">Transaction Date</label>
+                                    <input type="datetime-local" class="form-control bg-secondary text-white" id="transactionDate">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transactionDescription" class="form-label">Description</label>
+                            <textarea class="form-control bg-secondary text-white" id="transactionDescription" rows="3" placeholder="Optional description"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="adminDashboard.saveTransactionRecord()">Save Transaction</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteConfirmText">Are you sure you want to delete this record? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Firebase v8 CDN for withdrawal control functions -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/firebase-auth.js"></script>
+    <script type="module" src="js/firebase-database.js"></script>
+    <script type="module" src="js/auth-integration.js"></script>
+    <script type="module" src="js/admin.js"></script>
+    
+    <script type="module">
+      import { listAllKyc } from "./js/kyc-storage.js";
+      import { renderAdminKyc } from "./js/admin-kyc.js";
+      window.listAllKyc = listAllKyc;
+      
+      // Mount KYC admin UI when the KYC section is active
+      document.addEventListener("DOMContentLoaded", () => {
+        const section = document.querySelector("#kyc") || document.querySelector('[data-section="kyc"]');
+        if (section) {
+          // If section has an inner container, use it; else, render directly
+          const target = section.querySelector(".section-body") || section;
+          renderAdminKyc(target);
+        }
+      });
+    </script>
+    
+    <script>
+        // Firebase configuration for v8 compatibility
+        const firebaseConfig = {
+            apiKey: "AIzaSyAwnWoLfrEc1EtXWCD0by5L0VtCmYf8Unw",
+            authDomain: "centraltradehub-30f00.firebaseapp.com",
+            projectId: "centraltradehub-30f00",
+            storageBucket: "centraltradehub-30f00.firebasestorage.app",
+            messagingSenderId: "745751687877",
+            appId: "1:745751687877:web:4576449aa2e8360931b6ac",
+            measurementId: "G-YHCS5CH450"
+        };
+        
+        // Initialize Firebase v8 for withdrawal control functions
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
+        // Initialize admin panel on DOM load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loading screen after initialization
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+            }, 1500);
+            
+            // Fix Bootstrap modal accessibility issues
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                // Store the element that triggered the modal
+                let triggerElement = null;
+                
+                // When modal is about to be shown
+                modal.addEventListener('show.bs.modal', function(event) {
+                    triggerElement = event.relatedTarget || document.activeElement;
+                });
+                
+                // When modal is shown, focus on the modal itself
+                modal.addEventListener('shown.bs.modal', function() {
+                    // Remove aria-hidden when modal is shown
+                    modal.removeAttribute('aria-hidden');
+                    // Focus on the modal dialog for screen readers
+                    const modalDialog = modal.querySelector('.modal-dialog');
+                    if (modalDialog) {
+                        modalDialog.focus();
+                    }
+                });
+                
+                // When modal is about to be hidden
+                modal.addEventListener('hide.bs.modal', function() {
+                    // Blur any focused elements inside the modal
+                    const focusedElement = modal.querySelector(':focus');
+                    if (focusedElement) {
+                        focusedElement.blur();
+                    }
+                });
+                
+                // When modal is hidden, restore focus and set aria-hidden
+                modal.addEventListener('hidden.bs.modal', function() {
+                    // Set aria-hidden back to true
+                    modal.setAttribute('aria-hidden', 'true');
+                    // Restore focus to the trigger element
+                    if (triggerElement && typeof triggerElement.focus === 'function') {
+                        triggerElement.focus();
+                    }
+                    triggerElement = null;
+                });
+            });
+        });
+
+        // Withdrawal Management
+        let currentWithdrawalRequest = null;
+        let withdrawalDetailsModal = null;
+
+        // Initialize withdrawal management
+        function initializeWithdrawalManagement() {
+            withdrawalDetailsModal = new bootstrap.Modal(document.getElementById('withdrawalDetailsModal'));
+            loadPendingWithdrawals();
+            loadRecentWithdrawals();
+            
+            // Set up real-time listener for pending withdrawals
+            const db = firebase.firestore();
+            db.collection('withdrawal-requests')
+                .where('status', '==', 'pending')
+                .onSnapshot((snapshot) => {
+                    loadPendingWithdrawals();
+                    updatePendingCount(snapshot.size);
+                });
+        }
+
+        // Show withdrawal management section
+        function showWithdrawalManagement() {
+            console.log('Loading withdrawal requests...');
+            
+            // Hide all other sections
+            document.querySelectorAll('.admin-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show withdrawal section
+            const withdrawalSection = document.getElementById('withdrawals');
+            if (withdrawalSection) {
+                withdrawalSection.style.display = 'block';
+                loadWithdrawalRequests();
+            } else {
+                // Temporary display in main content area
+                document.querySelector('.admin-main').innerHTML = `
+                    <div class="card bg-dark">
+                        <div class="card-header">
+                            <h5>Withdrawal Requests</h5>
+                        </div>
+                        <div class="card-body" id="withdrawalRequestsContainer">
+                            <p>Loading withdrawal requests...</p>
+                        </div>
+                    </div>
+                `;
+                loadWithdrawalRequests();
+            }
+        }
+
+        function loadWithdrawalRequests() {
+            const container = document.getElementById('withdrawalRequestsContainer') || document.querySelector('.card-body');
+            
+            firebase.firestore().collection('withdrawal-requests')
+                .orderBy('timestamp', 'desc')
+                .get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        container.innerHTML = '<p class="text-muted">No withdrawal requests found.</p>';
+                        return;
+                    }
+                    
+                    let html = '<div class="table-responsive"><table class="table table-dark table-striped"><thead><tr><th>Date</th><th>User</th><th>Amount</th><th>Method</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+                    
+                    querySnapshot.forEach((doc) => {
+                        const request = doc.data();
+                        const date = request.timestamp ? new Date(request.timestamp.seconds * 1000).toLocaleDateString() : 'N/A';
+                        
+                        html += `
+                            <tr>
+                                <td>${date}</td>
+                                <td>${request.userEmail}</td>
+                                <td>$${request.amount.toLocaleString()}</td>
+                                <td>${request.details.method.toUpperCase()}</td>
+                                <td><span class="badge bg-warning">${request.status}</span></td>
+                                <td>
+                                    <button class="btn btn-success btn-sm me-1" onclick="approveWithdrawal('${doc.id}')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${doc.id}')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += '</tbody></table></div>';
+                    container.innerHTML = html;
+                })
+                .catch((error) => {
+                    console.error('Error loading withdrawal requests:', error);
+                    container.innerHTML = '<p class="text-danger">Error loading withdrawal requests.</p>';
+                });
+        }
+
+        function approveWithdrawal(requestId) {
+            if (confirm('Are you sure you want to approve this withdrawal?')) {
+                firebase.firestore().collection('withdrawal-requests').doc(requestId)
+                    .update({ status: 'approved' })
+                    .then(() => {
+                        alert('Withdrawal approved successfully!');
+                        loadWithdrawalRequests();
+                    })
+                    .catch((error) => {
+                        console.error('Error approving withdrawal:', error);
+                        alert('Error approving withdrawal.');
+                    });
+            }
+        }
+
+        function rejectWithdrawal(requestId) {
+            if (confirm('Are you sure you want to reject this withdrawal?')) {
+                firebase.firestore().collection('withdrawal-requests').doc(requestId)
+                    .update({ status: 'rejected' })
+                    .then(() => {
+                        alert('Withdrawal rejected.');
+                        loadWithdrawalRequests();
+                    })
+                    .catch((error) => {
+                        console.error('Error rejecting withdrawal:', error);
+                        alert('Error rejecting withdrawal.');
+                    });
+            }
+        }
+
+        // Load pending withdrawals
+        async function loadPendingWithdrawals() {
+            try {
+                const db = firebase.firestore();
+                const snapshot = await db.collection('withdrawal-requests')
+                    .where('status', '==', 'pending')
+                    .orderBy('requestDate', 'desc')
+                    .get();
+                
+                const tbody = document.getElementById('pendingWithdrawalsBody');
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No pending withdrawals</td></tr>';
+                    return;
+                }
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.requestDate ? data.requestDate.toDate().toLocaleDateString() : 'N/A';
+                    
+                    html += `
+                        <tr>
+                            <td><code>${data.requestId}</code></td>
+                            <td>${data.userEmail}</td>
+                            <td><strong>$${data.amount.toLocaleString()}</strong></td>
+                            <td><span class="badge bg-info">${data.details.method}</span></td>
+                            <td>${date}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="viewWithdrawalDetails('${doc.id}')">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                tbody.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading pending withdrawals:', error);
+            }
+        }
+
+        // Load recent withdrawals
+        async function loadRecentWithdrawals() {
+            try {
+                const db = firebase.firestore();
+                const snapshot = await db.collection('withdrawal-requests')
+                    .where('status', 'in', ['approved', 'rejected'])
+                    .orderBy('requestDate', 'desc')
+                    .limit(10)
+                    .get();
+                
+                const tbody = document.getElementById('recentWithdrawalsBody');
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No recent withdrawals</td></tr>';
+                    return;
+                }
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.requestDate ? data.requestDate.toDate().toLocaleDateString() : 'N/A';
+                    const statusClass = data.status === 'approved' ? 'success' : 'danger';
+                    
+                    html += `
+                        <tr>
+                            <td><code>${data.requestId}</code></td>
+                            <td>${data.userEmail}</td>
+                            <td><strong>$${data.amount.toLocaleString()}</strong></td>
+                            <td><span class="badge bg-info">${data.details.method}</span></td>
+                            <td><span class="badge bg-${statusClass}">${data.status}</span></td>
+                            <td>${date}</td>
+                        </tr>
+                    `;
+                });
+                
+                tbody.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading recent withdrawals:', error);
+            }
+        }
+
+        // View withdrawal details
+        async function viewWithdrawalDetails(docId) {
+            try {
+                const db = firebase.firestore();
+                const doc = await db.collection('withdrawal-requests').doc(docId).get();
+                
+                if (!doc.exists) {
+                    alert('Withdrawal request not found');
+                    return;
+                }
+                
+                const data = doc.data();
+                currentWithdrawalRequest = { id: docId, ...data };
+                
+                const date = data.requestDate ? data.requestDate.toDate().toLocaleString() : 'N/A';
+                
+                let detailsHtml = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Request Information</h6>
+                            <p><strong>Request ID:</strong> <code>${data.requestId}</code></p>
+                            <p><strong>User Email:</strong> ${data.userEmail}</p>
+                            <p><strong>Amount:</strong> <span class="text-success">$${data.amount.toLocaleString()}</span></p>
+                            <p><strong>Method:</strong> <span class="badge bg-info">${data.details.method}</span></p>
+                            <p><strong>Status:</strong> <span class="badge bg-warning">${data.status}</span></p>
+                            <p><strong>Request Date:</strong> ${date}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Payment Details</h6>
+                `;
+                
+                if (data.details.method === 'bank') {
+                    detailsHtml += `
+                        <p><strong>Bank Name:</strong> ${data.details.bankName}</p>
+                        <p><strong>Account Holder:</strong> ${data.details.accountName}</p>
+                        <p><strong>Account Number:</strong> ${data.details.accountNumber}</p>
+                        <p><strong>Routing Number:</strong> ${data.details.routingNumber}</p>
+                        ${data.details.swiftCode ? `<p><strong>SWIFT Code:</strong> ${data.details.swiftCode}</p>` : ''}
+                    `;
+                } else if (data.details.method === 'crypto') {
+                    detailsHtml += `
+                        <p><strong>Cryptocurrency:</strong> ${data.details.cryptoCurrency}</p>
+                        <p><strong>Network:</strong> ${data.details.cryptoNetwork || 'N/A'}</p>
+                        <p><strong>Wallet Address:</strong> <code>${data.details.cryptoAddress}</code></p>
+                    `;
+                }
+                
+                detailsHtml += `
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('withdrawalDetailsBody').innerHTML = detailsHtml;
+                
+                // Show/hide action buttons based on status
+                const approveBtn = document.getElementById('approveBtn');
+                const rejectBtn = document.getElementById('rejectBtn');
+                
+                if (data.status === 'pending') {
+                    approveBtn.style.display = 'inline-block';
+                    rejectBtn.style.display = 'inline-block';
+                } else {
+                    approveBtn.style.display = 'none';
+                    rejectBtn.style.display = 'none';
+                }
+                
+                withdrawalDetailsModal.show();
+            } catch (error) {
+                console.error('Error loading withdrawal details:', error);
+                alert('Error loading withdrawal details');
+            }
+        }
+
+        // Update pending count
+        function updatePendingCount(count) {
+            const badge = document.getElementById('pendingWithdrawalsCount');
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'inline-block' : 'none';
+            }
+        }
+
+        // Refresh withdrawals
+        function refreshWithdrawals() {
+            loadPendingWithdrawals();
+            loadRecentWithdrawals();
+        }
+
+        // Show withdrawal control section
+        function showWithdrawalControl() {
+            console.log('Showing withdrawal control section');
+            
+            // Hide all other sections
+            document.querySelectorAll('.admin-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show the user-control section and add withdrawal content to it
+            const userControlSection = document.getElementById('user-control');
+            if (userControlSection) {
+                userControlSection.style.display = 'block';
+                
+                // Clear existing content
+                userControlSection.innerHTML = '';
+                
+                // Create withdrawal control content directly in user-control section
+                const withdrawalContent = document.createElement('div');
+                withdrawalContent.id = 'withdrawal-control-content';
+                withdrawalContent.innerHTML = `
+                    <div class="section-header mb-4">
+                        <h1 class="h3 mb-1"><i class="fas fa-money-bill-wave me-2"></i>Withdrawal Control</h1>
+                        <p class="text-muted">Manage user withdrawal requests</p>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Pending Withdrawal Requests</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="withdrawal-control-loading" class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="mt-2 text-muted">Loading withdrawal requests...</p>
+                                    </div>
+                                    <div id="withdrawal-control-table" class="table-responsive" style="display: none;">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Request ID</th>
+                                                    <th>User Email</th>
+                                                    <th>Amount</th>
+                                                    <th>Method</th>
+                                                    <th>Status</th>
+                                                    <th>Date</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="withdrawal-control-tbody">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                userControlSection.appendChild(withdrawalContent);
+                
+                // Update active navigation
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                const withdrawalTab = document.querySelector('#withdrawal-tab');
+                if (withdrawalTab) {
+                    withdrawalTab.classList.add('active');
+                }
+                
+                // Load withdrawal requests
+                loadWithdrawalControlRequests();
+            } else {
+                console.error('User control section not found!');
+                alert('Error: Could not find user control section');
+            }
+        }
+        
+        // Function removed as it's no longer needed
+        
+        // Load withdrawal control requests
+        async function loadWithdrawalControlRequests() {
+            try {
+                const tbody = document.getElementById('withdrawal-control-tbody');
+                const loading = document.getElementById('withdrawal-control-loading');
+                const table = document.getElementById('withdrawal-control-table');
+                
+                if (!tbody) {
+                    console.error('Withdrawal control tbody not found');
+                    return;
+                }
+                
+                // Show loading
+                if (loading) loading.style.display = 'block';
+                if (table) table.style.display = 'none';
+                
+                // Use firebase.firestore() directly instead of db
+                const snapshot = await firebase.firestore().collection('withdrawal-requests')
+                    .where('status', '==', 'pending')
+                    .orderBy('requestDate', 'desc')
+                    .get();
+                
+                let html = '';
+                
+                if (snapshot.empty) {
+                    html = `
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">No pending withdrawal requests</p>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const date = data.requestDate ? data.requestDate.toDate().toLocaleDateString() : 'N/A';
+                        
+                        html += `
+                            <tr>
+                                <td><code>${data.requestId}</code></td>
+                                <td>${data.userEmail}</td>
+                                <td><strong>$${data.amount.toLocaleString()}</strong></td>
+                                <td><span class="badge bg-info">${data.details.method}</span></td>
+                                <td><span class="badge bg-warning">${data.status}</span></td>
+                                <td>${date}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-success me-1" onclick="approveWithdrawalControl('${doc.id}')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="rejectWithdrawalControl('${doc.id}')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                tbody.innerHTML = html;
+                
+                // Hide loading, show table
+                if (loading) loading.style.display = 'none';
+                if (table) table.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading withdrawal control requests:', error);
+                const tbody = document.getElementById('withdrawal-control-tbody');
+                if (tbody) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-danger">
+                                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                <p class="mb-0">Error loading withdrawal requests: ${error.message}</p>
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                // Hide loading, show table even on error
+                const loading = document.getElementById('withdrawal-control-loading');
+                const table = document.getElementById('withdrawal-control-table');
+                if (loading) loading.style.display = 'none';
+                if (table) table.style.display = 'block';
+            }
+        }
+        
+        // Approve withdrawal from control panel
+        async function approveWithdrawalControl(docId) {
+            if (!confirm('Are you sure you want to approve this withdrawal request?')) {
+                return;
+            }
+            
+            try {
+                // First, get the withdrawal request details
+                const withdrawalDoc = await firebase.firestore().collection('withdrawal-requests').doc(docId).get();
+                
+                if (!withdrawalDoc.exists) {
+                    throw new Error('Withdrawal request not found');
+                }
+                
+                const withdrawalData = withdrawalDoc.data();
+                const userEmail = withdrawalData.userEmail || withdrawalData.email;
+                const amount = parseFloat(withdrawalData.amount) || 0;
+                const method = withdrawalData.method || withdrawalData.withdrawalMethod || (withdrawalData.details && withdrawalData.details.method) || 'Unknown';
+                const accountDetails = withdrawalData.accountDetails || withdrawalData.details || {};
+                
+                if (!userEmail) {
+                    throw new Error('User email not found in withdrawal request');
+                }
+                
+                if (amount <= 0) {
+                    throw new Error('Invalid withdrawal amount');
+                }
+                
+                // Get user document
+                const userQuery = await firebase.firestore().collection('users').where('email', '==', userEmail).get();
+                
+                if (userQuery.empty) {
+                    throw new Error('User not found');
+                }
+                
+                const userDoc = userQuery.docs[0];
+                const userData = userDoc.data();
+                const userId = userDoc.id;
+                
+                // Check if user has sufficient balance
+                const currentBalance = parseFloat(userData.accountBalance) || 0;
+                const currentWalletBalance = parseFloat(userData.walletBalance) || 0;
+                
+                if (currentBalance < amount) {
+                    throw new Error(`Insufficient account balance. Current: $${currentBalance.toFixed(2)}, Required: $${amount.toFixed(2)}`);
+                }
+                
+                // Calculate new balances
+                const newAccountBalance = currentBalance - amount;
+                const newWalletBalance = Math.max(0, currentWalletBalance - amount);
+                
+                // Use batch write for atomic operations
+                const batch = firebase.firestore().batch();
+                
+                // Update withdrawal request status
+                const withdrawalRef = firebase.firestore().collection('withdrawal-requests').doc(docId);
+                batch.update(withdrawalRef, {
+                    status: 'approved',
+                    approvedDate: firebase.firestore.FieldValue.serverTimestamp(),
+                    processedAmount: amount
+                });
+                
+                // Update user balances
+                const userRef = firebase.firestore().collection('users').doc(userId);
+                batch.update(userRef, {
+                    accountBalance: newAccountBalance,
+                    walletBalance: newWalletBalance,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Add transaction to user's history
+                const transactionRef = firebase.firestore().collection('transactions').doc();
+                batch.set(transactionRef, {
+                    userId: userId,
+                    userEmail: userEmail,
+                    type: 'withdrawal',
+                    amount: amount,
+                    method: method,
+                    accountDetails: accountDetails,
+                    status: 'completed',
+                    description: `Withdrawal via ${method} - Approved by Admin`,
+                    balanceBefore: currentBalance,
+                    balanceAfter: newAccountBalance,
+                    walletBalanceBefore: currentWalletBalance,
+                    walletBalanceAfter: newWalletBalance,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    approvedBy: 'admin',
+                    withdrawalRequestId: docId,
+                    transactionId: transactionRef.id
+                });
+                
+                // Commit all operations atomically
+                await batch.commit();
+                
+                alert(`Withdrawal request approved successfully!\n\nAmount: $${amount.toFixed(2)}\nUser: ${userEmail}\nMethod: ${method}\nNew Balance: $${newAccountBalance.toFixed(2)}`);
+                loadWithdrawalControlRequests(); // Refresh the list
+                
+            } catch (error) {
+                console.error('Error approving withdrawal:', error);
+                alert('Error approving withdrawal request: ' + error.message);
+            }
+        }
+        
+        // Reject withdrawal from control panel
+        async function rejectWithdrawalControl(docId) {
+            const reason = prompt('Please enter rejection reason (optional):');
+            
+            try {
+                // First, get the withdrawal request details
+                const withdrawalDoc = await firebase.firestore().collection('withdrawal-requests').doc(docId).get();
+                
+                if (!withdrawalDoc.exists) {
+                    throw new Error('Withdrawal request not found');
+                }
+                
+                const withdrawalData = withdrawalDoc.data();
+                const userEmail = withdrawalData.userEmail || withdrawalData.email;
+                const amount = parseFloat(withdrawalData.amount) || 0;
+                const method = withdrawalData.method || withdrawalData.withdrawalMethod || 'Unknown';
+                const accountDetails = withdrawalData.accountDetails || withdrawalData.details || {};
+                
+                if (!userEmail) {
+                    throw new Error('User email not found in withdrawal request');
+                }
+                
+                // Get user document for transaction history
+                const userQuery = await firebase.firestore().collection('users').where('email', '==', userEmail).get();
+                
+                let userId = null;
+                let currentBalance = 0;
+                let currentWalletBalance = 0;
+                
+                if (!userQuery.empty) {
+                    const userDoc = userQuery.docs[0];
+                    const userData = userDoc.data();
+                    userId = userDoc.id;
+                    currentBalance = parseFloat(userData.accountBalance) || 0;
+                    currentWalletBalance = parseFloat(userData.walletBalance) || 0;
+                }
+                
+                // Use batch write for atomic operations
+                const batch = firebase.firestore().batch();
+                
+                // Update withdrawal request status
+                const withdrawalRef = firebase.firestore().collection('withdrawal-requests').doc(docId);
+                batch.update(withdrawalRef, {
+                    status: 'rejected',
+                    rejectedDate: firebase.firestore.FieldValue.serverTimestamp(),
+                    rejectionReason: reason || 'No reason provided'
+                });
+                
+                // Add transaction to user's history (if user found)
+                if (userId) {
+                    const transactionRef = firebase.firestore().collection('transactions').doc();
+                    batch.set(transactionRef, {
+                        userId: userId,
+                        userEmail: userEmail,
+                        type: 'withdrawal',
+                        amount: amount,
+                        method: method,
+                        accountDetails: accountDetails,
+                        status: 'rejected',
+                        description: `Withdrawal via ${method} - Rejected by Admin`,
+                        rejectionReason: reason || 'No reason provided',
+                        balanceBefore: currentBalance,
+                        balanceAfter: currentBalance, // No change for rejected withdrawals
+                        walletBalanceBefore: currentWalletBalance,
+                        walletBalanceAfter: currentWalletBalance, // No change for rejected withdrawals
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        rejectedBy: 'admin',
+                        withdrawalRequestId: docId,
+                        transactionId: transactionRef.id
+                    });
+                }
+                
+                // Commit all operations atomically
+                await batch.commit();
+                
+                alert(`Withdrawal request rejected successfully!\n\nAmount: $${amount.toFixed(2)}\nUser: ${userEmail}\nReason: ${reason || 'No reason provided'}`);
+                loadWithdrawalControlRequests(); // Refresh the list
+                
+            } catch (error) {
+                console.error('Error rejecting withdrawal:', error);
+                alert('Error rejecting withdrawal request: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

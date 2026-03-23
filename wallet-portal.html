@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Your Wallet - TitanTrades</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/wallet-portal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- INSERTED: favicon link to correct path -->
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+</head>
+<body>
+    <div class="wallet-portal-container">
+        <header class="portal-header">
+            <div class="header-content">
+                <button class="back-btn" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </button>
+                <h1><i class="fas fa-wallet"></i> Connect Your Wallet</h1>
+                <p>Securely connect your cryptocurrency wallet to start trading</p>
+            </div>
+        </header>
+
+        <main class="portal-main">
+            <!-- Wallet Connection Methods -->
+            <div class="connection-methods">
+                <div class="method-tabs">
+                    <button class="tab-btn active" data-tab="auto-connect">Auto Connect</button>
+                    <button class="tab-btn" data-tab="manual-input">Manual Input</button>
+                    <button class="tab-btn" data-tab="import-wallet">Import Wallet</button>
+                </div>
+
+                <!-- Auto Connect Tab -->
+                <div class="tab-content active" id="auto-connect">
+                    <h3>Connect Automatically</h3>
+                    <p>Connect using your browser wallet extension</p>
+                    
+                    <div class="wallet-options">
+                        <button class="wallet-option" data-wallet="metamask">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="MetaMask" width="40">
+                            <div class="wallet-info">
+                                <h4>MetaMask</h4>
+                                <p>Connect using MetaMask browser extension</p>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        
+                        <button class="wallet-option" data-wallet="walletconnect">
+                            <img src="https://walletconnect.com/walletconnect-logo.svg" alt="WalletConnect" width="40">
+                            <div class="wallet-info">
+                                <h4>WalletConnect</h4>
+                                <p>Scan QR code with your mobile wallet</p>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        
+                        <button class="wallet-option" data-wallet="coinbase">
+                            <img src="https://images.ctfassets.net/q5ulk4bp65r7/3TBS4oVkD1ghowTqVQJlqj/2dfd4ea3b623a7c0d8deb2ff445dee9e/Consumer_Wordmark.svg" alt="Coinbase" width="40">
+                            <div class="wallet-info">
+                                <h4>Coinbase Wallet</h4>
+                                <p>Connect using Coinbase Wallet</p>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        
+                        <button class="wallet-option" data-wallet="keplr">
+                            <img src="assets/images/keplr.jpg" alt="Keplr" width="40">
+                            <div class="wallet-info">
+                                <h4>Connect with Keplr</h4>
+                                <p>Connect using Keplr browser extension</p>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Manual Input Tab -->
+                <div class="tab-content" id="manual-input">
+                    <h3>Manual Wallet Input</h3>
+                    <p>Enter your wallet details manually</p>
+                    
+                    <form class="wallet-form" id="manualWalletForm">
+                        <div class="form-group">
+                            <label for="walletType">Wallet Type</label>
+                            <select id="walletType" required>
+                                <option value="">Select wallet type</option>
+                                <option value="ethereum">Ethereum (ETH)</option>
+                                <option value="bitcoin">Bitcoin (BTC)</option>
+                                <option value="binance">Binance Smart Chain (BSC)</option>
+                                <option value="polygon">Polygon (MATIC)</option>
+                                <option value="solana">Solana (SOL)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="walletAddress">Wallet Address</label>
+                            <input type="text" id="walletAddress" placeholder="Enter your wallet address" required>
+                            <small>Your public wallet address (starts with 0x for Ethereum)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="walletName">Wallet Name (Optional)</label>
+                            <input type="text" id="walletName" placeholder="Give your wallet a name">
+                        </div>
+                        
+                        <div class="security-notice">
+                            <i class="fas fa-shield-alt"></i>
+                            <div>
+                                <h4>Security Notice</h4>
+                                <p>We only store your public wallet address. Never share your private keys or seed phrase.</p>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="connect-btn">
+                            <i class="fas fa-link"></i> Connect Wallet
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Import Wallet Tab -->
+                <div class="tab-content" id="import-wallet">
+                    <h3>Import Existing Wallet</h3>
+                    <p>Import wallet using seed phrase or private key</p>
+                    
+                    <form class="wallet-form" id="importWalletForm">
+                        <div class="import-methods">
+                            <div class="method-option">
+                                <input type="radio" id="seedPhrase" name="importMethod" value="seed" checked>
+                                <label for="seedPhrase">
+                                    <i class="fas fa-key"></i>
+                                    <div>
+                                        <h4>Seed Phrase</h4>
+                                        <p>12 or 24 word recovery phrase</p>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <div class="method-option">
+                                <input type="radio" id="privateKey" name="importMethod" value="private">
+                                <label for="privateKey">
+                                    <i class="fas fa-lock"></i>
+                                    <div>
+                                        <h4>Private Key</h4>
+                                        <p>Import using private key</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" id="seedPhraseGroup">
+                            <label for="seedPhraseInput">Seed Phrase</label>
+                            <textarea id="seedPhraseInput" placeholder="Enter your 12 or 24 word seed phrase" rows="3"></textarea>
+                            <small>Separate each word with a space</small>
+                        </div>
+                        
+                        <div class="form-group hidden" id="privateKeyGroup">
+                            <label for="privateKeyInput">Private Key</label>
+                            <input type="password" id="privateKeyInput" placeholder="Enter your private key">
+                            <small>Your private key (keep this secure)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="walletPassword">Wallet Password</label>
+                            <input type="password" id="walletPassword" placeholder="Create a password for this wallet" required>
+                        </div>
+                        
+                        <div class="security-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>
+                                <h4>Security Warning</h4>
+                                <p>Your seed phrase and private key are encrypted and stored locally. We recommend using a hardware wallet for maximum security.</p>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="connect-btn">
+                            <i class="fas fa-download"></i> Import Wallet
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Git Integration Section -->
+            <div class="git-integration">
+                <h3><i class="fab fa-git-alt"></i> Git Integration</h3>
+                <p>Connect your Git repository for automated trading strategy deployment</p>
+                
+                <form class="git-form" id="gitIntegrationForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="gitProvider">Git Provider</label>
+                            <select id="gitProvider" required>
+                                <option value="">Select provider</option>
+                                <option value="github">GitHub</option>
+                                <option value="gitlab">GitLab</option>
+                                <option value="bitbucket">Bitbucket</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="gitUsername">Username</label>
+                            <input type="text" id="gitUsername" placeholder="Your Git username" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gitRepository">Repository URL</label>
+                        <input type="url" id="gitRepository" placeholder="https://github.com/username/repository">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gitToken">Access Token</label>
+                        <input type="password" id="gitToken" placeholder="Personal access token">
+                        <small>Required for private repositories and push access</small>
+                    </div>
+                    
+                    <div class="git-permissions">
+                        <h4>Permissions</h4>
+                        <div class="permission-list">
+                            <label class="permission-item">
+                                <input type="checkbox" id="readRepo" checked disabled>
+                                <span>Read repository</span>
+                            </label>
+                            <label class="permission-item">
+                                <input type="checkbox" id="writeRepo">
+                                <span>Write to repository</span>
+                            </label>
+                            <label class="permission-item">
+                                <input type="checkbox" id="deployHooks">
+                                <span>Deploy webhooks</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="connect-btn secondary">
+                        <i class="fab fa-git-alt"></i> Connect Git Repository
+                    </button>
+                </form>
+            </div>
+
+            <!-- Connection Status -->
+            <div class="connection-status" id="connectionStatus" style="display: none;">
+                <div class="status-card">
+                    <div class="status-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="status-info">
+                        <h4>Wallet Connected Successfully!</h4>
+                        <p id="connectedWalletInfo"></p>
+                        <div class="status-actions">
+                            <button class="btn-primary" onclick="window.location.href='dashboard.html'">
+                                Go to Dashboard
+                            </button>
+                            <button class="btn-secondary" id="disconnectWallet">
+                                Disconnect
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loadingText">Connecting wallet...</p>
+        </div>
+    </div>
+
+    <script type="module" src="js/wallet-portal.js"></script>
+</body>
+</html>

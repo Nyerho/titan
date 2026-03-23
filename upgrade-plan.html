@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade Plan - TitanTrades</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/utilities.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .upgrade-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            margin-bottom: 3rem;
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .upgrade-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 4rem;
+        }
+        
+        .upgrade-header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .upgrade-header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+        
+        .plan-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 25px;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.4s ease;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.2);
+        }
+        
+        .plan-card.featured {
+            border: 3px solid #FFD700;
+            transform: scale(1.05);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 255, 255, 0.98));
+        }
+        
+        .plan-card.featured::before {
+            content: 'MOST POPULAR';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #1e3c72;
+            padding: 0.6rem 2rem;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .plan-card.premium {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(255, 255, 255, 0.98));
+            border: 3px solid #8A2BE2;
+        }
+        
+        .plan-card.premium::before {
+            content: 'ELITE TRADER';
+            background: linear-gradient(45deg, #8A2BE2, #9370DB);
+            color: white;
+        }
+        
+        .plan-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .plan-name {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+        
+        .plan-subtitle {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+        
+        .plan-price {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .plan-period {
+            color: #666;
+            margin-bottom: 2.5rem;
+            font-weight: 600;
+        }
+        
+        .plan-features {
+            list-style: none;
+            margin-bottom: 2.5rem;
+            text-align: left;
+        }
+        
+        .plan-features li {
+            padding: 1rem 0;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .plan-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .plan-features i {
+            color: #4CAF50;
+            margin-right: 1rem;
+            width: 20px;
+            font-size: 1.1rem;
+        }
+        
+        .plan-features .unavailable i {
+            color: #dc3545;
+        }
+        
+        .plan-button {
+            width: 100%;
+            padding: 1.2rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .plan-button.primary {
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            color: white;
+            box-shadow: 0 10px 30px rgba(30, 60, 114, 0.3);
+        }
+        
+        .plan-button.gold {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #1e3c72;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+        
+        .plan-button.premium {
+            background: linear-gradient(45deg, #8A2BE2, #9370DB);
+            color: white;
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.3);
+        }
+        
+        .plan-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .plan-button:disabled {
+            background: #e0e0e0;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .value-proposition {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 3rem;
+            margin-top: 4rem;
+            text-align: center;
+        }
+        
+        .value-proposition h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: #1e3c72;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .benefit-item {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .benefit-item i {
+            font-size: 3rem;
+            color: #2a5298;
+            margin-bottom: 1rem;
+        }
+        
+        .benefit-item h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1e3c72;
+        }
+        
+        .benefit-item p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .upgrade-container {
+                padding: 1rem;
+            }
+            
+            .upgrade-header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .plans-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .plan-card.featured,
+            .plan-card.premium {
+                transform: none;
+            }
+            
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="upgrade-container">
+        <a href="dashboard.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        
+        <div class="upgrade-header">
+            <h1><i class="fas fa-rocket"></i> Elevate Your Trading</h1>
+            <p>Choose your path to financial freedom with our premium trading packages</p>
+        </div>
+        
+        <div class="plans-grid">
+            <div class="plan-card">
+                <div class="plan-icon" style="color: #28a745;">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="plan-name" style="color: #28a745;">Trader</div>
+                <div class="plan-subtitle">Perfect for beginners</div>
+                <div class="plan-price">$200</div>
+                <div class="plan-period">per month</div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> 10 Premium Signals Daily</li>
+                    <li><i class="fas fa-check"></i> Basic Market Analysis</li>
+                    <li><i class="fas fa-check"></i> Email & Chat Support</li>
+                    <li><i class="fas fa-check"></i> Mobile Trading Alerts</li>
+                    <li><i class="fas fa-check"></i> Risk Management Tools</li>
+                    <li class="unavailable"><i class="fas fa-times"></i> Personal Trading Coach</li>
+                    <li class="unavailable"><i class="fas fa-times"></i> VIP Market Insights</li>
+                </ul>
+                <button class="plan-button primary" onclick="selectPlan('trader', 200)">Start Trading</button>
+            </div>
+            
+            <div class="plan-card featured">
+                <div class="plan-icon" style="color: #ffc107;">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div class="plan-name" style="color: #ffc107;">Pro Trader</div>
+                <div class="plan-subtitle">Most popular choice</div>
+                <div class="plan-price">$1,000</div>
+                <div class="plan-period">per month</div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> 25 Premium Signals Daily</li>
+                    <li><i class="fas fa-check"></i> Advanced AI Analysis</li>
+                    <li><i class="fas fa-check"></i> Priority 24/7 Support</li>
+                    <li><i class="fas fa-check"></i> Real-time Market Alerts</li>
+                    <li><i class="fas fa-check"></i> Advanced Risk Management</li>
+                    <li><i class="fas fa-check"></i> Weekly Strategy Sessions</li>
+                    <li class="unavailable"><i class="fas fa-times"></i> Personal Trading Coach</li>
+                </ul>
+                <button class="plan-button gold" onclick="selectPlan('pro-trader', 1000)">Go Pro</button>
+            </div>
+            
+            <div class="plan-card">
+                <div class="plan-icon" style="color: #6f42c1;">
+                    <i class="fas fa-gem"></i>
+                </div>
+                <div class="plan-name" style="color: #6f42c1;">Elite Trader</div>
+                <div class="plan-subtitle">For serious traders</div>
+                <div class="plan-price">$3,000</div>
+                <div class="plan-period">per month</div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> 50 Premium Signals Daily</li>
+                    <li><i class="fas fa-check"></i> Institutional-Grade Analysis</li>
+                    <li><i class="fas fa-check"></i> Dedicated Account Manager</li>
+                    <li><i class="fas fa-check"></i> Custom Trading Strategies</li>
+                    <li><i class="fas fa-check"></i> Portfolio Management Tools</li>
+                    <li><i class="fas fa-check"></i> Personal Trading Coach</li>
+                    <li><i class="fas fa-check"></i> VIP Market Insights</li>
+                </ul>
+                <button class="plan-button primary" onclick="selectPlan('elite-trader', 3000)">Join Elite</button>
+            </div>
+            
+            <div class="plan-card premium">
+                <div class="plan-icon" style="color: #8A2BE2;">
+                    <i class="fas fa-infinity"></i>
+                </div>
+                <div class="plan-name" style="color: #8A2BE2;">Master Trader</div>
+                <div class="plan-subtitle">Ultimate trading experience</div>
+                <div class="plan-price">$15,000</div>
+                <div class="plan-period">per month</div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> Unlimited Premium Signals</li>
+                    <li><i class="fas fa-check"></i> Proprietary Trading Algorithms</li>
+                    <li><i class="fas fa-check"></i> Direct Line to Trading Floor</li>
+                    <li><i class="fas fa-check"></i> Hedge Fund Level Strategies</li>
+                    <li><i class="fas fa-check"></i> Multi-Asset Portfolio Management</li>
+                    <li><i class="fas fa-check"></i> Personal Trading Team</li>
+                    <li><i class="fas fa-check"></i> Exclusive Market Intelligence</li>
+                </ul>
+                <button class="plan-button premium" onclick="selectPlan('master-trader', 15000)">Become Master</button>
+            </div>
+        </div>
+        
+        <div class="value-proposition">
+            <h2>Why Choose TitanTrades?</h2>
+            <p style="font-size: 1.2rem; color: #666; margin-bottom: 2rem;">Join thousands of successful traders who trust our platform</p>
+            
+            <div class="benefits-grid">
+                <div class="benefit-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Secure & Regulated</h3>
+                    <p>Bank-level security with full regulatory compliance</p>
+                </div>
+                <div class="benefit-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <h3>Proven Results</h3>
+                    <p>95% signal accuracy rate with verified track record</p>
+                </div>
+                <div class="benefit-item">
+                    <i class="fas fa-users"></i>
+                    <h3>Expert Team</h3>
+                    <p>Professional traders with 15+ years experience</p>
+                </div>
+                <div class="benefit-item">
+                    <i class="fas fa-clock"></i>
+                    <h3>24/7 Support</h3>
+                    <p>Round-the-clock assistance from trading experts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function selectPlan(planType, price) {
+            const planNames = {
+                'trader': 'Trader Package ($200/month)',
+                'pro-trader': 'Pro Trader Package ($1,000/month)',
+                'elite-trader': 'Elite Trader Package ($3,000/month)',
+                'master-trader': 'Master Trader Package ($15,000/month)'
+            };
+            
+            // Create confirmation modal
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 3rem;
+                    border-radius: 20px;
+                    text-align: center;
+                    max-width: 500px;
+                    margin: 2rem;
+                ">
+                    <i class="fas fa-rocket" style="font-size: 3rem; color: #2a5298; margin-bottom: 1rem;"></i>
+                    <h2 style="margin-bottom: 1rem; color: #1e3c72;">Upgrade to ${planNames[planType]}?</h2>
+                    <p style="margin-bottom: 2rem; color: #666;">You're about to unlock premium trading features and boost your earning potential.</p>
+                    <div style="display: flex; gap: 1rem; justify-content: center;">
+                        <button onclick="confirmUpgrade('${planType}', ${price})" style="
+                            background: linear-gradient(45deg, #1e3c72, #2a5298);
+                            color: white;
+                            border: none;
+                            padding: 1rem 2rem;
+                            border-radius: 25px;
+                            font-weight: 600;
+                            cursor: pointer;
+                        ">Confirm Upgrade</button>
+                        <button onclick="closeModal()" style="
+                            background: #e0e0e0;
+                            color: #666;
+                            border: none;
+                            padding: 1rem 2rem;
+                            border-radius: 25px;
+                            font-weight: 600;
+                            cursor: pointer;
+                        ">Cancel</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            window.closeModal = () => {
+                document.body.removeChild(modal);
+            };
+            
+            window.confirmUpgrade = (plan, amount) => {
+                closeModal();
+                // Simulate payment processing
+                showProcessingModal(plan, amount);
+            };
+        }
+        
+        function showProcessingModal(plan, amount) {
+            const processingModal = document.createElement('div');
+            processingModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1001;
+            `;
+            
+            processingModal.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 3rem;
+                    border-radius: 20px;
+                    text-align: center;
+                    max-width: 400px;
+                    margin: 2rem;
+                ">
+                    <div style="
+                        width: 60px;
+                        height: 60px;
+                        border: 4px solid #f3f3f3;
+                        border-top: 4px solid #2a5298;
+                        border-radius: 50%;
+                        animation: spin 1s linear infinite;
+                        margin: 0 auto 2rem;
+                    "></div>
+                    <h2 style="margin-bottom: 1rem; color: #1e3c72;">Processing Payment...</h2>
+                    <p style="color: #666;">Redirecting to secure payment gateway</p>
+                </div>
+            `;
+            
+            // Add spinner animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(processingModal);
+            
+            // Simulate processing time
+            setTimeout(() => {
+                document.body.removeChild(processingModal);
+                alert(`Payment gateway integration would handle $${amount} payment for ${plan} plan.`);
+            }, 3000);
+        }
+        
+        // Add entrance animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.plan-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(50px)';
+                card.style.transition = 'all 0.6s ease';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 150);
+            });
+        });
+    </script>
+</body>
+</html>

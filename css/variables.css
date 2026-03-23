@@ -1,0 +1,106 @@
+/* CSS Variables for Consistency */
+:root {
+    /* Brand Colors - Updated for Dark Blue Theme */
+    --primary-color: #8b5cf6;
+    --primary-gradient: linear-gradient(135deg, #8b5cf6, #22d3ee);
+    --secondary-color: #22d3ee;
+    
+    /* Background Colors - Dark Blue Theme */
+    --bg-primary: #070a12;   /* Main background */
+    --bg-secondary: #0e1630; /* Surfaces */
+    --bg-tertiary: #141b34;  /* Elevated surfaces */
+    --bg-card: #1a2550;      /* Card/border surface */
+    --bg-sidebar: #0e1630;   /* Sidebar background */
+    
+    /* Text Colors */
+    --text-primary: #ffffff;
+    --text-secondary: #b8c5d1;
+    --text-accent: var(--primary-color);
+    
+    /* Status Colors */
+    --success-color: #28a745;
+    --error-color: #dc3545;
+    --warning-color: #ffc107;
+    
+    /* Typography */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    
+    /* Border Radius */
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* Global Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    line-height: 1.6;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+}
+
+/* Button Components */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-family: var(--font-family);
+    font-weight: var(--font-weight-medium);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    color: var(--text-primary);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--bg-card);
+}
+
+.btn-accent {
+    background: var(--primary-color);
+    color: var(--bg-primary);
+}
+
+/* Card Components */
+.card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--bg-card);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+}
+
+/* Status Classes */
+.positive { color: var(--success-color); }
+.negative { color: var(--error-color); }
+.accent { color: var(--text-accent); }

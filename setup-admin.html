@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Setup Admin User</title>
+</head>
+<body>
+    <h1>Admin User Setup</h1>
+    <button id="setupAdmin">Make Current User Admin</button>
+    <div id="status"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { firebaseConfig } from './js/firebase-config.js';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.getElementById('setupAdmin').addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (!user) {
+                document.getElementById('status').innerHTML = '<p style="color: red;">Please log in first</p>';
+                return;
+            }
+
+            try {
+                const userRef = doc(db, 'users', user.uid);
+                await updateDoc(userRef, {
+                    role: 'admin'
+                });
+                
+                document.getElementById('status').innerHTML = '<p style="color: green;">Admin role added successfully! You can now access the admin panel.</p>';
+                
+                // Verify the update
+                const userDoc = await getDoc(userRef);
+                console.log('Updated user data:', userDoc.data());
+                
+            } catch (error) {
+                console.error('Error updating user role:', error);
+                document.getElementById('status').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('status').innerHTML = `<p>Logged in as: ${user.email}</p>`;
+            } else {
+                document.getElementById('status').innerHTML = '<p style="color: orange;">Please log in first</p>';
+            }
+        });
+    </script>
+</body>
+</html>

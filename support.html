@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support - TitanTrades</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/utilities.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .support-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .support-header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .support-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .support-card {
+            background: #1a1a2e;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #2d2d44;
+            transition: all 0.3s ease;
+        }
+        .support-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-5px);
+        }
+        .support-card h3 {
+            color: #00d4ff;
+            margin-bottom: 1rem;
+        }
+        .contact-form {
+            background: #1a1a2e;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #2d2d44;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0f0f23;
+            border: 1px solid #2d2d44;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 1rem;
+        }
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .submit-btn {
+            background: #00d4ff;
+            color: #0f0f23;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .submit-btn:hover {
+            background: #00b8e6;
+            transform: translateY(-2px);
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: #00d4ff;
+            color: #0f0f23;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            background: #00b8e6;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="support-container">
+        <div class="back-button-container" style="margin-bottom: 2rem;">
+            <a href="dashboard.html" class="back-button" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #1a1a2e; color: #00d4ff; border: 2px solid #00d4ff; padding: 0.75rem 1.5rem; border-radius: 50px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;">
+                <i class="fas fa-arrow-left"></i>
+                Back to Dashboard
+            </a>
+        </div>
+        
+        <div class="support-header">
+            <h1><i class="fas fa-question-circle"></i> Support Center</h1>
+            <p>Get help with your trading account and platform</p>
+        </div>
+        
+        <div class="support-grid">
+            <div class="support-card">
+                <h3><i class="fas fa-phone"></i> Phone Support</h3>
+                <p>Speak directly with our support team</p>
+                <p><strong>+1 (555) 123-4567</strong></p>
+                <p>Available 24/7</p>
+            </div>
+            
+            <div class="support-card">
+                <h3><i class="fas fa-envelope"></i> Email Support</h3>
+                <p>Send us your questions via email</p>
+                <p><strong>support@centraltradekeplr.com</strong></p>
+                <p>Response within 24 hours</p>
+            </div>
+            
+            <div class="support-card">
+                <h3><i class="fas fa-comments"></i> Live Chat</h3>
+                <p>Chat with our support agents</p>
+                <button class="submit-btn" onclick="alert('Live chat feature coming soon!')">
+                    Start Chat
+                </button>
+            </div>
+        </div>
+        
+        <div class="contact-form">
+            <h2>Contact Form</h2>
+            <form onsubmit="handleSupportForm(event)">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Issue Category</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select Category</option>
+                        <option value="account">Account Issues</option>
+                        <option value="trading">Trading Problems</option>
+                        <option value="deposits">Deposits & Withdrawals</option>
+                        <option value="technical">Technical Support</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" placeholder="Describe your issue in detail..." required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-paper-plane"></i>
+                    Send Message
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <script src="js/ai-support-chat.js"></script>
+    <script>
+        function handleSupportForm(event) {
+            event.preventDefault();
+            alert('Thank you for contacting us! We will respond within 24 hours.');
+            event.target.reset();
+        }
+    </script>
+</body>
+</html>

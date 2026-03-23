@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - TitanTrades</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/platform.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="platform-body">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <i class="fas fa-chart-line" style="font-size: 2rem; color: #00d4ff;"></i>
+                    <span class="logo-text">TitanTrades</span>
+                </a>
+            </div>
+            <div class="nav-buttons">
+                <a href="platform.html" class="btn-secondary">Back to Platform</a>
+                <div class="user-menu">
+                    <div class="user-info">
+                        <img src="assets/images/user-avatar.png" alt="User" class="user-avatar">
+                        <span class="user-name" id="current-user-name">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Content -->
+    <div class="profile-container">
+        <div class="profile-sidebar">
+            <div class="profile-nav">
+                <a href="#profile-info" class="profile-nav-item active" data-tab="profile-info">
+                    <i class="fas fa-user"></i> Profile Information
+                </a>
+                <a href="#account-settings" class="profile-nav-item" data-tab="account-settings">
+                    <i class="fas fa-cog"></i> Account Settings
+                </a>
+                <a href="#transaction-history" class="profile-nav-item" data-tab="transaction-history">
+                    <i class="fas fa-history"></i> Transaction History
+                </a>
+                <a href="#trading-history" class="profile-nav-item" data-tab="trading-history">
+                    <i class="fas fa-chart-line"></i> Trading History
+                </a>
+                <a href="#security" class="profile-nav-item" data-tab="security">
+                    <i class="fas fa-shield-alt"></i> Security
+                </a>
+                <a href="dashboard.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="profile-main">
+            <!-- Profile Information Tab -->
+            <div class="profile-tab active" id="profile-info">
+                <div class="profile-header">
+                    <h2>Profile Information</h2>
+                    <button class="btn-edit" onclick="toggleEditMode()">Edit Profile</button>
+                </div>
+                
+                <form class="profile-form" id="profileForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name</label>
+                            <input type="text" id="firstName" name="firstName" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" name="lastName" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <input type="tel" id="phone" name="phone" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="country">Country</label>
+                            <select id="country" name="country" disabled>
+                                <option value="">Select Country</option>
+                                <option value="US">United States</option>
+                                <option value="UK">United Kingdom</option>
+                                <option value="CA">Canada</option>
+                                <option value="AU">Australia</option>
+                                <!-- Add more countries -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="accountType">Account Type</label>
+                            <input type="text" id="accountType" name="accountType" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions" style="display: none;">
+                        <button type="submit" class="btn-primary">Save Changes</button>
+                        <button type="button" class="btn-secondary" onclick="cancelEdit()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Transaction History Tab -->
+            <div class="profile-tab" id="transaction-history">
+                <div class="profile-header">
+                    <h2>Transaction History</h2>
+                    <div class="filter-controls">
+                        <select id="transactionFilter">
+                            <option value="all">All Transactions</option>
+                            <option value="deposit">Deposits</option>
+                            <option value="withdrawal">Withdrawals</option>
+                            <option value="transfer">Transfers</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="transaction-list" id="transactionList">
+                    <div class="loading">Loading transactions...</div>
+                </div>
+            </div>
+
+            <!-- Trading History Tab -->
+            <div class="profile-tab" id="trading-history">
+                <div class="profile-header">
+                    <h2>Trading History</h2>
+                    <div class="filter-controls">
+                        <select id="tradeFilter">
+                            <option value="all">All Trades</option>
+                            <option value="open">Open Positions</option>
+                            <option value="closed">Closed Positions</option>
+                            <option value="pending">Pending Orders</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="trade-list" id="tradeList">
+                    <div class="loading">Loading trades...</div>
+                </div>
+            </div>
+
+            <!-- Account Settings Tab -->
+            <div class="profile-tab" id="account-settings">
+                <div class="profile-header">
+                    <h2>Account Settings</h2>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>Notifications</h3>
+                    <div class="setting-item">
+                        <label class="switch">
+                            <input type="checkbox" id="emailNotifications">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Email Notifications</span>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label class="switch">
+                            <input type="checkbox" id="tradeAlerts">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Trade Alerts</span>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>Trading Preferences</h3>
+                    <div class="form-group">
+                        <label for="defaultLeverage">Default Leverage</label>
+                        <select id="defaultLeverage">
+                            <option value="1:50">1:50</option>
+                            <option value="1:100">1:100</option>
+                            <option value="1:200">1:200</option>
+                            <option value="1:500">1:500</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Tab -->
+            <div class="profile-tab" id="security">
+                <div class="profile-header">
+                    <h2>Security Settings</h2>
+                </div>
+                
+                <div class="security-section">
+                    <h3>Change Password</h3>
+                    <form class="security-form" id="passwordForm">
+                        <div class="form-group">
+                            <label for="currentPassword">Current Password</label>
+                            <input type="password" id="currentPassword" name="currentPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" name="newPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Update Password</button>
+                    </form>
+                </div>
+                
+                <div class="security-section">
+                    <h3>Two-Factor Authentication</h3>
+                    <div class="setting-item">
+                        <label class="switch">
+                            <input type="checkbox" id="twoFactorAuth">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Enable Two-Factor Authentication</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/user-profile-service.js"></script>
+    <script type="module" src="js/profile-manager.js"></script>
+</body>
+</html>

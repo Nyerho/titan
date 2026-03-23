@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Platform - TitanTrades</title>
+    <!-- Load base styles first -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Load platform-specific styles -->
+    <link rel="stylesheet" href="css/platform.css">
+    <link rel="stylesheet" href="css/platform-mobile.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- TradingView Charting Library -->
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    
+    <!-- Firebase Scripts -->
+    <link rel="stylesheet" href="css/market-notifications.css">
+</head>
+<body class="platform-body">
+    <!-- Authentication Protection -->
+    <script>
+        (function() {
+            function checkAuth() {
+                if (typeof firebase !== 'undefined') {
+                    firebase.auth().onAuthStateChanged((user) => {
+                        if (!user) {
+                            alert('Please log in to access the trading platform.');
+                            window.location.href = 'auth.html';
+                        } else {
+                            // Show funding button for authenticated users
+                            const fundingBtn = document.querySelector('.btn-funding');
+                            if (fundingBtn) fundingBtn.style.display = 'inline-block';
+                        }
+                    });
+                } else {
+                    setTimeout(checkAuth, 100);
+                }
+            }
+            checkAuth();
+        })();
+    </script>
+    
+    <!-- Enhanced Navigation -->
+    <nav class="navbar platform-nav">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <a href="index.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;">
+                        <img src="assets/images/logo.png" alt="TitanTrades" style="width: 35px; height: 35px; border-radius: 6px;">
+                        <span style="font-size: 20px; font-weight: 600; color: #ffffff;">TitanTrades</span>
+                    </a>
+                </div>
+                <div class="market-status">
+                    <span class="status-indicator active"></span>
+                    <span class="status-text">Markets Open</span>
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li><a href="dashboard.html" class="nav-link">Home</a></li>
+                <li><a href="platform.html" class="nav-link active">Platform</a></li>
+                <li><a href="trading-bots.html" class="nav-link">Trading Bots</a></li>
+                <li><a href="prop-accounts.html" class="nav-link">Prop Accounts</a></li>
+                <li><a href="#" class="nav-link" onclick="goToMarkets()">Markets</a></li>
+                <li><a href="funding.html" class="nav-link">About</a></li>
+                <li><a href="#" class="nav-link" onclick="goToSupport()">Support</a></li>
+            </ul>
+
+            <!-- Navigation Buttons -->
+            <div class="nav-buttons">
+                <a href="dashboard.html" class="btn-dashboard">
+                    <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                </a>
+            </div>
+
+            <!-- Enhanced User Menu with Comprehensive Dropdown -->
+            <div class="user-menu">
+                <div class="user-info" onclick="toggleUserDropdown()">
+                    <img src="assets/images/user-avatar.png" alt="User" class="user-avatar">
+                    <span class="user-name" id="current-user-name">Loading...</span>
+                    <div class="hamburger-icon">
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                    </div>
+                </div>
+                <div class="comprehensive-dropdown" id="userDropdown">
+                    <!-- Account Section -->
+                    <div class="dropdown-section">
+                        <div class="section-header">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Account</span>
+                        </div>
+                        <a href="profile.html" class="dropdown-item">
+                            <i class="fas fa-user"></i> My Profile
+                        </a>
+                        <a href="profile.html#account-settings" class="dropdown-item">
+                            <i class="fas fa-cog"></i> Account Settings
+                        </a>
+                        <a href="profile.html#transaction-history" class="dropdown-item">
+                            <i class="fas fa-receipt"></i> Account Statement
+                        </a>
+                        <a href="profile.html#trading-history" class="dropdown-item">
+                            <i class="fas fa-history"></i> Trading History
+                        </a>
+                    </div>
+                    
+                    <!-- Funding Section -->
+                    <div class="dropdown-section">
+                        <div class="section-header">
+                            <i class="fas fa-wallet"></i>
+                            <span>Funding</span>
+                        </div>
+                        <a href="funding.html" class="dropdown-item highlight">
+                            <i class="fas fa-plus-circle"></i> Fund Account
+                        </a>
+                        <a href="withdrawal.html" class="dropdown-item">
+                            <i class="fas fa-minus-circle"></i> Withdraw Funds
+                        </a>
+                        <a href="funding.html" class="dropdown-item" onclick="openTransferModal()">
+                            <i class="fas fa-exchange-alt"></i> Transfer Funds
+                        </a>
+                    </div>
+                    
+                    <!-- Trading Section -->
+                    <div class="dropdown-section">
+                        <div class="section-header">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Trading</span>
+                        </div>
+                        <a href="#" class="dropdown-item" onclick="showOpenPositions()">
+                            <i class="fas fa-chart-area"></i> Open Positions
+                        </a>
+                        <a href="#" class="dropdown-item" onclick="showPendingOrders()">
+                            <i class="fas fa-clock"></i> Pending Orders
+                        </a>
+                        <a href="#" class="dropdown-item" onclick="openTradingCalculator()">
+                            <i class="fas fa-calculator"></i> Trading Calculator
+                        </a>
+                    </div>
+                    
+                    <!-- Tools & Settings Section -->
+                    <div class="dropdown-section">
+                        <div class="section-header">
+                            <i class="fas fa-tools"></i>
+                            <span>Tools & Settings</span>
+                        </div>
+                        <a href="profile.html#account-settings" class="dropdown-item">
+                            <i class="fas fa-sliders-h"></i> Platform Settings
+                        </a>
+                        <a href="#" class="dropdown-item" onclick="toggleNotifications()">
+                            <i class="fas fa-bell"></i> Notifications
+                        </a>
+                        <a href="#" class="dropdown-item" onclick="downloadReports()">
+                            <i class="fas fa-download"></i> Download Reports
+                        </a>
+                    </div>
+                    
+                    <!-- Support Section -->
+                    <div class="dropdown-section">
+                        <div class="section-header">
+                            <i class="fas fa-life-ring"></i>
+                            <span>Support</span>
+                        </div>
+                        <a href="index.html#contact" class="dropdown-item">
+                            <i class="fas fa-headset"></i> Contact Support
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-question-circle"></i> Help Center
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-book"></i> Trading Guide
+                        </a>
+                    </div>
+                    
+                    <div class="dropdown-divider"></div>
+                    
+                    <!-- Logout -->
+                    <a href="#" class="dropdown-item logout-item" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Mobile Menu Toggle -->
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Trading Interface -->
+    <div class="trading-container">
+        <!-- Mobile sidebar toggles -->
+        <div class="mobile-controls">
+            <button class="mobile-sidebar-toggle" onclick="toggleSidebar('left')">
+                📊 Markets & Tools
+            </button>
+            <button class="mobile-sidebar-toggle" onclick="toggleSidebar('right')">
+                💼 Portfolio & Orders
+            </button>
+        </div>
+        
+        <div class="left-sidebar sidebar" id="leftSidebar">
+            <!-- Account Summary -->
+            <div class="account-summary">
+                <h3><i class="fas fa-wallet"></i> Account Summary</h3>
+                <div class="balance-info">
+                    <div class="balance-item">
+                        <span class="label">Balance:</span>
+                        <span class="value" id="account-balance">$10,000.00</span>
+                    </div>
+                    <div class="balance-item">
+                        <span class="label">Equity:</span>
+                        <span class="value" id="account-equity">$10,250.00</span>
+                    </div>
+                    <div class="balance-item">
+                        <span class="label">Margin:</span>
+                        <span class="value" id="account-margin">$500.00</span>
+                    </div>
+                    <div class="balance-item">
+                        <span class="label">Free Margin:</span>
+                        <span class="value" id="free-margin">$9,750.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bot-control" id="botControl">
+                <h3><i class="fas fa-robot"></i> Bot Trading</h3>
+                <div class="bot-control-status" id="botControlStatus">Loading…</div>
+                <div class="bot-list" id="botList"></div>
+                <div class="bot-actions">
+                    <button class="bot-btn primary" id="botEngineToggleBtn" type="button" disabled>Loading…</button>
+                    <a class="bot-btn secondary" href="trading-bots.html" id="manageBotsLink">Manage Bots</a>
+                </div>
+            </div>
+
+            <!-- Market Overview -->
+            <div class="market-overview">
+                <h3><i class="fas fa-chart-line"></i> Market Overview</h3>
+                <div class="market-indices" id="market-indices">
+                    <div class="index-item">
+                        <span class="index-name">S&P 500</span>
+                        <span class="index-value">4,234.56</span>
+                        <span class="index-change positive">+1.23%</span>
+                    </div>
+                    <div class="index-item">
+                        <span class="index-name">NASDAQ</span>
+                        <span class="index-value">14,234.56</span>
+                        <span class="index-change positive">+0.87%</span>
+                    </div>
+                    <div class="index-item">
+                        <span class="index-name">DXY</span>
+                        <span class="index-value">103.45</span>
+                        <span class="index-change negative">-0.34%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Watchlist -->
+            <div class="watchlist">
+                <div class="watchlist-header">
+                    <h3><i class="fas fa-star"></i> Watchlist</h3>
+                    <button class="add-symbol-btn" title="Add Symbol">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="watchlist-tabs">
+                    <button class="watchlist-tab active" data-category="forex">Forex</button>
+                    <button class="watchlist-tab" data-category="crypto">Crypto</button>
+                    <button class="watchlist-tab" data-category="stocks">Stocks</button>
+                </div>
+                <div class="watchlist-content" id="watchlist-content">
+                    <div class="watchlist-item active" data-symbol="EURUSD">
+                        <div class="symbol-info">
+                            <span class="symbol">EUR/USD</span>
+                            <span class="price" id="price-EURUSD">1.0845</span>
+                        </div>
+                        <span class="change positive" id="change-EURUSD">+0.0012</span>
+                    </div>
+                    <div class="watchlist-item" data-symbol="GBPUSD">
+                        <div class="symbol-info">
+                            <span class="symbol">GBP/USD</span>
+                            <span class="price" id="price-GBPUSD">1.2634</span>
+                        </div>
+                        <span class="change negative" id="change-GBPUSD">-0.0023</span>
+                    </div>
+                    <div class="watchlist-item" data-symbol="USDJPY">
+                        <div class="symbol-info">
+                            <span class="symbol">USD/JPY</span>
+                            <span class="price" id="price-USDJPY">149.85</span>
+                        </div>
+                        <span class="change positive" id="change-USDJPY">+0.45</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chart Area -->
+        <div class="main-content">
+            <div class="chart-header">
+                <div class="symbol-selector">
+                    <select id="symbol-select">
+                        <option value="EURUSD">EUR/USD</option>
+                        <option value="GBPUSD">GBP/USD</option>
+                        <option value="USDJPY">USD/JPY</option>
+                        <option value="BTCUSD">BTC/USD</option>
+                        <option value="ETHUSD">ETH/USD</option>
+                        <option value="XAUUSD">XAU/USD</option>
+                    </select>
+                </div>
+                <div class="timeframe-selector">
+                    <button class="timeframe-btn" data-timeframe="1m">1M</button>
+                    <button class="timeframe-btn" data-timeframe="5m">5M</button>
+                    <button class="timeframe-btn active" data-timeframe="15m">15M</button>
+                    <button class="timeframe-btn" data-timeframe="1h">1H</button>
+                    <button class="timeframe-btn" data-timeframe="4h">4H</button>
+                    <button class="timeframe-btn" data-timeframe="1d">1D</button>
+                </div>
+                <div class="chart-tools">
+                    <button class="tool-btn" title="Drawing Tools">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="tool-btn" title="Indicators">
+                        <i class="fas fa-chart-bar"></i>
+                    </button>
+                    <button class="tool-btn" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="trading-chart" class="trading-chart">
+                <!-- TradingView Widget BEGIN -->
+                <div class="tradingview-widget-container" style="height:100%;width:100%;border:none;outline:none;">
+                  <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%;border:none;outline:none;"></div>
+                  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+                  {
+                  "autosize": true,
+                  "symbol": "FX:EURUSD",
+                  "interval": "15",
+                  "timezone": "Etc/UTC",
+                  "theme": "dark",
+                  "style": "1",
+                  "locale": "en",
+                  "enable_publishing": false,
+                  "backgroundColor": "rgba(15, 15, 35, 1)",
+                  "gridColor": "rgba(42, 46, 57, 0.5)",
+                  "hide_top_toolbar": false,
+                  "hide_legend": false,
+                  "save_image": false,
+                  "calendar": false,
+                  "hide_volume": false,
+                  "support_host": "https://www.tradingview.com",
+                  "container_id": "tradingview_chart"
+                  }
+                  </script>
+                </div>
+                <!-- TradingView Widget END -->
+            </div>
+            
+            <!-- Price Info Panel -->
+            <div class="price-info-panel">
+                <div class="current-price">
+                    <span class="price-label">Current Price:</span>
+                    <span class="price-value" id="current-price">1.0845</span>
+                </div>
+                <div class="price-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">High:</span>
+                        <span class="stat-value" id="high-price">1.0867</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Low:</span>
+                        <span class="stat-value" id="low-price">1.0823</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Change:</span>
+                        <span class="stat-value positive" id="price-change">+0.0012</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="right-sidebar sidebar" id="rightSidebar">
+            <!-- Order Panel -->
+            <div class="order-panel">
+                <div class="order-tabs">
+                    <button class="order-tab active" data-type="market" id="market-tab">Market</button>
+                    <button class="order-tab" data-type="limit" id="limit-tab">Limit</button>
+                    <button class="order-tab" data-type="stop" id="stop-tab">Stop</button>
+                </div>
+                
+                <div class="order-form">
+                    <div class="order-type-buttons">
+                        <button class="order-type-btn buy-btn active" data-type="buy" id="buy-btn">BUY</button>
+                        <button class="order-type-btn sell-btn" data-type="sell" id="sell-btn">SELL</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Volume (Lots)</label>
+                        <input type="number" id="volume-input" value="0.01" min="0.01" step="0.01">
+                    </div>
+                    
+                    <div class="form-group limit-order" id="price-group" style="display: none;">
+                        <label>Price</label>
+                        <input type="number" id="price-input" step="0.00001">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Stop Loss</label>
+                        <input type="number" id="sl-input" step="0.00001" placeholder="Optional">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Take Profit</label>
+                        <input type="number" id="tp-input" step="0.00001" placeholder="Optional">
+                    </div>
+                    
+                    <button class="place-order-btn" id="place-order-btn">
+                        <i class="fas fa-plus"></i> Place Order
+                    </button>
+                </div>
+            </div>
+
+            <!-- Open Positions -->
+            <div class="positions-panel">
+                <h3><i class="fas fa-list"></i> Open Positions</h3>
+                <div class="positions-list" id="positions-list">
+                    <div class="empty-state">
+                        <i class="fas fa-chart-line"></i>
+                        <p>No open positions</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order History -->
+            <div class="history-panel">
+                <h3><i class="fas fa-history"></i> Order History</h3>
+                <div class="history-list" id="history-list">
+                    <div class="empty-state">
+                        <i class="fas fa-clock"></i>
+                        <p>No order history</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load JavaScript Files -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/firebase-auth.js"></script>
+    <script type="module" src="js/auth-integration.js"></script>
+    <script src="js/error-handler.js"></script>
+    <script src="js/market-data-service.js"></script>
+    <script src="js/trading-service.js"></script>
+    <script src="js/api-testing.js"></script>
+    <script src="js/platform.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/market-data.js"></script>
+    <script src="js/market-notifications.js"></script>
+
+    <script type="module">
+        import { auth } from './js/firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import FirebaseDatabaseService from './js/firebase-database.js';
+
+        // Function to format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            }).format(amount);
+        }
+
+        let botIntervalId = null;
+        let botEngineEnabled = localStorage.getItem('tt_bot_engine_enabled') === '1';
+        let currentUser = null;
+        let lastActiveBotsCount = 0;
+
+        const botUi = {
+            status: document.getElementById('botControlStatus'),
+            list: document.getElementById('botList'),
+            toggleBtn: document.getElementById('botEngineToggleBtn')
+        };
+
+        const BOT_CONFIG = {
+            bot_scalper: { volume: 0.02, riskFactor: 0.00035, tradesPerTick: 2, symbols: ['EUR/USD', 'GBP/USD', 'USD/JPY'] },
+            bot_swing: { volume: 0.02, riskFactor: 0.00025, tradesPerTick: 1, symbols: ['EUR/USD', 'GBP/USD', 'USD/JPY'] },
+            bot_ai_pro: { volume: 0.03, riskFactor: 0.0004, tradesPerTick: 1, symbols: ['EUR/USD', 'GBP/USD', 'USD/JPY', 'BTC/USD', 'ETH/USD'] },
+            bot_quant_elite: { volume: 0.05, riskFactor: 0.00055, tradesPerTick: 2, symbols: ['EUR/USD', 'GBP/USD', 'USD/JPY', 'BTC/USD', 'ETH/USD'] }
+        };
+
+        function stopBotEngine() {
+            if (!botIntervalId) return;
+            clearInterval(botIntervalId);
+            botIntervalId = null;
+        }
+
+        function setBotEngineEnabled(enabled) {
+            botEngineEnabled = !!enabled;
+            localStorage.setItem('tt_bot_engine_enabled', botEngineEnabled ? '1' : '0');
+        }
+
+        function getBotConfig(botId) {
+            return BOT_CONFIG[botId] || { volume: 0.01, riskFactor: 0.0003, tradesPerTick: 1, symbols: ['EUR/USD', 'GBP/USD', 'USD/JPY', 'BTC/USD', 'ETH/USD'] };
+        }
+
+        function renderBotControl(botsOwned) {
+            const ownedMap = botsOwned || {};
+            const owned = Object.values(ownedMap).filter(Boolean);
+            const active = owned.filter((b) => b && b.active);
+            lastActiveBotsCount = active.length;
+
+            if (botUi.list) {
+                botUi.list.innerHTML = '';
+                if (owned.length) {
+                    for (const bot of owned.sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id))) {
+                        const row = document.createElement('div');
+                        row.className = 'bot-item';
+                        row.innerHTML = `
+                            <div class="bot-meta">
+                                <div class="bot-name">${bot.name || bot.id}</div>
+                                <div class="bot-id">${bot.id}</div>
+                            </div>
+                            <div class="bot-pill ${bot.active ? 'on' : 'off'}">${bot.active ? 'Active' : 'Inactive'}</div>
+                        `;
+                        botUi.list.appendChild(row);
+                    }
+                }
+            }
+
+            if (!owned.length) {
+                if (botUi.status) botUi.status.textContent = 'No bots owned. Buy a bot to enable automated trading.';
+                if (botUi.toggleBtn) {
+                    botUi.toggleBtn.disabled = true;
+                    botUi.toggleBtn.textContent = 'Buy a bot to unlock';
+                }
+                stopBotEngine();
+                return;
+            }
+
+            if (!active.length) {
+                if (botUi.status) botUi.status.textContent = 'Bots owned, but none are active. Activate a bot to start trading.';
+                if (botUi.toggleBtn) {
+                    botUi.toggleBtn.disabled = true;
+                    botUi.toggleBtn.textContent = 'Activate a bot first';
+                }
+                stopBotEngine();
+                return;
+            }
+
+            if (botUi.status) botUi.status.textContent = botEngineEnabled ? `Bot trading is ON (${active.length} active).` : `Bot trading is OFF (${active.length} active).`;
+            if (botUi.toggleBtn) {
+                botUi.toggleBtn.disabled = false;
+                botUi.toggleBtn.textContent = botEngineEnabled ? 'Stop Bot Trading' : 'Start Bot Trading';
+            }
+        }
+
+        async function runBotsOnce(user) {
+            const entitlementsResult = await FirebaseDatabaseService.getUserEntitlements(user.uid);
+            if (!entitlementsResult.success) return;
+
+            const botsOwned = entitlementsResult.data.botsOwned || {};
+            const propAccount = entitlementsResult.data.propAccount || null;
+
+            if (propAccount && propAccount.status === 'breached') return;
+
+            const activeBots = Object.values(botsOwned).filter((b) => b && b.active);
+            if (!activeBots.length) return;
+
+            for (const bot of activeBots) {
+                const baseEquity = propAccount ? Number(propAccount.accountSize || 0) : 1000;
+                const cfg = getBotConfig(bot.id);
+                for (let i = 0; i < cfg.tradesPerTick; i++) {
+                    const symbol = cfg.symbols[Math.floor(Math.random() * cfg.symbols.length)];
+                    const side = Math.random() > 0.5 ? 'buy' : 'sell';
+                    const profit = Math.round(((Math.random() - 0.495) * baseEquity * cfg.riskFactor) * 100) / 100;
+
+                    await FirebaseDatabaseService.createTrade(user.uid, {
+                        source: 'bot',
+                        botId: bot.id,
+                        botName: bot.name || bot.id,
+                        symbol,
+                        side,
+                        volume: cfg.volume,
+                        profit,
+                        status: 'completed',
+                        closedAt: Date.now()
+                    });
+
+                    if (propAccount) {
+                        await FirebaseDatabaseService.applyPropTradeResult(user.uid, profit);
+                    } else {
+                        await FirebaseDatabaseService.applyBalanceDelta(user.uid, profit);
+                    }
+                }
+            }
+        }
+
+        function startBotEngine(user) {
+            if (botIntervalId) return;
+            runBotsOnce(user).then(() => loadUserAccountData(user)).catch(() => {});
+            botIntervalId = setInterval(async () => {
+                try {
+                    await runBotsOnce(user);
+                    await loadUserAccountData(user);
+                } catch (e) {}
+            }, 45000);
+        }
+
+        // Function to load user balance and account data
+        async function loadUserAccountData(user) {
+            try {
+                const [balanceResult, entitlementsResult] = await Promise.all([
+                    FirebaseDatabaseService.getUserBalance(user.uid),
+                    FirebaseDatabaseService.getUserEntitlements(user.uid)
+                ]);
+
+                const propAccount = entitlementsResult.success ? entitlementsResult.data.propAccount : null;
+                const useProp = propAccount && propAccount.status !== 'breached';
+                renderBotControl(entitlementsResult.success ? entitlementsResult.data.botsOwned : {});
+
+                if (currentUser) {
+                    if (botEngineEnabled && lastActiveBotsCount > 0) startBotEngine(currentUser);
+                    if ((!botEngineEnabled || lastActiveBotsCount === 0) && botIntervalId) stopBotEngine();
+                }
+
+                if (useProp) {
+                    const balance = Number(propAccount.currentEquity ?? propAccount.accountSize ?? 0);
+                    document.getElementById('account-balance').textContent = formatCurrency(balance);
+                    
+                    // Calculate other account metrics based on balance
+                    const equity = balance * 1.025; // 2.5% equity gain example
+                    const margin = balance * 0.05; // 5% margin usage
+                    const freeMargin = balance - margin;
+                    
+                    document.getElementById('account-equity').textContent = formatCurrency(equity);
+                    document.getElementById('account-margin').textContent = formatCurrency(margin);
+                    document.getElementById('free-margin').textContent = formatCurrency(freeMargin);
+                } else if (balanceResult.success) {
+                    const balance = balanceResult.balance;
+                    document.getElementById('account-balance').textContent = formatCurrency(balance);
+                    
+                    const equity = balance * 1.025;
+                    const margin = balance * 0.05;
+                    const freeMargin = balance - margin;
+                    
+                    document.getElementById('account-equity').textContent = formatCurrency(equity);
+                    document.getElementById('account-margin').textContent = formatCurrency(margin);
+                    document.getElementById('free-margin').textContent = formatCurrency(freeMargin);
+                } else {
+                    console.error('Failed to load balance:', balanceResult.error);
+                    // Set default values if balance loading fails
+                    document.getElementById('account-balance').textContent = '$0.00';
+                    document.getElementById('account-equity').textContent = '$0.00';
+                    document.getElementById('account-margin').textContent = '$0.00';
+                    document.getElementById('free-margin').textContent = '$0.00';
+                }
+            } catch (error) {
+                console.error('Error loading account data:', error);
+                // Set default values on error
+                document.getElementById('account-balance').textContent = '$0.00';
+                document.getElementById('account-equity').textContent = '$0.00';
+                document.getElementById('account-margin').textContent = '$0.00';
+                document.getElementById('free-margin').textContent = '$0.00';
+            }
+        }
+
+        // Check authentication and load user data
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log('User authenticated:', user.email);
+                currentUser = user;
+                
+                // Update user name in navigation
+                const userNameElement = document.getElementById('current-user-name');
+                if (userNameElement) {
+                    userNameElement.textContent = user.email.split('@')[0];
+                }
+                
+                // Load real user account data
+                await loadUserAccountData(user);
+            } else {
+                console.log('No user found, redirecting to auth page');
+                currentUser = null;
+                window.location.href = 'auth.html';
+            }
+        });
+
+        if (botUi.toggleBtn) {
+            botUi.toggleBtn.addEventListener('click', async () => {
+                if (!currentUser) return;
+                if (botEngineEnabled) {
+                    setBotEngineEnabled(false);
+                    stopBotEngine();
+                    await loadUserAccountData(currentUser);
+                    return;
+                }
+
+                setBotEngineEnabled(true);
+                await loadUserAccountData(currentUser);
+                if (lastActiveBotsCount > 0) startBotEngine(currentUser);
+            });
+        }
+
+        // Navigation functions that preserve authentication
+        function goToMarkets() {
+            // Open markets section in new tab to preserve current session
+            window.open('index.html#markets', '_blank');
+        }
+        
+        function goToSupport() {
+            // Open support section in new tab to preserve current session
+            window.open('index.html#contact', '_blank');
+        }
+        
+        // Enhanced logout function
+        window.logout = function() {
+            if (confirm('Are you sure you want to logout?')) {
+                auth.signOut().then(() => {
+                    window.location.href = 'index.html';
+                }).catch((error) => {
+                    console.error('Logout error:', error);
+                });
+            }
+        }
+
+    function toggleSidebar(side) {
+        const left = document.getElementById('leftSidebar');
+        const right = document.getElementById('rightSidebar');
+        if (!left || !right) return;
+
+        if (side === 'left') {
+            const next = !left.classList.contains('active');
+            left.classList.toggle('active', next);
+            right.classList.remove('active');
+        } else if (side === 'right') {
+            const next = !right.classList.contains('active');
+            right.classList.toggle('active', next);
+            left.classList.remove('active');
+        }
+
+        document.body.classList.toggle('sidebar-open', left.classList.contains('active') || right.classList.contains('active'));
+    }
+
+    function closeSidebars() {
+        const left = document.getElementById('leftSidebar');
+        const right = document.getElementById('rightSidebar');
+        if (left) left.classList.remove('active');
+        if (right) right.classList.remove('active');
+        document.body.classList.remove('sidebar-open');
+    }
+
+    window.toggleSidebar = toggleSidebar;
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSidebars();
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) closeSidebars();
+    });
+    </script>
+
+    <script>
+    // Enhanced dropdown functionality with content shifting
+    function toggleUserDropdown() {
+        const dropdown = document.getElementById('userDropdown');
+        const navbar = document.querySelector('.navbar');
+        const body = document.querySelector('.platform-body');
+        
+        if (dropdown.classList.contains('show')) {
+            // Closing dropdown
+            dropdown.classList.remove('show');
+            navbar.classList.remove('dropdown-expanded');
+            body.classList.remove('dropdown-open');
+        } else {
+            // Opening dropdown
+            dropdown.classList.add('show');
+            navbar.classList.add('dropdown-expanded');
+            body.classList.add('dropdown-open');
+        }
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const userMenu = document.querySelector('.user-menu');
+        const dropdown = document.getElementById('userDropdown');
+        const navbar = document.querySelector('.navbar');
+        const body = document.querySelector('.platform-body');
+        
+        if (!userMenu.contains(event.target)) {
+            dropdown.classList.remove('show');
+            navbar.classList.remove('dropdown-expanded');
+            body.classList.remove('dropdown-open');
+        }
+    });
+    
+    // Close dropdown on escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const dropdown = document.getElementById('userDropdown');
+            const navbar = document.querySelector('.navbar');
+            const body = document.querySelector('.platform-body');
+            
+            dropdown.classList.remove('show');
+            navbar.classList.remove('dropdown-expanded');
+            body.classList.remove('dropdown-open');
+        }
+    });
+    
+    // Enhanced logout functionality
+    document.getElementById('logout-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to logout?')) {
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'auth.html';
+            }).catch((error) => {
+                console.error('Logout error:', error);
+            });
+        }
+    });
+
+    // Fixed Trading Button Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Order tab functionality
+        const orderTabs = document.querySelectorAll('.order-tab');
+        const priceGroup = document.getElementById('price-group');
+        
+        orderTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                orderTabs.forEach(t => t.classList.remove('active'));
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Show/hide price input based on order type
+                const orderType = this.getAttribute('data-type');
+                if (orderType === 'market') {
+                    priceGroup.style.display = 'none';
+                } else {
+                    priceGroup.style.display = 'block';
+                }
+            });
+        });
+        
+        // Buy/Sell button functionality
+        const orderTypeButtons = document.querySelectorAll('.order-type-btn');
+        orderTypeButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                orderTypeButtons.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Update place order button text
+                const placeOrderBtn = document.getElementById('place-order-btn');
+                const orderType = this.getAttribute('data-type').toUpperCase();
+                placeOrderBtn.innerHTML = `<i class="fas fa-plus"></i> Place ${orderType} Order`;
+            });
+        });
+        
+        // Place order button functionality
+        const placeOrderBtn = document.getElementById('place-order-btn');
+        placeOrderBtn.addEventListener('click', function() {
+            const volume = document.getElementById('volume-input').value;
+            const price = document.getElementById('price-input').value;
+            const stopLoss = document.getElementById('sl-input').value;
+            const takeProfit = document.getElementById('tp-input').value;
+            
+            const activeOrderType = document.querySelector('.order-type-btn.active').getAttribute('data-type');
+            const activeOrderTab = document.querySelector('.order-tab.active').getAttribute('data-type');
+            
+            // Basic validation
+            if (!volume || volume <= 0) {
+                alert('Please enter a valid volume');
+                return;
+            }
+            
+            if (activeOrderTab !== 'market' && (!price || price <= 0)) {
+                alert('Please enter a valid price for limit/stop orders');
+                return;
+            }
+            
+            // Create order object
+            const order = {
+                type: activeOrderType,
+                orderType: activeOrderTab,
+                volume: parseFloat(volume),
+                price: activeOrderTab === 'market' ? null : parseFloat(price),
+                stopLoss: stopLoss ? parseFloat(stopLoss) : null,
+                takeProfit: takeProfit ? parseFloat(takeProfit) : null,
+                symbol: document.getElementById('symbol-select').value,
+                timestamp: new Date().toISOString()
+            };
+            
+            console.log('Placing order:', order);
+            
+            // Show success message
+            alert(`${activeOrderType.toUpperCase()} ${activeOrderTab} order placed successfully!`);
+            
+            // Reset form
+            document.getElementById('volume-input').value = '0.01';
+            document.getElementById('price-input').value = '';
+            document.getElementById('sl-input').value = '';
+            document.getElementById('tp-input').value = '';
+        });
+    });
+    </script>
+
+    <style>
+        .btn-dashboard {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-dashboard:hover {
+            background: linear-gradient(135deg, #0099cc 0%, #007399 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-dashboard i {
+            font-size: 16px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .btn-dashboard {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            
+            .btn-dashboard span {
+                display: none;
+            }
+        }
+    </style>
+</body>
+</html>
+
+<!-- Market Notifications Script -->
+    <script src="js/market-notifications.js"></script>
+</body>
+
+<!-- Account Summary with Real Data -->
+<div class="account-summary">
+    <h3>Account Summary</h3>
+    <div class="summary-item">
+        <span class="label">Balance:</span>
+        <span class="value" id="account-balance">Loading...</span>
+    </div>
+    <div class="summary-item">
+        <span class="label">Equity:</span>
+        <span class="value" id="account-equity">Loading...</span>
+    </div>
+    <div class="summary-item">
+        <span class="label">Margin:</span>
+        <span class="value" id="account-margin">Loading...</span>
+    </div>
+    <div class="summary-item">
+        <span class="label">Free Margin:</span>
+        <span class="value" id="account-free-margin">Loading...</span>
+    </div>
+</div>
+    <style>
+        .btn-dashboard {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-dashboard:hover {
+            background: linear-gradient(135deg, #0099cc 0%, #007399 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-dashboard i {
+            font-size: 16px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .btn-dashboard {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            
+            .btn-dashboard span {
+                display: none;
+            }
+        }
+    </style>
+

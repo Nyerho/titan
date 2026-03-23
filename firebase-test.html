@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Test</title>
+</head>
+<body>
+    <h1>Firebase Loading Test</h1>
+    <div id="status">Loading...</div>
+    <div id="console-output"></div>
+
+    <script type="module">
+        // Override console.log to display on page
+        const originalLog = console.log;
+        const originalError = console.error;
+        const output = document.getElementById('console-output');
+        
+        function addToOutput(message, type = 'log') {
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? 'red' : 'green';
+            div.style.fontFamily = 'monospace';
+            div.style.margin = '2px 0';
+            div.textContent = `[${type.toUpperCase()}] ${message}`;
+            output.appendChild(div);
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToOutput(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToOutput(args.join(' '), 'error');
+        };
+        
+        // Test Firebase loading
+        try {
+            console.log('Starting Firebase test...');
+            
+            // Import firebase-config
+            const firebaseConfig = await import('./js/firebase-config.js');
+            console.log('✅ firebase-config.js imported successfully');
+            console.log('Available exports:', Object.keys(firebaseConfig));
+            
+            // Check if services are available
+            if (window.auth) {
+                console.log('✅ window.auth is available');
+            } else {
+                console.error('❌ window.auth is NOT available');
+            }
+            
+            if (window.db) {
+                console.log('✅ window.db is available');
+            } else {
+                console.error('❌ window.db is NOT available');
+            }
+            
+            if (window.storage) {
+                console.log('✅ window.storage is available');
+            } else {
+                console.error('❌ window.storage is NOT available');
+            }
+            
+            document.getElementById('status').textContent = 'Test completed - check results above';
+            document.getElementById('status').style.color = 'green';
+            
+        } catch (error) {
+            console.error('❌ Firebase loading failed:', error.message);
+            console.error('Error details:', error);
+            document.getElementById('status').textContent = 'Test failed - check errors above';
+            document.getElementById('status').style.color = 'red';
+        }
+    </script>
+</body>
+</html>

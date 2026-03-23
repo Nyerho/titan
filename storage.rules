@@ -1,0 +1,42 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+    function isImage() {
+      return request.resource != null && request.resource.contentType.matches('image/.*');
+    }
+    function sizeOk() {
+      return request.resource != null && request.resource.size < 20 * 1024 * 1024; // < 20MB
+    }
+
+    // User access: only to their own KYC folder
+    match /kyc/{uid}/{allPaths=**} {
+      // read covers both get and list
+      allow read: if isOwner(uid);
+      // restrict writes to images and reasonable size
+      allow write: if isOwner(uid) && isImage() && sizeOk();
+    }
+
+    // Admin can read/list all KYC files (no writes to Storage by default)
+    match /kyc/{allUsers=**} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Default deny for everything else
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

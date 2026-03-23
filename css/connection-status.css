@@ -1,0 +1,141 @@
+/* Connection Status Indicator Styles */
+.connection-status {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 15px;
+}
+
+.connection-indicator {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.connection-indicator.connected {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.connection-indicator.connecting {
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.connection-indicator.disconnected {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+}
+
+.connected .status-dot {
+    background: #22c55e;
+}
+
+.connecting .status-dot {
+    background: #fbbf24;
+}
+
+.disconnected .status-dot {
+    background: #ef4444;
+}
+
+.status-details {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    min-width: 200px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.connection-indicator:hover .status-details {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.provider-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.provider-status:last-child {
+    border-bottom: none;
+}
+
+.provider-name {
+    font-weight: 500;
+    color: #374151;
+    text-transform: capitalize;
+}
+
+.provider-status-text {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    text-transform: capitalize;
+}
+
+.provider-status.connected .provider-status-text {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.provider-status.connecting .provider-status-text {
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+}
+
+.provider-status.disconnected .provider-status-text {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .status-details {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .provider-name {
+        color: #d1d5db;
+    }
+}

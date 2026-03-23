@@ -1,0 +1,375 @@
+/* Liquidity Providers Enhanced Styling */
+.providers-logos-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.providers-logos {
+    display: flex;
+    gap: 1.5rem;
+    width: calc(200% + 3rem);
+}
+
+.providers-row-1 {
+    animation: slideLeft 25s linear infinite;
+}
+
+.providers-row-2 {
+    animation: slideRight 30s linear infinite;
+}
+
+/* Override existing provider-logo styles */
+.liquidity-providers .provider-logo {
+    background: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    height: 100px;
+    min-width: 180px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.liquidity-providers .provider-logo:hover {
+    background: #f8f9fa !important;
+    border-color: #00d4ff !important;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.2);
+    animation-play-state: paused;
+}
+
+.provider-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: center;
+}
+
+.bank-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.provider-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.2;
+}
+
+/* Bank-specific logo colors */
+.jpmorgan { background: linear-gradient(135deg, #0066cc, #004499); }
+.barclays { background: linear-gradient(135deg, #00aeef, #0088cc); }
+.santander { background: linear-gradient(135deg, #ec0000, #cc0000); }
+.bbva { background: linear-gradient(135deg, #004481, #003366); }
+.boa { background: linear-gradient(135deg, #e31837, #cc1530); }
+.boi { background: linear-gradient(135deg, #1f4e79, #163a5f); }
+.bmo { background: linear-gradient(135deg, #cc092f, #aa0728); }
+.bos { background: linear-gradient(135deg, #005eb8, #004a93); }
+.investec { background: linear-gradient(135deg, #ffcc00, #e6b800); color: #333; text-shadow: none; }
+.itau { background: linear-gradient(135deg, #ec7000, #d45f00); }
+.kbc { background: linear-gradient(135deg, #1f5582, #194466); }
+.mizuho { background: linear-gradient(135deg, #0066cc, #004499); }
+.mufg { background: linear-gradient(135deg, #dc143c, #c41e3a); }
+.nomura { background: linear-gradient(135deg, #008000, #006600); }
+.bawag { background: linear-gradient(135deg, #ff6600, #e55a00); }
+.bayern { background: linear-gradient(135deg, #003d82, #002d5f); }
+
+/* Hide old provider placeholder */
+.provider-placeholder {
+    display: none;
+}
+
+/* New animations */
+@keyframes slideRight {
+    0% {
+        transform: translateX(-50%);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .liquidity-providers .provider-logo {
+        min-width: 150px !important;
+        height: 80px !important;
+        padding: 1rem !important;
+    }
+    
+    .bank-logo {
+        width: 40px;
+        height: 40px;
+        font-size: 0.7rem;
+    }
+    
+    .provider-name {
+        font-size: 0.8rem;
+    }
+    
+    .providers-logos {
+        gap: 1rem;
+    }
+    
+    .providers-logos-container {
+        gap: 1rem;
+    }
+}
+
+/* Liquidity Providers: Two-line marquee scrolling left-to-right */
+/* Variables for spacing and speed */
+:root {
+    --providers-gap: 24px;
+    --providers-height: 56px;
+    --providers-row-gap: 10px;
+    --providers-duration: 22s;  /* adjust for speed */
+    --providers-duration-2: 26s; /* second row slightly different for a nice effect */
+}
+
+/* Section container */
+.liquidity-providers {
+    padding: 40px 0;
+}
+
+/* Marquee container (no page-wide overflow) */
+.providers-marquee {
+    width: 100%;
+    overflow: hidden;           /* contain scroll within section */
+}
+
+/* Stack two rows */
+.providers-rows,
+.providers-marquee {
+    display: flex;
+    flex-direction: column;
+    gap: var(--providers-row-gap);
+}
+
+/* Each row holds two identical tracks (duplicated content) for seamless loop */
+.providers-row {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    height: calc(var(--providers-height) + 8px);
+}
+
+/* Track wrapper: two identical children with same logos */
+.providers-row .track {
+    display: inline-flex;
+    gap: var(--providers-gap);
+    align-items: center;
+    height: var(--providers-height);
+    /* Continuous rightward movement */
+    animation: marquee-right var(--providers-duration) linear infinite;
+    will-change: transform;
+}
+
+/* Second track in the same row starts halfway (to avoid gaps) */
+.providers-row .track.track-dup {
+    animation-delay: calc(var(--providers-duration) / -2);
+}
+
+/* Second row slightly different duration to desynchronize */
+.providers-row.row-2 .track {
+    animation-duration: var(--providers-duration-2);
+}
+.providers-row.row-2 .track.track-dup {
+    animation-delay: calc(var(--providers-duration-2) / -2);
+}
+
+/* Logos */
+.provider-logo {
+    display: inline-block;
+    height: var(--providers-height);
+    max-height: var(--providers-height);
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+}
+
+/* Keyframes for rightward marquee:
+   Move from -100% to 0% so content travels left -> right continuously */
+@keyframes marquee-right {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(0%); }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    :root {
+        --providers-gap: 18px;
+        --providers-height: 44px;
+        --providers-row-gap: 8px;
+        --providers-duration: 18s;
+        --providers-duration-2: 21s;
+    }
+    .providers-row {
+        height: calc(var(--providers-height) + 6px);
+    }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .providers-row .track {
+        animation: none !important;
+        transform: none !important;
+    }
+}
+
+/* Add missing keyframes for leftward motion */
+@keyframes slideLeft {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Ensure logos inside provider cards render visibly */
+/* Liquidity Providers safe layout + contained marquee */
+.providers-logos {
+    flex-direction: column;       /* row-1 above row-2 (no overlap) */
+    width: 100%;
+    gap: var(--providers-row-gap, 10px);
+}
+
+.liquidity-providers .provider-logo img,
+.liquidity-providers .provider-logo svg {
+    filter: none !important;      /* remove invert/brightness from base CSS */
+    mix-blend-mode: normal !important;
+    opacity: 1 !important;
+}
+
+/* Variables for spacing/speed */
+:root {
+    --lp-gap: 24px;
+    --lp-logo-height: 48px;
+    --lp-duration-row1: 30s;
+    --lp-duration-row2: 36s;
+}
+
+/* Clamp section width and prevent page horizontal scroll */
+.liquidity-providers,
+.providers {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    position: static !important;
+}
+
+/* Container padding (safe) */
+.liquidity-providers .container,
+.providers .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    box-sizing: border-box !important;
+}
+
+/* Marquee wrapper: contain overflow inside section */
+.providers-marquee,
+.providers-logos {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    position: relative !important;
+}
+
+/* Each row: horizontally laid out, animated as a whole */
+.providers-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 0 !important; /* gaps are inside tracks */
+    width: max-content !important; /* row spans the combined width of both tracks */
+    will-change: transform !important;
+    animation: lp-marquee var(--lp-duration-row1) linear infinite !important;
+}
+
+/* Row-specific speeds if desired */
+.providers-row.row-2 {
+    animation-duration: var(--lp-duration-row2) !important;
+}
+
+/* Two identical tracks side-by-side for seamless loop */
+.providers-row .track,
+.providers-row .track-dup {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: var(--lp-gap) !important;
+    flex: none !important; /* don't grow/shrink; they define the row's width */
+}
+
+/* Logo sizing */
+.provider-logo {
+    display: block !important;
+    height: var(--lp-logo-height) !important;
+    width: auto !important;
+    max-height: var(--lp-logo-height) !important;
+    object-fit: contain !important;
+}
+
+/* General safety: no inner element exceeds container width */
+.liquidity-providers *,
+.providers * {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* Keyframes: move row left by 50% of its own width (since it contains 2 identical tracks) */
+@keyframes lp-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Mobile tweaks: slightly smaller logos and gaps */
+@media (max-width: 768px) {
+    :root {
+        --lp-gap: 16px;
+        --lp-logo-height: 40px;
+        --lp-duration-row1: 26s;
+        --lp-duration-row2: 32s;
+    }
+}
+
+/* Logo sizing: keep within container, no overflow */
+.provider-logo {
+    display: block !important;
+    max-width: 160px !important; /* adjust if you prefer larger logos */
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+}
+
+/* General safety: limit inner elements to container width */
+.liquidity-providers *,
+.providers * {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+}
+
+/* Responsive tweak: reduce logo size slightly on small screens */
+@media (max-width: 768px) {
+    .provider-logo {
+        max-width: 140px !important;
+    }
+}

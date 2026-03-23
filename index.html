@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Deployment trigger comment - reverted to clean state -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>TitanTrades - Advanced Trading Platform</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Professional forex and cryptocurrency trading platform with advanced tools and real-time market data">
+    <meta name="keywords" content="forex trading, cryptocurrency, trading platform, financial markets">
+    <meta name="author" content="TitanTrades">
+    
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="TitanTrades - Professional Trading Platform">
+    <meta property="og:description" content="Trade forex and crypto with advanced tools">
+    <meta property="og:image" content="assets/images/logo.png">
+    <meta property="og:url" content="https://titantrades.com">
+    
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TitanTrades">
+    <meta name="twitter:description" content="Professional Trading Platform">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3949ab">
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/liquidity-providers.css">
+    <link rel="stylesheet" href="css/mobile-performance.css">
+    <!-- Market Notifications CSS -->
+    <link rel="stylesheet" href="css/market-notifications.css">
+    <!-- <link rel="stylesheet" href="css/ai-support-chat.css"> -->
+    
+    <!-- Final mobile guard for What's New -->
+    <style>
+    @media (max-width: 768px) {
+      .news-achievements,
+      .news-achievements .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+      }
+      .news-achievements .news-achievements-content {
+        display: block !important;
+        grid-template-columns: none !important;
+        gap: 0 !important;
+        margin: 0 !important;
+        min-width: 0 !important;
+      }
+      .news-achievements .news-section,
+      .news-achievements .achievements-section {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 0 12px 0 !important;
+        padding: 16px !important;
+        box-sizing: border-box !important;
+        transform: none !important;
+      }
+      .news-achievements * {
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+      }
+    }
+    </style>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid nav-container">
+            <div class="nav-logo navbar-brand">
+                <a href="index.html" class="d-flex align-items-center text-decoration-none">
+                    <i class="fas fa-chart-line" style="font-size: 2rem; color: #8b5cf6;"></i>
+                    <span class="logo-text ms-2">TitanTrades</span>
+                </a>
+            </div>
+            
+            <!-- Bootstrap Navbar Toggler -->
+            <button class="navbar-toggler hamburger" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav nav-menu me-auto">
+                    <li class="nav-item"><a href="#home" class="nav-link active">Home</a></li>
+                    <li class="nav-item"><a href="#markets" class="nav-link">Markets</a></li>
+                    <li class="nav-item"><a href="#about" class="nav-link">About</a></li>
+                    <li class="nav-item"><a href="#contact" class="nav-link">Contact</a></li>
+                </ul>
+                <div class="nav-buttons d-flex gap-2">
+                    <a href="auth.html" class="btn btn-outline-light btn-secondary" id="loginBtn">Login</a>
+                    <a href="auth.html" class="btn btn-primary" id="getStartedBtn">Get Started</a>
+                    <a href="dashboard.html" class="btn btn-primary" id="dashboardBtn" style="display: none;">Go to Dashboard</a>
+                    <div class="user-menu" style="display: none;">
+                        <span class="user-welcome">Welcome, <span class="user-name"></span></span>
+                        <button class="btn btn-outline-light btn-logout">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container hero-container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <div class="landing-kicker mb-3">Built for modern traders</div>
+                    <h1 class="hero-title mb-3">Trade, automate, and scale with TitanTrades</h1>
+                    <p class="hero-subtitle mb-4">A fast, clean trading experience with built‑in automation. Buy trading bots, activate them in seconds, and run prop firm evaluations with clear rules and real‑time tracking.</p>
+                    <div class="hero-buttons flex-column flex-sm-row">
+                        <a href="auth.html#register" class="btn btn-primary btn-lg">Create Account</a>
+                        <a href="platform.html" class="btn btn-secondary btn-lg" onclick="handlePlatformClick(event)">Open Platform</a>
+                    </div>
+                    <div class="row g-3 mt-4">
+                        <div class="col-4">
+                            <div class="landing-metric">
+                                <div class="landing-metric-value">0.01s</div>
+                                <div class="landing-metric-label">Execution</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="landing-metric">
+                                <div class="landing-metric-value">24/7</div>
+                                <div class="landing-metric-label">Markets</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="landing-metric">
+                                <div class="landing-metric-value">150K+</div>
+                                <div class="landing-metric-label">Traders</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="landing-surface p-3 p-md-4">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="landing-panel p-3 p-md-4">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fas fa-robot" style="color: #8b5cf6;"></i>
+                                            <div class="fw-semibold">Trading Bots Marketplace</div>
+                                        </div>
+                                        <span class="badge landing-badge">Instant activation</span>
+                                    </div>
+                                    <div class="text-secondary mt-2">Choose a bot tier, purchase once, and toggle it on/off from your dashboard.</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="landing-panel p-3 p-md-4 h-100">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fas fa-building-columns" style="color: #22d3ee;"></i>
+                                        <div class="fw-semibold">Prop Accounts</div>
+                                    </div>
+                                    <div class="text-secondary mt-2">Pick a plan size and follow drawdown + target rules with live status.</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="landing-panel p-3 p-md-4 h-100">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fas fa-shield-alt" style="color: #10b981;"></i>
+                                        <div class="fw-semibold">Risk Controls</div>
+                                    </div>
+                                    <div class="text-secondary mt-2">Clear position sizing, balance checks, and evaluation tracking.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-rotator">
+        <div class="container">
+            <div class="landing-rotator-inner">
+                <div class="landing-rotator-box">
+                    <div class="landing-rotator-item landing-rotator-item-1">Buy a trading bot, activate it instantly, and stay in control.</div>
+                    <div class="landing-rotator-item landing-rotator-item-2">Prop account evaluations with clear drawdown rules and live status.</div>
+                    <div class="landing-rotator-item landing-rotator-item-3">Trade forex, indices, commodities and crypto with fast execution.</div>
+                    <div class="landing-rotator-item landing-rotator-item-4">One dashboard for funding, withdrawals, history, and support.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="markets" class="market-overview">
+        <div class="container">
+            <div class="row align-items-end g-4 mb-4">
+                <div class="col-lg-7">
+                    <div class="landing-kicker mb-2">Markets</div>
+                    <h2 class="landing-title mb-2">One account. Multiple asset classes.</h2>
+                    <p class="landing-lead mb-0">Trade forex, indices, commodities and crypto with a clean interface and fast order placement.</p>
+                </div>
+                <div class="col-lg-5 text-lg-end">
+                    <a href="platform.html" class="btn btn-primary me-2" onclick="handlePlatformClick(event)">Open Platform</a>
+                    <a href="auth.html#register" class="btn btn-outline-light">Get Started</a>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="landing-panel landing-panel-lg">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="fw-semibold">Forex</div>
+                            <i class="fas fa-exchange-alt" style="color: #22d3ee;"></i>
+                        </div>
+                        <div class="text-secondary mt-2">Majors, minors, and exotics with transparent pricing.</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="landing-panel landing-panel-lg">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="fw-semibold">Indices</div>
+                            <i class="fas fa-chart-area" style="color: #8b5cf6;"></i>
+                        </div>
+                        <div class="text-secondary mt-2">Global indices for momentum and macro setups.</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="landing-panel landing-panel-lg">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="fw-semibold">Crypto</div>
+                            <i class="fab fa-bitcoin" style="color: #f59e0b;"></i>
+                        </div>
+                        <div class="text-secondary mt-2">24/7 markets with quick execution.</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="landing-panel landing-panel-lg">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="fw-semibold">Commodities</div>
+                            <i class="fas fa-oil-can" style="color: #94a3b8;"></i>
+                        </div>
+                        <div class="text-secondary mt-2">Gold, oil and more to diversify risk.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Virtual Assets Section -->
+    <section class="virtual-assets">
+        <div class="container">
+            <div class="assets-content">
+                <div class="assets-text">
+                    <h2>Allocate funds to <span class="highlight">Virtual Assets</span></h2>
+                    <p>Allocate funds to the most popular cryptocurrencies like Bitcoin, Ethereum, Ripple, etc. with TitanTrades and capitalize on this dynamic market with significant pricing shifts, suitable for experienced traders who have an assertive trading approach.</p>
+                    
+                    <div class="features-stats">
+                        <div class="stat-box">
+                            <div class="stat-value">&lt;20ms</div>
+                            <div class="stat-label">Stable and nanosecond execution</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">0%</div>
+                            <div class="stat-label">Commission</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">UP TO 1:50</div>
+                            <div class="stat-label">Leverage on cryptocurrencies</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="assets-visual">
+                    <div class="crypto-gift-box">
+                        <img src="assets/images/PixVerse_Image_Effect_prompt_forex%20broker%20char.jpg" alt="Forex broker character" class="crypto-gift-image">
+                    </div>
+                </div>
+                <div class="crypto-gift-box">
+                        <div class="gift-container">
+                            <div class="crypto-coins">
+                                <div class="coin ethereum">ETH</div>
+                                <div class="coin bitcoin">₿</div>
+                                <div class="coin ripple">XRP</div>
+                            </div>
+                            <div class="gift-box"></div>
+                            <div class="gift-ribbon"></div>
+                            <div class="sparkles">
+                                <div class="sparkle"></div>
+                                <div class="sparkle"></div>
+                                <div class="sparkle"></div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Presence Section -->
+    <section class="global-presence">
+        <div class="container">
+            <div class="presence-content">
+                <div class="presence-text">
+                    <div class="section-badge">GLOBAL PRESENCE</div>
+                    <h2>Over 25+ Offices Worldwide</h2>
+                    <p>TitanTrades Group maintains 25+ offices worldwide catering to an international client base and partners with affiliates in major financial hubs around the world.</p>
+                    
+                    <div class="presence-stats">
+                        <div class="stat-box">
+                            <div class="stat-value">25+</div>
+                            <div class="stat-label">Global Offices</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">150K+</div>
+                            <div class="stat-label">Active Clients</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">50+</div>
+                            <div class="stat-label">Countries Served</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="presence-visual">
+                    <img src="assets/images/PixVerse_Image_Effect_prompt_forex%20broker%20char%20(1).jpg" alt="Forex broker character" class="presence-image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Introducing Brokers Section -->
+    <section class="introducing-brokers">
+        <div class="container">
+            <div class="brokers-content">
+                <div class="brokers-text">
+                    <h2>Introducing Brokers & Institutional Program</h2>
+                    <p class="brokers-subtitle">Increase your profits with the highest rebates & commissions in the industry.</p>
+                    <p>TitanTrades Group's Institutional Programs include Introducing Broker, Affiliate Program, White Label, Prime of Primes & Franchise Partner, all exclusively tailored to suit your business needs.</p>
+                    <a href="auth.html" class="login-btn">Login <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="brokers-visual">
+                    <div class="crypto-mining-visual">
+                        <div class="mining-cart">
+                            <div class="cart-body"></div>
+                            <div class="cart-wheels">
+                                <div class="wheel"></div>
+                                <div class="wheel"></div>
+                            </div>
+                        </div>
+                        <div class="crypto-coins-scattered">
+                            <div class="coin btc">₿</div>
+                            <div class="coin eth">Ξ</div>
+                            <div class="coin ltc">Ł</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Forex Trading Section -->
+    <section class="forex-trading">
+        <div class="container">
+            <div class="forex-content">
+                <div class="forex-text">
+                    <h2>Trade <span class="highlight">Forex</span></h2>
+                    <p>Access over 55 major, cross, and exotic Forex pairs with narrow spreads.</p>
+                    
+                    <div class="forex-stats">
+                        <div class="stat-box">
+                            <div class="stat-value">Up to 500:1</div>
+                            <div class="stat-label">Highest levels of leverage</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">0.0* Pips</div>
+                            <div class="stat-label">Tightest spreads in the industry</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="forex-visual">
+                    <img src="assets/images/PixVerse_Image_Effect_prompt_forex%20broker.jpg" alt="Forex broker" class="forex-image">
+                    <div class="trading-platform-preview">
+                        <div class="platform-screen">
+                            <div class="platform-header">
+                                <div class="platform-nav"></div>
+                            </div>
+                            <div class="platform-content">
+                                <div class="chart-area">
+                                    <div class="trading-chart"></div>
+                                </div>
+                                <div class="trading-panels">
+                                    <div class="panel watchlist"></div>
+                                    <div class="panel order-form"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Trading Platforms Section -->
+    <section class="mobile-platforms">
+        <div class="container">
+            <div class="platforms-header">
+                <h2>Explore our Mobile Trading Platforms</h2>
+                <div class="platform-tabs">
+                    <button class="platform-tab active" data-platform="mt4mt5">MT4/MT5</button>
+                    <button class="platform-tab" data-platform="titantrades-advanced">TitanTrades Trader 4/5</button>
+                    <button class="platform-tab" data-platform="titantrades-plus">TitanTrades Plus <span class="available">Available Now</span></button>
+                </div>
+            </div>
+            
+            <div class="platforms-content">
+                <div class="platform-info">
+                    <h3>MT4/MT5 <span class="highlight">TRADING SOFTWARE</span></h3>
+                    <p>Access over 20,000 instruments including forex, metals, shares, indices, commodities & cryptocurrencies on award-winning MT4 and MT5 Mobile Platforms with instant nano-second execution.</p>
+                    
+                    <div class="platform-features">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                    </div>
+                    
+                    <a href="auth.html" class="join-btn">Join Today <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="platform-visual">
+                    <img src="assets/images/mt4.webp" alt="MT4/MT5 Mobile Trading Platform" class="platform-image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Invest in Indices Section -->
+    <section class="indices-trading">
+        <div class="container">
+            <div class="indices-content">
+                <div class="indices-text">
+                    <h2>Invest in <span class="highlight">Indices</span></h2>
+                    <p>Gain instant access and trade major stock exchange indices from across the globe, including NASDAQ, German DAX Index, US Wall Street 30 Index and more.</p>
+                    
+                    <div class="indices-features">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <span>Real-time market data</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <span>Global market access</span>
+                        </div>
+                    </div>
+                    
+                    <a href="auth.html" class="trade-btn">Start Trading <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="indices-visual">
+                    <img src="assets/images/indices.webp" alt="Indices Trading Mobile Platform" class="indices-image">
+                    <div class="indices-overlay">
+                        <div class="market-flags">
+                            <div class="flag-item us500">
+                                <img src="https://flagcdn.com/w40/us.png" alt="US Flag" class="flag">
+                                <span>US500</span>
+                            </div>
+                            <div class="flag-item uk100">
+                                <img src="https://flagcdn.com/w40/gb.png" alt="UK Flag" class="flag">
+                                <span>UK100</span>
+                            </div>
+                            <div class="flag-item de30">
+                                <img src="https://flagcdn.com/w40/de.png" alt="German Flag" class="flag">
+                                <span>DE30</span>
+                            </div>
+                            <div class="flag-item us30">
+                                <img src="https://flagcdn.com/w40/us.png" alt="US Flag" class="flag">
+                                <span>US30</span>
+                            </div>
+                            <div class="flag-item chn50">
+                                <img src="https://flagcdn.com/w40/cn.png" alt="China Flag" class="flag">
+                                <span>CHN50</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Education Section -->
+    <section id="education" class="education-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Trading Education Center</h2>
+                <p>Master the markets with our comprehensive educational resources designed for traders of all levels</p>
+            </div>
+            <div class="education-content">
+                <div class="education-categories">
+                    <div class="education-card">
+                        <div class="education-icon">
+                            <i class="fas fa-play-circle"></i>
+                        </div>
+                        <h3>Video Tutorials</h3>
+                        <p>Step-by-step video guides covering everything from basic trading concepts to advanced strategies</p>
+                        <ul>
+                            <li>Getting Started with Forex Trading</li>
+                            <li>Technical Analysis Fundamentals</li>
+                            <li>Risk Management Strategies</li>
+                            <li>Platform Navigation Guide</li>
+                        </ul>
+
+                    </div>
+                    <div class="education-card">
+                        <div class="education-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h3>Trading Guides</h3>
+                        <p>Comprehensive written guides and eBooks to deepen your trading knowledge</p>
+                        <ul>
+                            <li>Complete Forex Trading Guide</li>
+                            <li>Cryptocurrency Trading Handbook</li>
+                            <li>Options Trading Strategies</li>
+                            <li>Market Psychology Guide</li>
+                        </ul>
+
+                    </div>
+                    <div class="education-card">
+                        <div class="education-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Market Analysis</h3>
+                        <p>Daily market insights, technical analysis, and expert commentary</p>
+                        <ul>
+                            <li>Daily Market Outlook</li>
+                            <li>Weekly Technical Analysis</li>
+                            <li>Economic Calendar Events</li>
+                            <li>Expert Trading Signals</li>
+                        </ul>
+
+                    </div>
+                    <div class="education-card">
+                        <div class="education-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Webinars & Events</h3>
+                        <p>Live trading sessions and educational webinars with industry experts</p>
+                        <ul>
+                            <li>Weekly Live Trading Sessions</li>
+                            <li>Expert Guest Webinars</li>
+                            <li>Q&A with Professional Traders</li>
+                            <li>Market Update Sessions</li>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="row g-4 align-items-stretch">
+                <div class="col-lg-7">
+                    <div class="landing-kicker mb-2">About</div>
+                    <h2 class="landing-title mb-3">Built to remove friction from trading.</h2>
+                    <p class="landing-lead mb-4">TitanTrades combines a fast trading interface with optional automation. You can trade manually, run bots you own, or track prop evaluations without switching platforms.</p>
+
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <div class="landing-panel landing-panel-sm">
+                                <div class="fw-semibold mb-1">Designed for focus</div>
+                                <div class="text-secondary">Clean UI, quick navigation, and real-time updates across pages.</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="landing-panel landing-panel-sm">
+                                <div class="fw-semibold mb-1">Automation when you want it</div>
+                                <div class="text-secondary">Buy bots, activate them from the dashboard, and stay in control.</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="landing-panel landing-panel-sm">
+                                <div class="fw-semibold mb-1">Prop evaluation tracking</div>
+                                <div class="text-secondary">Clear daily/max drawdown rules with status shown on your account.</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="landing-panel landing-panel-sm">
+                                <div class="fw-semibold mb-1">Security-minded</div>
+                                <div class="text-secondary">Authentication + profile sync with sensible defaults.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="landing-surface h-100 p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="fw-semibold">At a glance</div>
+                            <span class="badge landing-badge">2026</span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="landing-metric-card">
+                                    <div class="landing-metric-value">150K+</div>
+                                    <div class="landing-metric-label">Traders</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="landing-metric-card">
+                                    <div class="landing-metric-value">99.9%</div>
+                                    <div class="landing-metric-label">Uptime</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="landing-metric-card">
+                                    <div class="landing-metric-value">24/7</div>
+                                    <div class="landing-metric-label">Crypto</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="landing-metric-card">
+                                    <div class="landing-metric-value">0%</div>
+                                    <div class="landing-metric-label">Hidden fees</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-secondary small mt-3">Figures shown are indicative and for product presentation.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Talk to the Team</h2>
+                <p>Questions about funding, bots, or prop plans? Send a message and we’ll help you out.</p>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Phone Support</h3>
+                            <p>+1 (555) 123-TRADE</p>
+                            <p>Available 24/7</p>
+                        </div>
+                    </div>
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Email Support</h3>
+                    <p>support@titantrades.com</p>
+                    <p>Fast response, 24/7</p>
+                        </div>
+                    </div>
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Live Chat</h3>
+                            <p>Instant messaging support</p>
+                            <p>Available 24/7</p>
+                        </div>
+                    </div>
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Headquarters</h3>
+                            <p>123 Financial District</p>
+                            <p>New York, NY 10004</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form-section">
+                    <h3>Send us a Message</h3>
+                    <form class="contact-form-main" id="mainContactForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fullName">Full Name *</label>
+                                <input type="text" id="fullName" name="fullName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="emailAddress">Email Address *</label>
+                                <input type="email" id="emailAddress" name="email" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="phoneNumber">Phone Number</label>
+                                <input type="tel" id="phoneNumber" name="phone">
+                            </div>
+                            <div class="form-group">
+                                <label for="inquiryType">Inquiry Type *</label>
+                                <select id="inquiryType" name="inquiryType" required>
+                                    <option value="">Select inquiry type</option>
+                                    <option value="account">Account Opening</option>
+                                    <option value="platform">Platform Support</option>
+                                    <option value="trading">Trading Questions</option>
+                                    <option value="technical">Technical Issues</option>
+                                    <option value="partnership">Partnership Opportunities</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="messageContent">Message *</label>
+                            <textarea id="messageContent" name="message" rows="6" required placeholder="Please describe how we can help you..."></textarea>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="agreeContact" name="agreeContact" required>
+                            <label for="agreeContact">I agree to be contacted regarding my inquiry</label>
+                        </div>
+                        <button type="submit" class="btn-primary btn-full">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platform Features -->
+    <section id="platform" class="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose TitanTrades?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Advanced Charting</h3>
+                    <p>Professional-grade charts with 100+ technical indicators and drawing tools for comprehensive market analysis.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Lightning Fast Execution</h3>
+                    <p>Ultra-low latency trading with institutional-grade infrastructure and direct market access.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Bank-Level Security</h3>
+                    <p>Your funds and data are protected with military-grade encryption and segregated accounts.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Multi-Platform Access</h3>
+                    <p>Trade anywhere with our web, desktop, and mobile applications with synchronized portfolios.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>24/7 Support</h3>
+                    <p>Get expert assistance around the clock from our dedicated team of trading professionals.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3>Educational Resources</h3>
+                    <p>Access comprehensive trading education, market analysis, and expert insights to improve your skills.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trading Tools Preview -->
+    <section class="tools-preview">
+        <div class="container">
+            <div class="tools-content">
+                <div class="tools-text">
+                    <h2>Professional Trading Tools</h2>
+                    <p>Access the same tools used by institutional traders and hedge funds. Our platform provides everything you need for successful trading.</p>
+                    <ul class="tools-list">
+                        <li><i class="fas fa-check"></i> Real-time Level II market data</li>
+                        <li><i class="fas fa-check"></i> Advanced order types and algorithms</li>
+                        <li><i class="fas fa-check"></i> Risk management tools</li>
+                        <li><i class="fas fa-check"></i> Portfolio analytics and reporting</li>
+                        <li><i class="fas fa-check"></i> API access for automated trading</li>
+                    </ul>
+                    <a href="auth.html" class="btn-primary">Explore Platform</a>
+                </div>
+                <div class="tools-visual">
+                    <img src="assets/images/PixVerse_Image_Effect_prompt_trading%20platform.jpg" alt="Trading platform">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="why-choose-us">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-subtitle">BENEFIT FROM THE WORLD'S NO.1 ONLINE FINANCIAL DERIVATIVES BROKER</p>
+                <h2>Why Over 1 Million Clients Choose<br>TitanTrades Group</h2>
+                <p class="section-description">We have a long history of delivering exceptional and profitable trading experiences by providing unique trading accounts, instant execution, cutting-edge platforms, and the tightest pricing and liquidity.</p>
+            </div>
+            <div class="choose-us-features">
+                <div class="feature-stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Heavily Regulated</h3>
+                    <p class="stat-number">14 Financial Regulators</p>
+                    <p class="stat-description">Subsidiaries regulated, TOP REGULATORY BODIES</p>
+                </div>
+                <div class="feature-stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Daily Turnover</h3>
+                    <p class="stat-number">US$12.1Billion</p>
+                    <p class="stat-description">Record Breaking Financial performance in 2022</p>
+                </div>
+                <div class="feature-stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-level-up-alt"></i>
+                    </div>
+                    <h3>Leverage</h3>
+                    <p class="stat-number">Up To 500:1</p>
+                    <p class="stat-description">We provide one of the highest levels of leverage in the market helping traders to multiply their potential profits.</p>
+                </div>
+                <div class="feature-stat">
+                    <div class="stat-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>Customer Service</h3>
+                    <p class="stat-description">Enjoy assistance from our 24/7/365 customer service desk</p>
+                </div>
+            </div>
+            <div class="bonus-section">
+                <div class="bonus-card">
+                    <h3>20%</h3>
+                    <p>Deposit Bonus</p>
+                </div>
+                <div class="bonus-info">
+                    <h3>Receive up to <span class="highlight">$40,000</span></h3>
+                    <p>in tradable and withdrawable bonuses</p>
+                    <p class="terms">*Terms & Conditions Apply</p>
+                    <a href="auth.html" class="btn-primary">Start Trading Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Security of Funds Section -->
+    <section class="security-funds">
+        <div class="container">
+            <div class="security-content">
+                <div class="security-visual">
+                    <img src="assets/images/PixVerse_Image_Effect_prompt_forex%20broker.jpg" alt="Forex broker">
+                </div>
+                <div class="security-text">
+                    <p class="section-subtitle">$1 MILLION EXCESS LOSS INSURANCE PER ACCOUNT</p>
+                    <h2>Security of Funds</h2>
+                    <p>Our partners have grown along with TitanTrades Group in the past two decades, and our latest entity, MEX Atlantic, is taking our success a step further by offering unparalleled security to our traders. MEX Atlantic has taken out an insurance policy with Lloyd's of London, the world's leading insurance market, that protects clients' funds for up to USD$1 million per account.</p>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Company News and Achievements Section -->
+    <section class="news-achievements">
+        <div class="container">
+            <div class="news-achievements-content">
+                <div class="news-section">
+                    <p class="section-subtitle">WHAT'S NEW</p>
+                    <h3>Company News</h3>
+                    <p>Explore TitanTrades Group's milestones since its foundation in 2009 and learn how we've become one of the leaders in the online financial derivatives business</p>
+                </div>
+                <div class="achievements-section">
+                    <p class="section-subtitle">ACHIEVEMENTS</p>
+                    <h3>65+ FX Industry Awards</h3>
+                    <p>Our partners have grown along with TitanTrades Group in the past two decades, and our latest entity, Citi Atlantic, is taking our success a step further by offering unparalleled security to our traders</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+    /* Mobile-only fix: stack the What's New section, remove widths/margins that cause right-side cutoff */
+    @media (max-width: 768px) {
+      .news-achievements .news-achievements-content {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .news-achievements .news-section,
+      .news-achievements .achievements-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 16px;
+        box-sizing: border-box;
+      }
+
+      /* Ensure the container doesn't push content offscreen */
+      .news-achievements .container {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      /* Defensive: prevent any hidden overflows or fixed widths from cutting the right side */
+      .news-achievements * {
+        max-width: 100%;
+      }
+    }
+    </style>
+
+    <!-- Choose Where To Go Next Section -->
+    <section class="choose-next">
+        <div class="container">
+            <div class="next-header">
+                <h2>Choose Where To Go Next</h2>
+            </div>
+            <div class="next-options">
+                <a href="#platform" class="next-card" style="text-decoration: none; color: inherit;">
+                    <div class="card-icon">
+                        <img src="assets/images/speak.png" alt="Why TitanTrades" class="card-image">
+                    </div>
+                    <h3>Why TitanTrades</h3>
+                </a>
+                <a href="funding.html" class="next-card" style="text-decoration: none; color: inherit;">
+                    <div class="card-icon">
+                        <img src="assets/images/aF.png" alt="Account Funding" class="card-image">
+                    </div>
+                    <h3>Account Funding</h3>
+                </a>
+                <a href="#contact" class="next-card" style="text-decoration: none; color: inherit;">
+                    <div class="card-icon">
+                        <img src="assets/images/sup.png" alt="Support" class="card-image">
+                    </div>
+                    <h3>Support</h3>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <a href="index.html">
+                            <img src="assets/images/logo-white.png" alt="TitanTrades" class="logo">
+                            <span>TitanTrades</span>
+                        </a>
+                    </div>
+                    <p>The world's most advanced trading platform for professional traders and institutions.</p>
+                    <div class="social-links">
+                        <a href="https://twitter.com/titantrades"><i class="fab fa-twitter"></i></a>
+                        <a href="https://linkedin.com/company/titantrades"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://facebook.com/titantrades"><i class="fab fa-facebook"></i></a>
+                        <a href="https://instagram.com/titantrades"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="auth.html">Web Trading</a></li>
+                        <li><a href="mobile-app.html">Mobile App</a></li>
+                        <li><a href="desktop-app.html">Desktop App</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Markets</h4>
+                    <ul>
+                        <li><a href="auth.html">Forex</a></li>
+                        <li><a href="auth.html">Stocks</a></li>
+                        <li><a href="auth.html">Commodities</a></li>
+                        <li><a href="auth.html">Cryptocurrencies</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#contact">Contact Us</a></li>
+                        <li><a href="https://www.investopedia.com/trading/" target="_blank">Trading Education</a></li>
+                        <li><a href="https://www.sec.gov/investor" target="_blank">Investor Resources</a></li>
+                        <li><a href="https://www.cftc.gov/" target="_blank">Regulatory Information</a></li>
+                        <li><a href="https://support.tradingview.com/" target="_blank">Platform Help</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 TitanTrades. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                    <a href="risk-disclosure.html">Risk Disclosure</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Load Firebase scripts in correct order -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/firebase-auth.js"></script>
+    <script type="module" src="js/firebase-database.js"></script>
+    <script type="module" src="js/auth-integration.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/main.js"></script>
+    <script src="js/performance-optimizer.js"></script>
+    <script src="js/market-notifications.js"></script>
+
+    <!-- Add mobile safe area toggler so chat bubble doesn't overlap content on phones -->
+    <script>
+    (function() {
+        function applyMobileSafeArea() {
+            if (window.innerWidth <= 768) {
+                document.body.classList.add('mobile-chat-safe-area');
+            } else {
+                document.body.classList.remove('mobile-chat-safe-area');
+            }
+        }
+        document.addEventListener('DOMContentLoaded', applyMobileSafeArea);
+        window.addEventListener('resize', applyMobileSafeArea);
+    })();
+    </script>
+
+    <!-- SIMPLIFIED: Let main.js handle all auth UI updates -->
+    <script>
+        // Handle Platform navigation click
+        function handlePlatformClick(event) {
+            event.preventDefault();
+            
+            if (window.authManager && window.authManager.isLoggedIn) {
+                window.location.href = 'platform.html';
+            } else {
+                window.location.href = 'auth.html';
+            }
+        }
+        
+        // Enhanced mobile navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburger = document.querySelector('.hamburger');
+            const navMenu = document.querySelector('.nav-menu');
+            const navButtons = document.querySelector('.nav-buttons');
+            
+            if (hamburger) {
+                hamburger.addEventListener('click', () => {
+                    hamburger.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                    navButtons.classList.toggle('active');
+                });
+            }
+            
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+            
+            // Live market data simulation
+            function updateMarketData() {
+                const tickers = document.querySelectorAll('.ticker-item');
+                tickers.forEach(ticker => {
+                    const priceElement = ticker.querySelector('.price');
+                    const changeElement = ticker.querySelector('.change');
+                    
+                    if (priceElement && changeElement) {
+                        const currentPrice = parseFloat(priceElement.textContent.replace(/[^0-9.-]/g, ''));
+                        const change = (Math.random() - 0.5) * 0.02;
+                        const newPrice = currentPrice * (1 + change);
+                        const changePercent = (change * 100).toFixed(2);
+                        
+                        priceElement.textContent = newPrice.toFixed(4);
+                        changeElement.textContent = `${change >= 0 ? '+' : ''}${changePercent}%`;
+                        changeElement.className = `change ${change >= 0 ? 'positive' : 'negative'}`;
+                    }
+                });
+            }
+            
+            setInterval(updateMarketData, 3000);
+        });
+    </script>
+
+    <script>
+    // Handle Platform navigation click
+    function handlePlatformClick(event) {
+        event.preventDefault();
+        
+        // Check if user is logged in
+        if (window.authManager && window.authManager.isLoggedIn) {
+            // User is logged in, redirect to platform
+            window.location.href = 'platform.html';
+        } else {
+            // User is not logged in, redirect to auth page
+            window.location.href = 'auth.html';
+        }
+    }
+    </script>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Login to Your Account</h2>
+            <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" name="password" required>
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="rememberMe" name="remember">
+                    <label for="rememberMe">Remember me</label>
+                </div>
+                <button type="submit" class="btn-primary btn-full">Login</button>
+                <div class="form-links">
+                    <a href="forgot-password.html" onclick="openModal('forgotPasswordModal'); closeModal('loginModal');">Forgot Password?</a>
+                    <a href="#" onclick="openModal('registerModal'); closeModal('loginModal');">Create Account</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Create Your Account</h2>
+            <button class="modal-close" onclick="closeModal('registerModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form class="auth-form" id="registerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" name="lastName" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email Address</label>
+                    <input type="email" id="registerEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="agreeTerms" name="terms" required>
+                    <label for="agreeTerms">I agree to the <a href="terms-of-service.html">Terms of Service</a> and <a href="privacy-policy.html">Privacy Policy</a></label>
+                </div>
+                <button type="submit" class="btn-primary btn-full">Create Account</button>
+                <div class="form-links">
+                    <a href="#" onclick="openModal('loginModal'); closeModal('registerModal');">Already have an account? Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+    <!-- Contact Modal -->
+    <div id="contactModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Contact Our Trading Experts</h2>
+            <button class="modal-close" onclick="closeModal('contactModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="contactForm2" class="contact-form">
+    <div class="form-group">
+        <label for="contactName2">Full Name</label>
+        <input type="text" id="contactName2" name="name" required>
+    </div>
+    <div class="form-group">
+        <label for="contactEmail2">Email Address</label>
+        <input type="email" id="contactEmail2" name="email" required>
+    </div>
+    <div class="form-group">
+        <label for="contactSubject2">Subject</label>
+        <select id="contactSubject2" name="subject" required>
+            <option value="">Select a topic</option>
+            <option value="account">Account Opening</option>
+            <option value="platform">Platform Support</option>
+            <option value="trading">Trading Questions</option>
+            <option value="technical">Technical Issues</option>
+            <option value="other">Other</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="contactMessage2">Message</label>
+        <textarea id="contactMessage2" name="message" rows="5" required></textarea>
+    </div>
+    <button type="submit" class="btn-primary btn-full">Send Message</button>
+</form>
+        </div>
+    </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div id="forgotPasswordModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-key"></i> Reset Password</h2>
+            <span class="close" onclick="closeModal('forgotPasswordModal')">&times;</span>
+        </div>
+        <form id="forgotPasswordForm" class="auth-form">
+            <div class="form-group">
+                <label for="resetEmail">
+                    <i class="fas fa-envelope"></i>
+                    Email Address
+                </label>
+                <input type="email" id="resetEmail" name="email" required placeholder="Enter your email address">
+                <span class="form-error" id="resetEmailError"></span>
+            </div>
+            <button type="submit" class="btn-primary btn-full">
+                <i class="fas fa-paper-plane"></i>
+                Send Reset Link
+            </button>
+        </form>
+        <div class="modal-footer">
+            <p>Remember your password? <a href="#" onclick="closeModal('forgotPasswordModal'); openModal('loginModal');">Back to Login</a></p>
+        </div>
+    </div>
+</div>
+
+<!-- <script src="js/ai-support-chat.js"></script> -->
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Smartsupp Live Chat script -->
+    <script type="text/javascript">
+    var _smartsupp = _smartsupp || {};
+    _smartsupp.key = '5a12e502e39d89519fbf29c7014792f8d6540920';
+    window.smartsupp||(function(d) {
+      var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+      s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+      c.type='text/javascript';c.charset='utf-8';c.async=true;
+      c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+    })(document);
+    </script>
+    <noscript> Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
+</body>
+</html>

@@ -1,0 +1,179 @@
+/* Market Notifications Styles */
+.market-notifications-container {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    z-index: 1000;
+    pointer-events: none;
+    max-width: 320px;
+}
+
+.market-notification {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    pointer-events: auto;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    position: relative;
+}
+
+.market-notification::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #00d4ff, #0099cc);
+    animation: notificationProgress 5s linear;
+}
+
+@keyframes notificationProgress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+.market-notification:hover {
+    transform: translateX(-5px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 212, 255, 0.2);
+}
+
+.notification-content {
+    padding: 16px;
+    color: #ffffff;
+}
+
+.notification-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.market-icon {
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+.market-symbol {
+    font-weight: 600;
+    font-size: 14px;
+    color: #00d4ff;
+    flex: 1;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: #cccccc;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.notification-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.notification-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.market-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.market-change {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.market-change.positive {
+    color: #28a745;
+    background: rgba(40, 167, 69, 0.2);
+}
+
+.market-change.negative {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.2);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .market-notifications-container {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        top: 80px;
+    }
+    
+    .market-notification {
+        margin-bottom: 8px;
+    }
+    
+    .notification-content {
+        padding: 12px;
+    }
+    
+    .market-price {
+        font-size: 14px;
+    }
+    
+    .market-change {
+        font-size: 12px;
+        padding: 3px 6px;
+    }
+}
+
+/* Animation for notification entrance */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Notification pulse effect */
+@keyframes notificationPulse {
+    0% { box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); }
+    50% { box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1); }
+    100% { box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); }
+}
+
+.market-notification {
+    animation: notificationPulse 3s ease-in-out infinite;
+}

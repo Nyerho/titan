@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prop Accounts - TitanTrades</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/ai-support-chat.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+        }
+        .container, .container-fluid {
+            background-color: transparent !important;
+        }
+        .card {
+            background-color: #1e293b !important;
+            border-color: #475569 !important;
+        }
+        .badge-soft {
+            background: rgba(139, 92, 246, 0.14);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            color: #d8ccff;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script src="js/user-state.js"></script>
+    <script type="module" src="js/ai-support-chat.js"></script>
+</head>
+<body onload="checkUserState()">
+    <header class="centraltradehub-header">
+        <div class="header-container">
+            <div class="mobile-toggle d-md-none">
+                <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="logo-section">
+                <a href="index.html" class="logo-link">
+                    <img src="assets/images/logo.png" alt="TitanTrades" class="dashboard-logo">
+                    <div class="logo-text">
+                        <h1 class="brand-logo">TitanTrades</h1>
+                        <p class="brand-tagline">Trade bigger and get paid faster.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="user-info">
+                <div class="kyc-status-indicator" id="kycStatusIndicator">
+                    <div class="kyc-badge" id="kycBadge">
+                        <i class="fas fa-user-check"></i>
+                        <span class="kyc-text" id="kycStatusText">KYC</span>
+                    </div>
+                </div>
+                <span class="user-email" id="userEmail" data-user-field="email">Loading...</span>
+                <span class="user-name" id="dashboard-user-name" data-user-field="displayName">Loading...</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid px-3 px-lg-4 py-3">
+        <div class="row g-3">
+            <aside class="col-12 col-md-4 col-lg-3 dashboard-sidebar collapse d-md-block" id="sidebarMenu">
+                <div class="position-sticky pt-3">
+                    <nav class="sidebar-nav">
+                        <a href="dashboard.html" class="nav-item d-flex align-items-center">
+                            <i class="fas fa-wallet me-2"></i>
+                            <span>Wallet</span>
+                        </a>
+                        <a href="platform.html" class="nav-item d-flex align-items-center">
+                            <i class="fas fa-chart-line me-2"></i>
+                            <span>Trading</span>
+                        </a>
+                        <a href="trading-bots.html" class="nav-item d-flex align-items-center">
+                            <i class="fas fa-robot me-2"></i>
+                            <span>Trading Bots</span>
+                        </a>
+                        <a href="prop-accounts.html" class="nav-item active d-flex align-items-center">
+                            <i class="fas fa-building-columns me-2"></i>
+                            <span>Prop Accounts</span>
+                        </a>
+                        <a href="history.html" class="nav-item d-flex align-items-center">
+                            <i class="fas fa-history me-2"></i>
+                            <span>History</span>
+                        </a>
+                        <a href="funding.html" class="nav-item d-flex align-items-center">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            <span>Funding</span>
+                        </a>
+                        <a href="withdrawal.html" class="nav-item d-flex align-items-center">
+                            <i class="fas fa-minus-circle me-2"></i>
+                            <span>Withdrawal</span>
+                        </a>
+                        <a href="kyc-portal.html" class="nav-item d-flex align-items-center">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            <span>KYC</span>
+                        </a>
+                        <a href="account.html" class="nav-item d-flex align-items-center">
+                            <i class="fas fa-user-cog me-2"></i>
+                            <span>Accounts</span>
+                        </a>
+                        <a href="platform.html#analytics" class="nav-item d-flex align-items-center">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            <span>Analytics</span>
+                        </a>
+                        <a href="index.html#contact" class="nav-item d-flex align-items-center">
+                            <i class="fas fa-question-circle me-2"></i>
+                            <span>Support</span>
+                        </a>
+                    </nav>
+                </div>
+            </aside>
+
+            <main class="col-12 col-md-8 col-lg-9 dashboard-main">
+                <div class="d-flex align-items-center justify-content-between pt-4 pb-3">
+                    <div>
+                        <h2 class="mb-1">Prop Firm Accounts</h2>
+                        <div class="text-secondary">Choose a prop account plan and track your evaluation status.</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="text-secondary small">Status</div>
+                        <div class="fs-6 fw-semibold" id="propStatus">No plan selected</div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h5 class="mb-1">Current Plan</h5>
+                                <div class="text-secondary small" id="currentPlanSubtitle">Select a plan below to enable prop evaluation on your account.</div>
+                            </div>
+                            <span class="badge badge-soft" id="currentPlanBadge">—</span>
+                        </div>
+                        <div class="row g-3 mt-2" id="currentPlanDetails"></div>
+                    </div>
+                </div>
+
+                <div class="row g-3" id="plansGrid"></div>
+            </main>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import firebaseDb from './js/firebase-database.js';
+
+        const PLANS = [
+            {
+                planId: 'ftmo-10k',
+                firmName: 'Titan Prop',
+                accountSize: 10000,
+                dailyDrawdownPct: 0.05,
+                maxDrawdownPct: 0.1,
+                profitTargetPct: 0.1
+            },
+            {
+                planId: 'ftmo-50k',
+                firmName: 'Titan Prop',
+                accountSize: 50000,
+                dailyDrawdownPct: 0.05,
+                maxDrawdownPct: 0.1,
+                profitTargetPct: 0.1
+            },
+            {
+                planId: 'ftmo-100k',
+                firmName: 'Titan Prop',
+                accountSize: 100000,
+                dailyDrawdownPct: 0.05,
+                maxDrawdownPct: 0.1,
+                profitTargetPct: 0.1
+            }
+        ];
+
+        const els = {
+            plansGrid: document.getElementById('plansGrid'),
+            status: document.getElementById('propStatus'),
+            badge: document.getElementById('currentPlanBadge'),
+            subtitle: document.getElementById('currentPlanSubtitle'),
+            details: document.getElementById('currentPlanDetails')
+        };
+
+        function formatUsd(value) {
+            const num = Number(value || 0);
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+        }
+
+        function formatPct(value) {
+            return `${Math.round(Number(value || 0) * 100)}%`;
+        }
+
+        function statusLabel(propAccount) {
+            if (!propAccount) return 'No plan selected';
+            if (propAccount.status === 'breached') return 'Breached';
+            if (propAccount.status === 'funded') return 'Funded';
+            return 'Evaluation';
+        }
+
+        function renderCurrent(propAccount) {
+            els.status.textContent = statusLabel(propAccount);
+
+            if (!propAccount) {
+                els.badge.textContent = '—';
+                els.subtitle.textContent = 'Select a plan below to enable prop evaluation on your account.';
+                els.details.innerHTML = `
+                    <div class="col-12">
+                        <div class="text-secondary">No prop firm account is active yet.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            els.badge.textContent = `${formatUsd(propAccount.accountSize)} ${propAccount.firmName}`;
+            els.subtitle.textContent = 'Rules are applied to evaluation trades on your prop account.';
+
+            const items = [
+                { label: 'Account Size', value: formatUsd(propAccount.accountSize) },
+                { label: 'Daily Drawdown', value: formatPct(propAccount.dailyDrawdownPct) },
+                { label: 'Max Drawdown', value: formatPct(propAccount.maxDrawdownPct) },
+                { label: 'Profit Target', value: formatPct(propAccount.profitTargetPct) },
+                { label: 'Current Equity', value: formatUsd(propAccount.currentEquity) },
+                { label: 'Today PnL', value: formatUsd(propAccount.todayPnl) }
+            ];
+
+            els.details.innerHTML = items.map((i) => `
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="p-3 rounded border" style="border-color: rgba(148,163,184,0.35) !important; background: rgba(15,23,42,0.35);">
+                        <div class="text-secondary small">${i.label}</div>
+                        <div class="fw-semibold">${i.value}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPlans(propAccount) {
+            els.plansGrid.innerHTML = '';
+
+            for (const plan of PLANS) {
+                const selected = propAccount?.planId === plan.planId;
+                const card = document.createElement('div');
+                card.className = 'col-12 col-md-6 col-xl-4';
+                card.innerHTML = `
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex align-items-start justify-content-between mb-2">
+                                <div>
+                                    <h5 class="mb-0">${formatUsd(plan.accountSize)}</h5>
+                                    <div class="text-secondary small">${plan.firmName}</div>
+                                </div>
+                                ${selected ? '<span class="badge badge-soft">Selected</span>' : ''}
+                            </div>
+                            <div class="text-secondary small mb-3">Evaluation rules</div>
+                            <div class="d-flex flex-column gap-2 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-secondary">Daily drawdown</span>
+                                    <span>${formatPct(plan.dailyDrawdownPct)}</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-secondary">Max drawdown</span>
+                                    <span>${formatPct(plan.maxDrawdownPct)}</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-secondary">Profit target</span>
+                                    <span>${formatPct(plan.profitTargetPct)}</span>
+                                </div>
+                            </div>
+                            <div class="mt-auto d-grid">
+                                <button class="btn ${selected ? 'btn-outline-secondary' : 'btn-primary'}" data-action="select-plan" data-plan-id="${plan.planId}" ${selected ? 'disabled' : ''}>
+                                    ${selected ? 'Selected' : 'Select Plan'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                els.plansGrid.appendChild(card);
+            }
+        }
+
+        function setButtonsBusy(selector, busy) {
+            document.querySelectorAll(selector).forEach((btn) => {
+                btn.disabled = busy || btn.disabled;
+            });
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            const userRef = doc(db, 'users', user.uid);
+            onSnapshot(userRef, (snap) => {
+                const userData = snap.exists() ? snap.data() : {};
+                const propAccount = userData.propAccount || null;
+                renderCurrent(propAccount);
+                renderPlans(propAccount);
+            });
+
+            document.addEventListener('click', async (e) => {
+                const btn = e.target?.closest?.('button[data-action="select-plan"]');
+                if (!btn) return;
+
+                const planId = btn.getAttribute('data-plan-id');
+                const plan = PLANS.find((p) => p.planId === planId);
+                if (!plan) return;
+
+                try {
+                    setButtonsBusy('button[data-action="select-plan"]', true);
+                    const result = await firebaseDb.setPropAccount(user.uid, plan);
+                    if (!result.success) {
+                        alert(`Failed to set plan: ${result.error}`);
+                    }
+                } finally {
+                    setButtonsBusy('button[data-action="select-plan"]', false);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
