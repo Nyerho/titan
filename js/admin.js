@@ -545,18 +545,20 @@ class EnhancedAdminDashboard {
             try {
                 console.log('Firestore projectId:', this.app?.options?.projectId);
             } catch (e) {}
-            const usersQuery = query(
+            const orderedQuery = query(
                 collection(this.db, 'users'),
                 orderBy('createdAt', 'desc')
             );
             
-            const snapshot = await getDocs(usersQuery);
+            let snapshot = await getDocs(orderedQuery);
             console.log(`Found ${snapshot.docs.length} users`);
 
             if (snapshot.docs.length === 0) {
                 try {
-                    const sanitySnapshot = await getDocs(query(collection(this.db, 'users'), limit(10)));
-                    console.log(`Sanity check (no orderBy) found ${sanitySnapshot.docs.length} users`);
+                    const fallbackQuery = query(collection(this.db, 'users'), limit(500));
+                    const fallbackSnapshot = await getDocs(fallbackQuery);
+                    console.log(`Sanity check (no orderBy) found ${fallbackSnapshot.docs.length} users`);
+                    snapshot = fallbackSnapshot;
                 } catch (e) {
                     console.warn('Sanity check query failed:', e);
                 }
@@ -566,6 +568,19 @@ class EnhancedAdminDashboard {
                 const userData = { id: doc.id, ...doc.data() };
                 console.log('User data:', userData); // Debug log
                 return userData;
+            });
+
+            this.users.sort((a, b) => {
+                const aTime = a.createdAt || a.lastLogin || a.updatedAt;
+                const bTime = b.createdAt || b.lastLogin || b.updatedAt;
+                
+                if (!aTime && !bTime) return 0;
+                if (!aTime) return 1;
+                if (!bTime) return -1;
+                
+                const aDate = aTime.toDate ? aTime.toDate() : new Date(aTime);
+                const bDate = bTime.toDate ? bTime.toDate() : new Date(bTime);
+                return bDate - aDate;
             });
             
             console.log('Users loaded:', this.users);
