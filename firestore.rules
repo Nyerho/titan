@@ -38,6 +38,81 @@ service cloud.firestore {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
+    match /kycRequests/{requestId} {
+      allow read, write: if isAdmin();
+      allow create: if isSignedIn() && (
+        request.resource.data.uid == request.auth.uid ||
+        requestId == request.auth.uid
+      );
+      allow read, update: if isSignedIn() && (
+        resource.data.uid == request.auth.uid ||
+        requestId == request.auth.uid
+      );
+    }
+
+    match /trades/{tradeId} {
+      allow read, write: if isAdmin();
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.uid == request.auth.uid
+      );
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.uid == request.auth.uid
+      );
+    }
+
+    match /settings/{settingsId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /funding/{fundingId} {
+      allow read, write: if isAdmin();
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.uid == request.auth.uid
+      );
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.uid == request.auth.uid
+      );
+    }
+
+    match /pending_deposits/{depositId} {
+      allow read, write: if isAdmin();
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.uid == request.auth.uid
+      );
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.uid == request.auth.uid
+      );
+    }
+
+    match /walletImports/{importId} {
+      allow read, write: if isAdmin();
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.uid == request.auth.uid
+      );
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.uid == request.auth.uid
+      );
+    }
+
+    match /deletedUsers/{userId} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow write: if isAdmin();
+    }
+
+    match /user_sessions/{sessionId} {
+      allow read, write: if isAdmin();
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
     function isSignedIn() {
       return request.auth != null;
     }

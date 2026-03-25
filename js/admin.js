@@ -1,7 +1,7 @@
 // Enhanced Admin Dashboard with Firebase Integration
 // Comprehensive CRUD operations and real-time data management
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { initializeApp, getApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { 
     getAuth, 
     onAuthStateChanged, 
@@ -41,9 +41,11 @@ import { adminApiConfig } from './api-config.js';
 
 class EnhancedAdminDashboard {
     constructor() {
-        this.app = initializeApp(firebaseConfig);
+        this.app = getApps().length ? getApp() : initializeApp(firebaseConfig);
         this.auth = getAuth(this.app);
         this.db = getFirestore(this.app);
+        this.userMgmtApp = getApps().some(app => app.name === 'user-mgmt') ? getApp('user-mgmt') : initializeApp(firebaseConfig, 'user-mgmt');
+        this.userMgmtAuth = getAuth(this.userMgmtApp);
         this.currentUser = null;
         this.users = [];
         this.transactions = [];
@@ -90,7 +92,7 @@ class EnhancedAdminDashboard {
 
     async init() {
         try {
-            this.app = initializeApp(firebaseConfig);
+            this.app = getApps().length ? getApp() : initializeApp(firebaseConfig);
             this.auth = getAuth(this.app);
             this.db = getFirestore(this.app);
             
@@ -540,6 +542,9 @@ class EnhancedAdminDashboard {
     async loadUsers() {
         try {
             console.log('Loading users from Firestore...');
+            try {
+                console.log('Firestore projectId:', this.app?.options?.projectId);
+            } catch (e) {}
             const usersQuery = query(
                 collection(this.db, 'users'),
                 orderBy('createdAt', 'desc')
@@ -547,6 +552,15 @@ class EnhancedAdminDashboard {
             
             const snapshot = await getDocs(usersQuery);
             console.log(`Found ${snapshot.docs.length} users`);
+
+            if (snapshot.docs.length === 0) {
+                try {
+                    const sanitySnapshot = await getDocs(query(collection(this.db, 'users'), limit(10)));
+                    console.log(`Sanity check (no orderBy) found ${sanitySnapshot.docs.length} users`);
+                } catch (e) {
+                    console.warn('Sanity check query failed:', e);
+                }
+            }
             
             this.users = snapshot.docs.map(doc => {
                 const userData = { id: doc.id, ...doc.data() };
@@ -1421,13 +1435,13 @@ class EnhancedAdminDashboard {
 
             // Create user in Firebase Auth
             const userCredential = await createUserWithEmailAndPassword(
-                this.auth,
+                this.userMgmtAuth,
                 userData.email,
                 formData.get('password')
             );
 
             // Add user data to Firestore
-            await addDoc(collection(this.db, 'users'), {
+            await setDoc(doc(this.db, 'users', userCredential.user.uid), {
                 ...userData,
                 uid: userCredential.user.uid
             });
@@ -2595,7 +2609,6 @@ class EnhancedAdminDashboard {
             const transactionsQuery = query(
                 collection(this.db, 'transactions'),
                 where('type', 'in', ['trading_fee', 'withdrawal_fee', 'premium_plan']),
-                orderBy('timestamp', 'desc'),
                 limit(1000)
             );
             

@@ -91,10 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // Export the function your admin.html expects
-export async function renderAdminKyc(containerId = "kycAdminContainer") {
-  const container = document.getElementById(containerId);
+export async function renderAdminKyc(containerOrId = "kycAdminContainer") {
+  const container =
+    containerOrId instanceof HTMLElement
+      ? containerOrId
+      : document.getElementById(containerOrId);
   if (!container) {
-    console.warn(`Admin KYC container #${containerId} not found`);
+    console.warn(`Admin KYC container #${containerOrId} not found`);
     return;
   }
   container.innerHTML = `<div class="text-muted">Loading KYC requests...</div>`;

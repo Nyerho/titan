@@ -12,7 +12,7 @@ import {
   deleteUser,
   sendEmailVerification
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { doc, setDoc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
 
 class FirebaseAuthService {
@@ -56,7 +56,11 @@ class FirebaseAuthService {
         onAuthStateChanged(auth, async (user) => {
             this.currentUser = user;
             if (user) {
-                await this.syncUserProfile(user);
+                try {
+                  await this.syncUserProfile(user);
+                } catch (e) {
+                  console.error('Error syncing user profile:', e);
+                }
             }
             this.notifyAuthStateListeners(user);
         });
@@ -77,10 +81,19 @@ class FirebaseAuthService {
       });
 
       // Create user document in Firestore
-      await this.createUserDocument(user, {
-        ...userData,
-        emailVerified: false
-      });
+      try {
+        await this.createUserDocument(user, {
+          ...userData,
+          emailVerified: false
+        });
+      } catch (firestoreError) {
+        try {
+          await deleteUser(user);
+        } catch (rollbackError) {
+          console.warn('Failed to rollback auth user after Firestore write failure:', rollbackError);
+        }
+        throw firestoreError;
+      }
 
       // Try to send verification email, but don't fail registration if it fails
       try {
@@ -99,10 +112,15 @@ class FirebaseAuthService {
       };
     } catch (error) {
       console.error('Registration error:', error);
+      try {
+        await signOut(auth);
+      } catch (e) {}
       return {
         success: false,
         error: error.code,
-        message: this.getErrorMessage(error.code)
+        message: error?.code === 'permission-denied'
+          ? 'Registration failed due to database permissions. Please contact support.'
+          : this.getErrorMessage(error.code)
       };
     }
   }
@@ -240,10 +258,11 @@ class FirebaseAuthService {
       email: user.email,
       displayName: user.displayName,
       emailVerified: user.emailVerified,
+      role: userData.role || 'user',
       balance: 0, // Start with 0 balance for synchronicity
       totalDeposits: 0,
-      createdAt: new Date(),
-      lastLogin: new Date(),
+      createdAt: serverTimestamp(),
+      lastLogin: serverTimestamp(),
       profile: {
         firstName: userData.firstName || '',
         lastName: userData.lastName || '',
@@ -294,7 +313,9 @@ class FirebaseAuthService {
         await this.createUserDocument(user, {});
       }
     } catch (error) {
-      console.error('Error syncing user profile:', error);
+      if (error?.code === 'permission-denied' || String(error?.message || '').includes('Missing or insufficient permissions')) {
+        return;
+      }
       throw error;
     }
   }
