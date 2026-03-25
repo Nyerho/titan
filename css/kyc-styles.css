@@ -5,9 +5,11 @@
     --kyc-success: #00d4aa;
     --kyc-warning: #fbbf24;
     --kyc-danger: #ef4444;
-    --kyc-dark: #1a1d29;
+    --kyc-dark: #ffffff;
     --kyc-light: #f8fafc;
-    --kyc-border: rgba(255, 255, 255, 0.1);
+    --kyc-border: #e2e8f0;
+    --kyc-text: #0f172a;
+    --kyc-text-muted: #475569;
 }
 
 /* KYC Header */
@@ -68,7 +70,7 @@
 
 /* KYC Status Card */
 .kyc-status-card {
-    background: rgba(255, 255, 255, 0.05);
+    background: #ffffff;
     border: 1px solid var(--kyc-border);
     border-radius: 16px;
     padding: 2rem;
@@ -99,12 +101,12 @@
 .status-info h2 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: white;
+    color: var(--kyc-text);
     margin: 0 0 0.5rem 0;
 }
 
 .status-info p {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--kyc-text-muted);
     margin: 0;
 }
 
@@ -142,7 +144,7 @@
 .progress-bar {
     width: 100%;
     height: 8px;
-    background: rgba(255, 255, 255, 0.1);
+    background: #e2e8f0;
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 1rem;
@@ -173,8 +175,8 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.5);
+    background: var(--kyc-light);
+    color: #64748b;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -194,13 +196,13 @@
 
 .step span {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--kyc-text-muted);
     text-align: center;
 }
 
 /* Benefits Section */
 .benefits-section {
-    background: rgba(255, 255, 255, 0.05);
+    background: #ffffff;
     border: 1px solid var(--kyc-border);
     border-radius: 16px;
     padding: 2rem;
@@ -208,7 +210,7 @@
 }
 
 .benefits-section h3 {
-    color: white;
+    color: var(--kyc-text);
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 1.5rem;
@@ -228,13 +230,13 @@
     align-items: flex-start;
     gap: 1rem;
     padding: 1rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--kyc-light);
     border-radius: 12px;
     transition: all 0.3s ease;
 }
 
 .benefit-item:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: #f1f5f9;
     transform: translateY(-2px);
 }
 
@@ -251,14 +253,14 @@
 }
 
 .benefit-content h4 {
-    color: white;
+    color: var(--kyc-text);
     font-size: 1rem;
     font-weight: 600;
     margin: 0 0 0.25rem 0;
 }
 
 .benefit-content p {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--kyc-text-muted);
     font-size: 0.875rem;
     margin: 0;
     line-height: 1.4;
@@ -266,7 +268,7 @@
 
 /* Requirements Section */
 .requirements-section {
-    background: rgba(255, 255, 255, 0.05);
+    background: #ffffff;
     border: 1px solid var(--kyc-border);
     border-radius: 16px;
     padding: 2rem;
@@ -274,7 +276,7 @@
 }
 
 .requirements-section h3 {
-    color: white;
+    color: var(--kyc-text);
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 1.5rem;
@@ -294,15 +296,15 @@
     align-items: center;
     gap: 1rem;
     padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--kyc-light);
     border: 1px solid var(--kyc-border);
     border-radius: 12px;
     transition: all 0.3s ease;
 }
 
 .requirement-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: #f1f5f9;
+    border-color: #cbd5e1;
 }
 
 .requirement-icon {
@@ -322,14 +324,14 @@
 }
 
 .requirement-content h4 {
-    color: white;
+    color: var(--kyc-text);
     font-size: 1rem;
     font-weight: 600;
     margin: 0 0 0.25rem 0;
 }
 
 .requirement-content p {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--kyc-text-muted);
     font-size: 0.875rem;
     margin: 0;
     line-height: 1.4;
@@ -385,26 +387,26 @@
 }
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #ffffff;
+    color: var(--kyc-text);
+    border: 1px solid var(--kyc-border);
 }
 
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: #f1f5f9;
     transform: translateY(-2px);
 }
 
 .btn-outline {
     background: transparent;
-    color: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--kyc-text);
+    border: 1px solid var(--kyc-border);
 }
 
 .btn-outline:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border-color: rgba(255, 255, 255, 0.5);
+    background: #f1f5f9;
+    color: var(--kyc-text);
+    border-color: #cbd5e1;
 }
 
 .btn-large {
@@ -413,7 +415,7 @@
 }
 
 .help-section {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--kyc-text-muted);
     font-size: 0.875rem;
 }
 
@@ -435,7 +437,7 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(15, 23, 42, 0.55);
     backdrop-filter: blur(5px);
 }
 
@@ -458,7 +460,7 @@
 }
 
 .modal-header h3 {
-    color: white;
+    color: var(--kyc-text);
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
@@ -467,7 +469,7 @@
 .modal-close {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.7);
+    color: #64748b;
     font-size: 1.5rem;
     cursor: pointer;
     padding: 0.25rem;
@@ -476,8 +478,8 @@
 }
 
 .modal-close:hover {
-    color: white;
-    background: rgba(255, 255, 255, 0.1);
+    color: var(--kyc-text);
+    background: #f1f5f9;
 }
 
 .modal-body {
@@ -493,7 +495,7 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(5px);
 }
 
@@ -656,12 +658,12 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(5px);
 }
 
 .modal-content {
-    background: #1a1d29;
+    background: #ffffff;
     margin: 2% auto;
     padding: 0;
     border-radius: 16px;
@@ -669,8 +671,8 @@
     max-width: 700px;
     max-height: 90vh;
     overflow-y: auto;
-    border: 1px solid #2d3748;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
 }
 
 .modal-header {
@@ -678,13 +680,13 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem 2rem;
-    border-bottom: 1px solid #2d3748;
-    background: #1a1d29;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
     border-radius: 16px 16px 0 0;
 }
 
 .modal-header h3 {
-    color: #ffffff;
+    color: var(--kyc-text);
     margin: 0;
     font-size: 1.5rem;
     font-weight: 600;
@@ -707,13 +709,13 @@
 }
 
 .modal-close:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
+    color: var(--kyc-text);
+    background: #f1f5f9;
 }
 
 .modal-body {
     padding: 2rem;
-    background: #1a1d29;
+    background: #ffffff;
 }
 
 /* Verification Form Styling */
@@ -722,7 +724,7 @@
 }
 
 .verification-form h4 {
-    color: #ffffff;
+    color: var(--kyc-text);
     font-size: 1.25rem;
     font-weight: 600;
     margin: 0 0 0.5rem 0;
@@ -730,7 +732,7 @@
 }
 
 .form-description {
-    color: #a0aec0;
+    color: var(--kyc-text-muted);
     margin-bottom: 2rem;
     text-align: center;
     font-size: 0.95rem;
@@ -740,10 +742,10 @@
 /* Upload Section Styling */
 .upload-section {
     margin-bottom: 2rem;
-    border: 1px solid #2d3748;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 1.5rem;
-    background: #252a3a;
+    background: #f8fafc;
 }
 
 .upload-header {
@@ -762,7 +764,7 @@
 .upload-header h5 {
     margin: 0;
     flex: 1;
-    color: #ffffff;
+    color: var(--kyc-text);
     font-size: 1rem;
     font-weight: 500;
 }
@@ -778,11 +780,11 @@
 
 /* Upload Area Styling */
 .upload-area {
-    border: 2px dashed #4a5568;
+    border: 2px dashed #cbd5e1;
     border-radius: 8px;
     transition: all 0.3s ease;
     position: relative;
-    background: #1a1d29;
+    background: #ffffff;
 }
 
 .upload-area.drag-over {
@@ -810,13 +812,13 @@
 
 .upload-placeholder p {
     margin: 0.5rem 0;
-    color: #ffffff;
+    color: var(--kyc-text);
     font-weight: 500;
     font-size: 1rem;
 }
 
 .upload-placeholder small {
-    color: #a0aec0;
+    color: var(--kyc-text-muted);
     font-size: 0.875rem;
     display: block;
     margin-top: 0.5rem;
@@ -832,14 +834,14 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    background: #2d3748;
+    background: #f8fafc;
     border-radius: 8px;
-    border: 1px solid #4a5568;
+    border: 1px solid #e2e8f0;
 }
 
 .file-preview img {
     border-radius: 8px;
-    border: 1px solid #4a5568;
+    border: 1px solid #e2e8f0;
     max-width: 120px;
     max-height: 90px;
     object-fit: cover;
@@ -854,7 +856,7 @@
   align-items: center;
   overflow: hidden;
   padding: 8px;
-  background: #0f131a; /* optional, matches dark theme */
+  background: #f8fafc; /* optional, matches dark theme */
   border-radius: 8px;
 }
 
@@ -902,7 +904,7 @@
     height: 60px;
     background: rgba(220, 53, 69, 0.2);
     border-radius: 8px;
-    border: 1px solid #4a5568;
+    border: 1px solid #e2e8f0;
 }
 
 .file-info {
@@ -911,12 +913,12 @@
 
 .file-info p {
     margin: 0 0 0.25rem 0;
-    color: #ffffff;
+    color: var(--kyc-text);
     font-size: 0.9rem;
 }
 
 .file-info p:last-child {
-    color: #a0aec0;
+    color: var(--kyc-text-muted);
     font-size: 0.8rem;
 }
 
@@ -946,7 +948,7 @@
     justify-content: flex-end;
     margin-top: 2rem;
     padding-top: 1.5rem;
-    border-top: 1px solid #2d3748;
+    border-top: 1px solid #e2e8f0;
 }
 
 .modal-actions .btn {
@@ -963,14 +965,14 @@
 }
 
 .btn-secondary {
-    background: #4a5568;
-    color: #ffffff;
-    border: 1px solid #4a5568;
+    background: #ffffff;
+    color: var(--kyc-text);
+    border: 1px solid #e2e8f0;
 }
 
 .btn-secondary:hover {
-    background: #2d3748;
-    border-color: #2d3748;
+    background: #f1f5f9;
+    border-color: #cbd5e1;
 }
 
 .btn-primary {
@@ -986,9 +988,9 @@
 }
 
 .btn-primary:disabled {
-    background: #2d3748;
-    border-color: #2d3748;
-    color: #718096;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #94a3b8;
     cursor: not-allowed;
     transform: none;
 }
@@ -1095,7 +1097,7 @@
 
 .upload-header i {
     font-size: 1.2rem;
-    color: var(--primary-color);
+    color: var(--kyc-primary);
 }
 
 .upload-header h5 {

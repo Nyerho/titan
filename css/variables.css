@@ -5,16 +5,16 @@
     --primary-gradient: linear-gradient(135deg, #8b5cf6, #22d3ee);
     --secondary-color: #22d3ee;
     
-    /* Background Colors - Dark Blue Theme */
-    --bg-primary: #070a12;   /* Main background */
-    --bg-secondary: #0e1630; /* Surfaces */
-    --bg-tertiary: #141b34;  /* Elevated surfaces */
-    --bg-card: #1a2550;      /* Card/border surface */
-    --bg-sidebar: #0e1630;   /* Sidebar background */
+    /* Background Colors */
+    --bg-primary: #ffffff;   /* Main background */
+    --bg-secondary: #f6f7fb; /* Surfaces */
+    --bg-tertiary: #ffffff;  /* Elevated surfaces */
+    --bg-card: #e2e8f0;      /* Card/border surface */
+    --bg-sidebar: #f6f7fb;   /* Sidebar background */
     
     /* Text Colors */
-    --text-primary: #ffffff;
-    --text-secondary: #b8c5d1;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
     --text-accent: var(--primary-color);
     
     /* Status Colors */

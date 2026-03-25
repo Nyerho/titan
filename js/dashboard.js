@@ -712,6 +712,11 @@ class DashboardManager {
             });
             const prices = sampleData.map(item => item.value);
     
+            // Create a subtle vertical gradient for area fill
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, 'rgba(37, 99, 235, 0.18)');   // #2563eb @ 18%
+            gradient.addColorStop(1, 'rgba(37, 99, 235, 0.03)');   // fade to 3%
+
             this.marketChart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -719,16 +724,18 @@ class DashboardManager {
                     datasets: [{
                         label: 'Price',
                         data: prices,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderColor: '#2563eb',
+                        backgroundColor: gradient,
                         borderWidth: 2,
                         fill: true,
-                        tension: 0.1,
-                        pointBackgroundColor: '#3b82f6',
+                        tension: 0.35,
+                        cubicInterpolationMode: 'monotone',
+                        pointBackgroundColor: '#2563eb',
                         pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 3,
-                        pointHoverRadius: 5
+                        pointBorderWidth: 1,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        pointHitRadius: 10
                     }]
                 },
                 options: {
@@ -739,37 +746,54 @@ class DashboardManager {
                             display: false
                         },
                         tooltip: {
-                            mode: 'index',
+                            mode: 'nearest',
                             intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#ffffff',
-                            bodyColor: '#ffffff',
-                            borderColor: '#3b82f6',
-                            borderWidth: 1
+                            backgroundColor: '#ffffff',
+                            titleColor: '#0f172a',
+                            bodyColor: '#0f172a',
+                            borderColor: '#cbd5e1',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(ctx) {
+                                    const v = ctx.parsed.y ?? ctx.raw;
+                                    return typeof v === 'number' ? '$' + v.toFixed(2) : v;
+                                }
+                            }
                         }
                     },
                     scales: {
                         x: {
                             display: true,
                             grid: {
-                                color: 'rgba(42, 46, 57, 0.3)',
-                                drawBorder: false
+                                color: '#e2e8f0',
+                                drawBorder: false,
+                                lineWidth: 1
                             },
                             ticks: {
-                                color: '#ffffff',
-                                maxTicksLimit: 8
+                                color: '#475569',
+                                maxTicksLimit: 6,
+                                maxRotation: 0,
+                                autoSkip: true
                             }
                         },
                         y: {
                             display: true,
                             grid: {
-                                color: 'rgba(42, 46, 57, 0.3)',
-                                drawBorder: false
+                                color: '#e2e8f0',
+                                drawBorder: false,
+                                lineWidth: 1
                             },
                             ticks: {
-                                color: '#ffffff',
+                                color: '#475569',
                                 callback: function(value) {
-                                    return '$' + value.toFixed(2);
+                                    if (typeof value !== 'number') return value;
+                                    const formatter = new Intl.NumberFormat('en-US', {
+                                        notation: 'compact',
+                                        maximumFractionDigits: 1
+                                    });
+                                    return '$' + formatter.format(value);
                                 }
                             }
                         }
@@ -782,7 +806,7 @@ class DashboardManager {
                 },
                 elements: {
                     point: {
-                        hoverRadius: 8
+                        hoverRadius: 6
                     }
                 }
             });

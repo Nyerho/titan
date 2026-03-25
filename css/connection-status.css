@@ -128,14 +128,3 @@
     }
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .status-details {
-        background: #1f2937;
-        border-color: #374151;
-    }
-    
-    .provider-name {
-        color: #d1d5db;
-    }
-}

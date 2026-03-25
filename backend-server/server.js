@@ -66,9 +66,11 @@ function initializeFirebaseAdmin() {
   }
 
   if (!admin.apps.length) {
-    const databaseURL =
-      process.env.FIREBASE_DATABASE_URL ||
-      'https://centraltradehub-30f00-default-rtdb.firebaseio.com';
+    const databaseURL = process.env.FIREBASE_DATABASE_URL;
+    if (!databaseURL) {
+      console.error('Firebase Admin initialization failed: FIREBASE_DATABASE_URL is required.');
+      process.exit(1);
+    }
     admin.initializeApp({ credential, databaseURL });
   }
   console.log(`Firebase Admin initialized (source: ${source})`);

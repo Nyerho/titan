@@ -5,6 +5,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { 
     getAuth, 
     onAuthStateChanged, 
+    getIdTokenResult,
     signOut,
     createUserWithEmailAndPassword,
     updatePassword,
@@ -147,17 +148,47 @@ class EnhancedAdminDashboard {
             }
             
             console.log('Checking admin access for user:', this.currentUser.uid);
-            const userDoc = await getDoc(doc(this.db, 'users', this.currentUser.uid));
+            let claimIsAdmin = false;
+            try {
+                try {
+                    if (typeof this.currentUser.getIdToken === 'function') {
+                        const token = await this.currentUser.getIdToken(true);
+                        try {
+                            const base64Url = String(token || '').split('.')[1] || '';
+                            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                            const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+                            const payload = JSON.parse(atob(padded));
+                            if (payload?.admin === true) {
+                                claimIsAdmin = true;
+                            }
+                        } catch (e) {}
+                    }
+                } catch (e) {}
+                const tokenResult = await getIdTokenResult(this.currentUser);
+                claimIsAdmin = claimIsAdmin || tokenResult?.claims?.admin === true;
+            } catch (e) {
+                claimIsAdmin = false;
+            }
+
+            let userDoc = null;
+            try {
+                userDoc = await getDoc(doc(this.db, 'users', this.currentUser.uid));
+            } catch (e) {
+                userDoc = null;
+            }
             
-            console.log('User document exists:', userDoc.exists());
-            if (userDoc.exists()) {
+            if (userDoc && userDoc.exists()) {
                 const userData = userDoc.data();
+                console.log('User document exists: true');
                 console.log('User data:', userData);
                 console.log('User role:', userData.role);
                 console.log('Role check result:', userData.role === 'admin');
+            } else {
+                console.log('User document exists:', false);
             }
             
-            if (!userDoc.exists() || userDoc.data().role !== 'admin') {
+            const docIsAdmin = !!(userDoc && userDoc.exists() && userDoc.data().role === 'admin');
+            if (!claimIsAdmin && !docIsAdmin) {
                 console.log('Access denied - redirecting to login');
                 this.showNotification('Access denied. Admin privileges required.', 'error');
                 await signOut(this.auth);
@@ -167,7 +198,7 @@ class EnhancedAdminDashboard {
             
             console.log('Admin access granted');
             // Update UI with admin info
-            this.updateAdminInfo(userDoc.data());
+            this.updateAdminInfo(userDoc && userDoc.exists() ? userDoc.data() : { email: this.currentUser.email, role: 'admin' });
             return true;
             
         } catch (error) {

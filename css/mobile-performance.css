@@ -12,7 +12,7 @@
     .auth-content,
     .floating-icon {
         backdrop-filter: none !important;
-        background: rgba(26, 26, 46, 0.95) !important;
+        background: #ffffff !important;
     }
     
     /* Simplify animations */
@@ -33,7 +33,7 @@
     
     /* Optimize hero section */
     .hero {
-        background: #1a1a2e !important;
+        background: #ffffff !important;
         min-height: auto !important;
     }
     
@@ -90,7 +90,7 @@
     
     /* Simplify navigation */
     .nav-menu {
-        background: #1a1a2e !important;
+        background: #ffffff !important;
         box-shadow: none !important;
     }
 }

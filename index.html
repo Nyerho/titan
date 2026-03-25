@@ -14,7 +14,7 @@
     <!-- Open Graph Tags -->
     <meta property="og:title" content="TitanTrades - Professional Trading Platform">
     <meta property="og:description" content="Trade forex and crypto with advanced tools">
-    <meta property="og:image" content="assets/images/logo.png">
+    <meta property="og:image" content="assets/images/og-image.png">
     <meta property="og:url" content="https://titantrades.com">
     
     <!-- Twitter Card Tags -->
@@ -24,12 +24,13 @@
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
-    <link rel="apple-touch-icon" href="assets/images/logo.png">
+    <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#3949ab">
     
+    <link rel="icon" type="image/x-icon" href="assets/images/aF.png">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/auth.css">
     <link rel="stylesheet" href="css/responsive.css">
@@ -89,7 +90,7 @@
         <div class="container-fluid nav-container">
             <div class="nav-logo navbar-brand">
                 <a href="index.html" class="d-flex align-items-center text-decoration-none">
-                    <i class="fas fa-chart-line" style="font-size: 2rem; color: #8b5cf6;"></i>
+                    <i class="fas fa-chart-line" style="font-size: 2rem; color: #00d4ff;"></i>
                     <span class="logo-text ms-2">TitanTrades</span>
                 </a>
             </div>
@@ -123,68 +124,36 @@
 
     <!-- Hero Section -->
     <section id="home" class="hero">
-        <div class="container hero-container">
-            <div class="row align-items-center g-5">
-                <div class="col-lg-6">
-                    <div class="landing-kicker mb-3">Built for modern traders</div>
-                    <h1 class="hero-title mb-3">Trade, automate, and scale with TitanTrades</h1>
-                    <p class="hero-subtitle mb-4">A fast, clean trading experience with built‑in automation. Buy trading bots, activate them in seconds, and run prop firm evaluations with clear rules and real‑time tracking.</p>
-                    <div class="hero-buttons flex-column flex-sm-row">
-                        <a href="auth.html#register" class="btn btn-primary btn-lg">Create Account</a>
-                        <a href="platform.html" class="btn btn-secondary btn-lg" onclick="handlePlatformClick(event)">Open Platform</a>
-                    </div>
-                    <div class="row g-3 mt-4">
-                        <div class="col-4">
-                            <div class="landing-metric">
-                                <div class="landing-metric-value">0.01s</div>
-                                <div class="landing-metric-label">Execution</div>
-                            </div>
+        <div class="container-fluid hero-container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 col-xl-8">
+                    <div class="hero-content text-center">
+                        <h1 class="hero-title display-4 fw-bold mb-4">Professional Trading Platform for Global Markets</h1>
+                        <p class="hero-subtitle lead mb-5">Execute trades with institutional-grade technology. Access forex, cryptocurrencies, commodities, and indices with ultra-low latency execution, advanced risk management, and comprehensive market analysis tools trusted by over 150,000 active traders worldwide.</p>
+                        <div class="hero-buttons d-flex flex-column flex-md-row gap-3 justify-content-center mb-5">
+                            <a href="auth.html#register" class="btn btn-primary btn-lg">Start Trading</a>
+                            <a href="auth.html" class="btn btn-outline-light btn-lg">Login to your Account</a>
+                            <a href="#contact" class="btn btn-outline-info btn-lg">Contact Us</a>
                         </div>
-                        <div class="col-4">
-                            <div class="landing-metric">
-                                <div class="landing-metric-value">24/7</div>
-                                <div class="landing-metric-label">Markets</div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="landing-metric">
-                                <div class="landing-metric-value">150K+</div>
-                                <div class="landing-metric-label">Traders</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="landing-surface p-3 p-md-4">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <div class="landing-panel p-3 p-md-4">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="fas fa-robot" style="color: #8b5cf6;"></i>
-                                            <div class="fw-semibold">Trading Bots Marketplace</div>
-                                        </div>
-                                        <span class="badge landing-badge">Instant activation</span>
+                        <div class="hero-stats">
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <div class="stat text-center">
+                                        <span class="stat-number display-6 fw-bold text-primary">$4.2B+</span>
+                                        <span class="stat-label d-block text-muted">Daily Trading Volume</span>
                                     </div>
-                                    <div class="text-secondary mt-2">Choose a bot tier, purchase once, and toggle it on/off from your dashboard.</div>
                                 </div>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <div class="landing-panel p-3 p-md-4 h-100">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <i class="fas fa-building-columns" style="color: #22d3ee;"></i>
-                                        <div class="fw-semibold">Prop Accounts</div>
+                                <div class="col-md-4">
+                                    <div class="stat text-center">
+                                        <span class="stat-number display-6 fw-bold text-primary">180K+</span>
+                                        <span class="stat-label d-block text-muted">Active Traders</span>
                                     </div>
-                                    <div class="text-secondary mt-2">Pick a plan size and follow drawdown + target rules with live status.</div>
                                 </div>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <div class="landing-panel p-3 p-md-4 h-100">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <i class="fas fa-shield-alt" style="color: #10b981;"></i>
-                                        <div class="fw-semibold">Risk Controls</div>
+                                <div class="col-md-4">
+                                    <div class="stat text-center">
+                                        <span class="stat-number display-6 fw-bold text-primary">0.008s</span>
+                                        <span class="stat-label d-block text-muted">Average Execution</span>
                                     </div>
-                                    <div class="text-secondary mt-2">Clear position sizing, balance checks, and evaluation tracking.</div>
                                 </div>
                             </div>
                         </div>
@@ -194,68 +163,45 @@
         </div>
     </section>
 
-    <section class="landing-rotator">
-        <div class="container">
-            <div class="landing-rotator-inner">
-                <div class="landing-rotator-box">
-                    <div class="landing-rotator-item landing-rotator-item-1">Buy a trading bot, activate it instantly, and stay in control.</div>
-                    <div class="landing-rotator-item landing-rotator-item-2">Prop account evaluations with clear drawdown rules and live status.</div>
-                    <div class="landing-rotator-item landing-rotator-item-3">Trade forex, indices, commodities and crypto with fast execution.</div>
-                    <div class="landing-rotator-item landing-rotator-item-4">One dashboard for funding, withdrawals, history, and support.</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
+    <!-- Market Overview -->
     <section id="markets" class="market-overview">
         <div class="container">
-            <div class="row align-items-end g-4 mb-4">
-                <div class="col-lg-7">
-                    <div class="landing-kicker mb-2">Markets</div>
-                    <h2 class="landing-title mb-2">One account. Multiple asset classes.</h2>
-                    <p class="landing-lead mb-0">Trade forex, indices, commodities and crypto with a clean interface and fast order placement.</p>
-                </div>
-                <div class="col-lg-5 text-lg-end">
-                    <a href="platform.html" class="btn btn-primary me-2" onclick="handlePlatformClick(event)">Open Platform</a>
-                    <a href="auth.html#register" class="btn btn-outline-light">Get Started</a>
-                </div>
-            </div>
-
-            <div class="row g-3">
-                <div class="col-12 col-md-6 col-xl-3">
-                    <div class="landing-panel landing-panel-lg">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="fw-semibold">Forex</div>
-                            <i class="fas fa-exchange-alt" style="color: #22d3ee;"></i>
-                        </div>
-                        <div class="text-secondary mt-2">Majors, minors, and exotics with transparent pricing.</div>
+            <div class="market-content">
+                <div class="market-text">
+                    <div class="section-badge">EXISTENCE IS</div>
+                    <h2>Enhanced with <span class="highlight">Wealth</span></h2>
+                    <p>Become part of the multitude of investors and elevate your portfolio to unparalleled heights.</p>
+                    
+                    <div class="market-buttons">
+                        <a href="auth.html#register" class="btn-start-trading">Start Trading <i class="fas fa-arrow-right"></i></a>
+                        <a href="auth.html" class="btn-login-account">Login to your Account <i class="fas fa-arrow-right"></i></a>
+                        <a href="#contact" class="btn-contact-us">Contact Us <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
-                <div class="col-12 col-md-6 col-xl-3">
-                    <div class="landing-panel landing-panel-lg">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="fw-semibold">Indices</div>
-                            <i class="fas fa-chart-area" style="color: #8b5cf6;"></i>
+                
+                <div class="market-data-panel">
+                    <div class="live-ticker-compact">
+                        <div class="ticker-row">
+                            <div class="ticker-item-compact">
+                                <span class="symbol">BINANCE:BNBUSDT</span>
+                                <span class="price red">24.67</span>
+                                <span class="change">-0.53 (-2.10%)</span>
+                            </div>
                         </div>
-                        <div class="text-secondary mt-2">Global indices for momentum and macro setups.</div>
-                    </div>
-                </div>
-                <div class="col-12 col-md-6 col-xl-3">
-                    <div class="landing-panel landing-panel-lg">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="fw-semibold">Crypto</div>
-                            <i class="fab fa-bitcoin" style="color: #f59e0b;"></i>
+                        <div class="ticker-row">
+                            <div class="ticker-item-compact">
+                                <span class="symbol">AVAXUSDT</span>
+                                <span class="price green">2.80718</span>
+                                <span class="change">-0.04 (-1.33%)</span>
+                            </div>
                         </div>
-                        <div class="text-secondary mt-2">24/7 markets with quick execution.</div>
-                    </div>
-                </div>
-                <div class="col-12 col-md-6 col-xl-3">
-                    <div class="landing-panel landing-panel-lg">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="fw-semibold">Commodities</div>
-                            <i class="fas fa-oil-can" style="color: #94a3b8;"></i>
+                        <div class="ticker-row">
+                            <div class="ticker-item-compact">
+                                <span class="symbol">XRPUSDT</span>
+                                <span class="price">0.5234</span>
+                                <span class="change">+0.0123 (+2.41%)</span>
+                            </div>
                         </div>
-                        <div class="text-secondary mt-2">Gold, oil and more to diversify risk.</div>
                     </div>
                 </div>
             </div>
@@ -287,7 +233,7 @@
                 </div>
                 <div class="assets-visual">
                     <div class="crypto-gift-box">
-                        <img src="assets/images/PixVerse_Image_Effect_prompt_forex%20broker%20char.jpg" alt="Forex broker character" class="crypto-gift-image">
+                        <img src="assets/images/tradeen.png" alt="Cryptocurrency Rewards Gift Box" class="crypto-gift-image">
                     </div>
                 </div>
                 <div class="crypto-gift-box">
@@ -335,7 +281,7 @@
                     </div>
                 </div>
                 <div class="presence-visual">
-                    <img src="assets/images/PixVerse_Image_Effect_prompt_forex%20broker%20char%20(1).jpg" alt="Forex broker character" class="presence-image">
+                    <img src="assets/images/hm2.png" alt="Global Trading Presence" class="presence-image">
                 </div>
             </div>
         </div>
@@ -391,7 +337,7 @@
                     </div>
                 </div>
                 <div class="forex-visual">
-                    <img src="assets/images/PixVerse_Image_Effect_prompt_forex%20broker.jpg" alt="Forex broker" class="forex-image">
+                    <img src="assets/images/forex trading 2.jpeg" alt="Forex Trading" class="forex-image">
                     <div class="trading-platform-preview">
                         <div class="platform-screen">
                             <div class="platform-header">
@@ -413,41 +359,7 @@
         </div>
     </section>
 
-    <!-- Mobile Trading Platforms Section -->
-    <section class="mobile-platforms">
-        <div class="container">
-            <div class="platforms-header">
-                <h2>Explore our Mobile Trading Platforms</h2>
-                <div class="platform-tabs">
-                    <button class="platform-tab active" data-platform="mt4mt5">MT4/MT5</button>
-                    <button class="platform-tab" data-platform="titantrades-advanced">TitanTrades Trader 4/5</button>
-                    <button class="platform-tab" data-platform="titantrades-plus">TitanTrades Plus <span class="available">Available Now</span></button>
-                </div>
-            </div>
-            
-            <div class="platforms-content">
-                <div class="platform-info">
-                    <h3>MT4/MT5 <span class="highlight">TRADING SOFTWARE</span></h3>
-                    <p>Access over 20,000 instruments including forex, metals, shares, indices, commodities & cryptocurrencies on award-winning MT4 and MT5 Mobile Platforms with instant nano-second execution.</p>
-                    
-                    <div class="platform-features">
-                        <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="feature-icon">
-                            <i class="fas fa-mobile-alt"></i>
-                        </div>
-                    </div>
-                    
-                    <a href="auth.html" class="join-btn">Join Today <i class="fas fa-arrow-right"></i></a>
-                </div>
-                
-                <div class="platform-visual">
-                    <img src="assets/images/mt4.webp" alt="MT4/MT5 Mobile Trading Platform" class="platform-image">
-                </div>
-            </div>
-        </div>
-    </section>
+    
 
     <!-- Invest in Indices Section -->
     <section class="indices-trading">
@@ -579,73 +491,66 @@
     <!-- About Section -->
     <section id="about" class="about-section">
         <div class="container">
-            <div class="row g-4 align-items-stretch">
-                <div class="col-lg-7">
-                    <div class="landing-kicker mb-2">About</div>
-                    <h2 class="landing-title mb-3">Built to remove friction from trading.</h2>
-                    <p class="landing-lead mb-4">TitanTrades combines a fast trading interface with optional automation. You can trade manually, run bots you own, or track prop evaluations without switching platforms.</p>
-
-                    <div class="row g-3">
-                        <div class="col-12 col-md-6">
-                            <div class="landing-panel landing-panel-sm">
-                                <div class="fw-semibold mb-1">Designed for focus</div>
-                                <div class="text-secondary">Clean UI, quick navigation, and real-time updates across pages.</div>
+            <div class="about-content">
+                <div class="about-text">
+                    <div class="section-header">
+                        <h2>About TitanTrades</h2>
+                        <p>Leading the future of online trading with cutting-edge technology and unparalleled service</p>
+                    </div>
+                    <div class="about-story">
+                        <h3>Our Story</h3>
+                        <p>Founded in 2018, TitanTrades emerged from a vision to democratize access to global financial markets. Our team of experienced traders, financial engineers, and technology experts came together with a mission to create the most advanced, user-friendly trading platform in the industry.</p>
+                        
+                        <p>Today, we serve over 180,000 active traders across 45 countries, processing more than $4.2 billion in daily trading volume. Our commitment to innovation, security, and customer success has made us one of the fastest-growing fintech companies in the trading space.</p>
+                    </div>
+                    
+                    <div class="about-mission">
+                        <h3>Our Mission</h3>
+                        <p>To empower traders worldwide with institutional-grade technology, comprehensive education, and exceptional support, enabling them to achieve their financial goals in global markets.</p>
+                    </div>
+                    
+                    <div class="about-values">
+                        <h3>Our Values</h3>
+                        <div class="values-grid">
+                            <div class="value-item">
+                                <i class="fas fa-shield-alt"></i>
+                                <h4>Security First</h4>
+                                <p>Your funds and data are protected by bank-level security measures</p>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="landing-panel landing-panel-sm">
-                                <div class="fw-semibold mb-1">Automation when you want it</div>
-                                <div class="text-secondary">Buy bots, activate them from the dashboard, and stay in control.</div>
+                            <div class="value-item">
+                                <i class="fas fa-rocket"></i>
+                                <h4>Innovation</h4>
+                                <p>Continuously advancing our technology to stay ahead of market demands</p>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="landing-panel landing-panel-sm">
-                                <div class="fw-semibold mb-1">Prop evaluation tracking</div>
-                                <div class="text-secondary">Clear daily/max drawdown rules with status shown on your account.</div>
+                            <div class="value-item">
+                                <i class="fas fa-handshake"></i>
+                                <h4>Transparency</h4>
+                                <p>Clear pricing, honest communication, and ethical business practices</p>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="landing-panel landing-panel-sm">
-                                <div class="fw-semibold mb-1">Security-minded</div>
-                                <div class="text-secondary">Authentication + profile sync with sensible defaults.</div>
+                            <div class="value-item">
+                                <i class="fas fa-users"></i>
+                                <h4>Customer Success</h4>
+                                <p>Your success is our success - we're committed to your trading journey</p>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-lg-5">
-                    <div class="landing-surface h-100 p-4">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="fw-semibold">At a glance</div>
-                            <span class="badge landing-badge">2026</span>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="landing-metric-card">
-                                    <div class="landing-metric-value">150K+</div>
-                                    <div class="landing-metric-label">Traders</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="landing-metric-card">
-                                    <div class="landing-metric-value">99.9%</div>
-                                    <div class="landing-metric-label">Uptime</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="landing-metric-card">
-                                    <div class="landing-metric-value">24/7</div>
-                                    <div class="landing-metric-label">Crypto</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="landing-metric-card">
-                                    <div class="landing-metric-value">0%</div>
-                                    <div class="landing-metric-label">Hidden fees</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-secondary small mt-3">Figures shown are indicative and for product presentation.</div>
+                <div class="about-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">180K+</div>
+                        <div class="stat-label">Active Traders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">$4.2B</div>
+                        <div class="stat-label">Daily Volume</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">45</div>
+                        <div class="stat-label">Countries</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">99.9%</div>
+                        <div class="stat-label">Uptime</div>
                     </div>
                 </div>
             </div>
@@ -656,8 +561,8 @@
     <section id="contact" class="contact-section">
         <div class="container">
             <div class="section-header">
-                <h2>Talk to the Team</h2>
-                <p>Questions about funding, bots, or prop plans? Send a message and we’ll help you out.</p>
+                <h2>Get in Touch</h2>
+                <p>Our team of trading experts is here to help you succeed. Reach out anytime.</p>
             </div>
             <div class="contact-content">
                 <div class="contact-info">
@@ -677,8 +582,8 @@
                         </div>
                         <div class="contact-details">
                             <h3>Email Support</h3>
-                    <p>support@titantrades.com</p>
-                    <p>Fast response, 24/7</p>
+                            <p>support@titantrades.com</p>
+                            <p>Response within 2 hours</p>
                         </div>
                     </div>
                     <div class="contact-method">
@@ -799,28 +704,7 @@
         </div>
     </section>
 
-    <!-- Trading Tools Preview -->
-    <section class="tools-preview">
-        <div class="container">
-            <div class="tools-content">
-                <div class="tools-text">
-                    <h2>Professional Trading Tools</h2>
-                    <p>Access the same tools used by institutional traders and hedge funds. Our platform provides everything you need for successful trading.</p>
-                    <ul class="tools-list">
-                        <li><i class="fas fa-check"></i> Real-time Level II market data</li>
-                        <li><i class="fas fa-check"></i> Advanced order types and algorithms</li>
-                        <li><i class="fas fa-check"></i> Risk management tools</li>
-                        <li><i class="fas fa-check"></i> Portfolio analytics and reporting</li>
-                        <li><i class="fas fa-check"></i> API access for automated trading</li>
-                    </ul>
-                    <a href="auth.html" class="btn-primary">Explore Platform</a>
-                </div>
-                <div class="tools-visual">
-                    <img src="assets/images/PixVerse_Image_Effect_prompt_trading%20platform.jpg" alt="Trading platform">
-                </div>
-            </div>
-        </div>
-    </section>
+    
 
     <!-- Why Choose Us Section -->
     <section class="why-choose-us">
@@ -883,7 +767,7 @@
         <div class="container">
             <div class="security-content">
                 <div class="security-visual">
-                    <img src="assets/images/PixVerse_Image_Effect_prompt_forex%20broker.jpg" alt="Forex broker">
+                    <img src="assets/images/sof.png" alt="Security of Funds">
                 </div>
                 <div class="security-text">
                     <p class="section-subtitle">$1 MILLION EXCESS LOSS INSURANCE PER ACCOUNT</p>
@@ -894,6 +778,8 @@
             </div>
         </div>
     </section>
+
+    
 
     <!-- Company News and Achievements Section -->
     <section class="news-achievements">
@@ -981,16 +867,16 @@
                 <div class="footer-section">
                     <div class="footer-logo">
                         <a href="index.html">
-                            <img src="assets/images/logo-white.png" alt="TitanTrades" class="logo">
+                            <img src="assets/images/logo.png" alt="TitanTrades" class="logo">
                             <span>TitanTrades</span>
                         </a>
                     </div>
                     <p>The world's most advanced trading platform for professional traders and institutions.</p>
                     <div class="social-links">
-                        <a href="https://twitter.com/titantrades"><i class="fab fa-twitter"></i></a>
-                        <a href="https://linkedin.com/company/titantrades"><i class="fab fa-linkedin"></i></a>
-                        <a href="https://facebook.com/titantrades"><i class="fab fa-facebook"></i></a>
-                        <a href="https://instagram.com/titantrades"><i class="fab fa-instagram"></i></a>
+                        <a href="https://twitter.com/centraltradeHub"><i class="fab fa-twitter"></i></a>
+                        <a href="https://linkedin.com/company/centraltradeHub"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://facebook.com/centraltradeHub"><i class="fab fa-facebook"></i></a>
+                        <a href="https://instagram.com/centraltradeHub"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
                 <div class="footer-section">
@@ -1022,7 +908,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 TitanTrades. All rights reserved.</p>
+                <p>&copy; 2024 TitanTrades. All rights reserved.</p>
                 <div class="footer-links">
                     <a href="privacy-policy.html">Privacy Policy</a>
                     <a href="terms-of-service.html">Terms of Service</a>

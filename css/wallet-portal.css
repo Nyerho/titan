@@ -1,13 +1,13 @@
 /* Wallet Portal Styles */
 .wallet-portal-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
-    color: #ffffff;
+    background: #f8fafc;
+    color: #0f172a;
 }
 
 .portal-header {
-    background: rgba(15, 15, 35, 0.95);
-    border-bottom: 1px solid rgba(42, 46, 57, 0.5);
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
     padding: 2rem 0;
 }
 
@@ -36,11 +36,11 @@
 .portal-header h1 {
     font-size: 2.5rem;
     margin-bottom: 0.5rem;
-    color: #ffffff;
+    color: #0f172a;
 }
 
 .portal-header p {
-    color: #8b9dc3;
+    color: #475569;
     font-size: 1.1rem;
 }
 
@@ -55,13 +55,13 @@
     display: flex;
     gap: 1rem;
     margin-bottom: 2rem;
-    border-bottom: 1px solid rgba(42, 46, 57, 0.5);
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .tab-btn {
     background: none;
     border: none;
-    color: #8b9dc3;
+    color: #475569;
     padding: 1rem 1.5rem;
     cursor: pointer;
     border-bottom: 2px solid transparent;
@@ -75,16 +75,17 @@
 }
 
 .tab-btn:hover {
-    color: #ffffff;
+    color: #0f172a;
 }
 
 /* Tab Content */
 .tab-content {
     display: none;
-    background: rgba(26, 26, 46, 0.8);
+    background: #ffffff;
     border-radius: 12px;
     padding: 2rem;
-    border: 1px solid rgba(42, 46, 57, 0.5);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
     margin-bottom: 2rem;
 }
 
@@ -93,13 +94,13 @@
 }
 
 .tab-content h3 {
-    color: #ffffff;
+    color: #0f172a;
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
 }
 
 .tab-content > p {
-    color: #8b9dc3;
+    color: #475569;
     margin-bottom: 2rem;
 }
 
@@ -114,8 +115,8 @@
     align-items: center;
     gap: 1rem;
     padding: 1.5rem;
-    background: rgba(15, 15, 35, 0.8);
-    border: 1px solid rgba(42, 46, 57, 0.5);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -138,13 +139,13 @@
 }
 
 .wallet-info h4 {
-    color: #ffffff;
+    color: #0f172a;
     margin-bottom: 0.25rem;
     font-size: 1.1rem;
 }
 
 .wallet-info p {
-    color: #8b9dc3;
+    color: #475569;
     font-size: 0.875rem;
     margin: 0;
 }
@@ -186,7 +187,7 @@
 
 .form-group label {
     display: block;
-    color: #ffffff;
+    color: #0f172a;
     font-weight: 600;
     margin-bottom: 0.5rem;
 }
@@ -196,10 +197,10 @@
 .form-group textarea {
     width: 100%;
     padding: 0.75rem;
-    background: rgba(15, 15, 35, 0.8);
-    border: 1px solid rgba(42, 46, 57, 0.5);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
-    color: #ffffff;
+    color: #0f172a;
     font-size: 1rem;
 }
 
@@ -213,7 +214,7 @@
 
 .form-group small {
     display: block;
-    color: #8b9dc3;
+    color: #64748b;
     font-size: 0.85rem;
     margin-top: 0.25rem;
 }
@@ -239,8 +240,8 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    background: rgba(15, 15, 35, 0.8);
-    border: 1px solid rgba(42, 46, 57, 0.5);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -257,12 +258,12 @@
 }
 
 .method-option label h4 {
-    color: #ffffff;
+    color: #0f172a;
     margin-bottom: 0.25rem;
 }
 
 .method-option label p {
-    color: #8b9dc3;
+    color: #475569;
     font-size: 0.9rem;
 }
 
@@ -300,33 +301,34 @@
 
 .security-notice h4,
 .security-warning h4 {
-    color: #ffffff;
+    color: #0f172a;
     margin-bottom: 0.25rem;
 }
 
 .security-notice p,
 .security-warning p {
-    color: #8b9dc3;
+    color: #475569;
     font-size: 0.9rem;
 }
 
 /* Git Integration */
 .git-integration {
-    background: rgba(26, 26, 46, 0.8);
+    background: #ffffff;
     border-radius: 12px;
     padding: 2rem;
-    border: 1px solid rgba(42, 46, 57, 0.5);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
     margin-bottom: 2rem;
 }
 
 .git-integration h3 {
-    color: #ffffff;
+    color: #0f172a;
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
 }
 
 .git-integration > p {
-    color: #8b9dc3;
+    color: #475569;
     margin-bottom: 2rem;
 }
 
@@ -335,7 +337,7 @@
 }
 
 .git-permissions h4 {
-    color: #ffffff;
+    color: #0f172a;
     margin-bottom: 1rem;
 }
 
@@ -348,7 +350,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #8b9dc3;
+    color: #475569;
     cursor: pointer;
 }
 
@@ -380,12 +382,13 @@
 }
 
 .connect-btn.secondary {
-    background: #16213e;
-    border: 1px solid #2d2d44;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
 }
 
 .connect-btn.secondary:hover {
-    background: #1e293b;
+    background: #e2e8f0;
     border-color: #4f46e5;
 }
 
@@ -396,7 +399,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(15, 23, 42, 0.55);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -404,12 +407,13 @@
 }
 
 .status-card {
-    background: rgba(26, 26, 46, 0.95);
+    background: #ffffff;
     border-radius: 12px;
     padding: 2rem;
     text-align: center;
     max-width: 400px;
-    border: 1px solid rgba(42, 46, 57, 0.5);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
 }
 
 .status-icon {
@@ -419,12 +423,12 @@
 }
 
 .status-info h4 {
-    color: #ffffff;
+    color: #0f172a;
     margin-bottom: 0.5rem;
 }
 
 .status-info p {
-    color: #8b9dc3;
+    color: #475569;
     margin-bottom: 2rem;
 }
 
@@ -455,8 +459,8 @@
 
 .btn-secondary {
     background: none;
-    border: 1px solid #2d2d44;
-    color: #8b9dc3;
+    border: 1px solid #e2e8f0;
+    color: #475569;
 }
 
 .btn-secondary:hover {
@@ -471,7 +475,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(15, 23, 42, 0.55);
     display: none;
     align-items: center;
     justify-content: center;
@@ -516,7 +520,7 @@
     
     .tab-btn {
         text-align: left;
-        border-bottom: 1px solid rgba(42, 46, 57, 0.5);
+        border-bottom: 1px solid #e2e8f0;
         border-radius: 0;
     }
     

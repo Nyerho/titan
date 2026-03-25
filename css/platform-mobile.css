@@ -62,9 +62,9 @@
     /* Mobile toggle buttons */
     .mobile-sidebar-toggle {
         display: block;
-        background: #16213e;
-        color: #ffffff;
-        border: none;
+        background: #ffffff;
+        color: #0f172a;
+        border: 1px solid #e2e8f0;
         padding: 0.5rem 1rem;
         margin: 0.25rem;
         border-radius: 4px;
@@ -73,7 +73,7 @@
     }
     
     .mobile-sidebar-toggle:hover {
-        background: #1e2a4a;
+        background: #f1f5f9;
     }
     
     /* Trading interface adjustments */

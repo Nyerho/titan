@@ -21,16 +21,19 @@ try {
     }
     
     if (firebase.apps.length === 0) {
-        const firebaseConfig = {
-            apiKey: "AIzaSyAwnWoLfrEc1EtXWCD0by5L0VtCmYf8Unw",
-            authDomain: "centraltradehub-30f00.firebaseapp.com",
-            projectId: "centraltradehub-30f00",
-            storageBucket: "centraltradehub-30f00.firebasestorage.app",
-            messagingSenderId: "745751687877",
-            appId: "1:745751687877:web:4576449aa2e8360931b6ac",
-            measurementId: "G-YHCS5CH450"
+        const firebaseConfig = window.FB_CONFIG || window.firebaseConfig || {
+            apiKey: "AIzaSyB2wni5mJd7m9QZYRLubeyMB6mcPOL1dtA",
+            authDomain: "titantrades-84777.firebaseapp.com",
+            projectId: "titantrades-84777",
+            storageBucket: "titantrades-84777.firebasestorage.app",
+            messagingSenderId: "107204284825",
+            appId: "1:107204284825:web:5d09b029feb91477ae8308",
+            measurementId: "G-585HB34KK9"
         };
-        
+
+        window.FB_CONFIG = window.FB_CONFIG || firebaseConfig;
+        window.firebaseConfig = window.firebaseConfig || firebaseConfig;
+
         firebase.initializeApp(firebaseConfig);
         window.db = firebase.firestore();
         console.log('Firebase initialized successfully with correct config');
@@ -964,7 +967,7 @@ const modalStyles = `
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(15, 23, 42, 0.55);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -972,31 +975,33 @@ const modalStyles = `
 }
 
 .modal-content {
-    background: #16213e;
+    background: #ffffff;
     border-radius: 10px;
     width: 90%;
     max-width: 500px;
     max-height: 90vh;
     overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
 }
 
 .modal-header {
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid #2a3f5f;
+    border-bottom: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .modal-header h3 {
-    color: #e8eaed;
+    color: #0f172a;
     margin: 0;
 }
 
 .close-btn {
     background: none;
     border: none;
-    color: #b3c1d1;
+    color: #64748b;
     font-size: 1.5rem;
     cursor: pointer;
     padding: 0;
@@ -1017,7 +1022,7 @@ const modalStyles = `
 
 .form-group label {
     display: block;
-    color: #b3c1d1;
+    color: #0f172a;
     margin-bottom: 0.5rem;
     font-weight: 500;
 }
@@ -1026,10 +1031,10 @@ const modalStyles = `
 .form-group select {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #2a3f5f;
+    border: 1px solid #e2e8f0;
     border-radius: 5px;
-    background: #0f1419;
-    color: #e8eaed;
+    background: #ffffff;
+    color: #0f172a;
     font-size: 1rem;
 }
 
@@ -1041,7 +1046,7 @@ const modalStyles = `
 
 .modal-footer {
     padding: 1rem 1.5rem;
-    border-top: 1px solid #2a3f5f;
+    border-top: 1px solid #e2e8f0;
     display: flex;
     gap: 1rem;
     justify-content: flex-end;

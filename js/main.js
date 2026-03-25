@@ -357,6 +357,7 @@ function getNotificationIcon(type) {
 // Initialize content manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     new ContentManager();
+    initLandingRotator();
     
     // Setup login/register button handlers
     // Remove these lines that open login/register modals:
@@ -387,30 +388,94 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+function initLandingRotator() {
+    const messageEl = document.getElementById('landingRotatorMessage');
+    const sourceEl = document.getElementById('landingRotatorSource');
+    if (!messageEl) return;
+
+    const messages = [];
+    if (sourceEl) {
+        Array.from(sourceEl.children).forEach((node) => {
+            const text = (node.textContent || '').trim();
+            if (text) messages.push(text);
+        });
+    }
+
+    if (!messages.length) {
+        messages.push(
+            'Buy a trading bot, activate it instantly, and stay in control.',
+            'Prop account evaluations with clear drawdown rules and live status.',
+            'Trade forex, indices, commodities and crypto with fast execution.',
+            'One dashboard for funding, withdrawals, history, and support.'
+        );
+    }
+
+    const transitions = ['tt-rotator-slide-up', 'tt-rotator-slide-left', 'tt-rotator-zoom', 'tt-rotator-slide-down'];
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let index = 0;
+    const tick = () => {
+        const transition = prefersReducedMotion ? 'tt-rotator-fade' : transitions[index % transitions.length];
+        const message = messages[index % messages.length];
+
+        messageEl.classList.remove(...transitions, 'tt-rotator-fade');
+        void messageEl.offsetWidth;
+        messageEl.textContent = message;
+        messageEl.classList.add(transition);
+
+        index += 1;
+    };
+
+    tick();
+    window.setInterval(tick, 4000);
+}
+
 // Admin access control function
 function checkAdminAccess() {
-    import('./firebase-config.js').then(({ auth }) => {
+    import('./firebase-config.js').then(async ({ auth, db }) => {
         // Use onAuthStateChanged to ensure auth is ready
-        const unsubscribe = auth.onAuthStateChanged((user) => {
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
             unsubscribe(); // Clean up listener
             
             if (!user) {
                 showNotification('Please log in to access admin panel', 'error');
                 return;
             }
-            
-            // Define admin emails
-            const adminEmails = [
-                'admin@centraltradehub.com',
-                'owner@centraltradehub.com'
-            ];
-            
-            if (adminEmails.includes(user.email)) {
-                // User is authorized
-                window.location.href = 'admin.html';
-            } else {
-                // User is not authorized
-                showNotification('Access denied. Admin privileges required.', 'error');
+
+            try {
+                const { getIdTokenResult } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                try {
+                    if (typeof user.getIdToken === 'function') {
+                        const token = await user.getIdToken(true);
+                        try {
+                            const base64Url = String(token || '').split('.')[1] || '';
+                            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                            const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+                            const payload = JSON.parse(atob(padded));
+                            if (payload?.admin === true) {
+                                window.location.href = 'admin.html';
+                                return;
+                            }
+                        } catch (e) {}
+                    }
+                } catch (e) {}
+                const tokenResult = await getIdTokenResult(user);
+                if (tokenResult?.claims?.admin === true) {
+                    window.location.href = 'admin.html';
+                    return;
+                }
+
+                const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                const isAdmin = userDoc.exists() && userDoc.data()?.role === 'admin';
+                if (isAdmin) {
+                    window.location.href = 'admin.html';
+                } else {
+                    showNotification('Access denied. Admin privileges required.', 'error');
+                }
+            } catch (error) {
+                console.error('Error checking admin role:', error);
+                showNotification('Unable to verify admin access. Please try again.', 'error');
             }
         });
     }).catch(error => {

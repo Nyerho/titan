@@ -1,7 +1,7 @@
 .crypto-portal-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    color: white;
+    background: #f8fafc;
+    color: #0f172a;
 }
 
 .portal-header {
@@ -9,14 +9,14 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .back-btn {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
     padding: 10px 15px;
     border-radius: 8px;
     cursor: pointer;
@@ -24,14 +24,15 @@
 }
 
 .back-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: #f1f5f9;
 }
 
 .user-balance {
-    background: rgba(0, 255, 0, 0.1);
+    background: rgba(34, 197, 94, 0.10);
     padding: 10px 15px;
     border-radius: 8px;
-    border: 1px solid rgba(0, 255, 0, 0.3);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    color: #0f172a;
 }
 
 .portal-main {
@@ -51,8 +52,8 @@
 }
 
 .crypto-card {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 20px;
     cursor: pointer;
@@ -61,7 +62,7 @@
 }
 
 .crypto-card:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: #f8fafc;
     transform: translateY(-2px);
 }
 
@@ -106,10 +107,11 @@
 }
 
 .purchase-form {
-    background: rgba(255, 255, 255, 0.05);
+    background: #ffffff;
     border-radius: 12px;
     padding: 25px;
     margin-top: 20px;
+    border: 1px solid #e2e8f0;
 }
 
 .form-group {
@@ -125,10 +127,10 @@
 .form-group input {
     width: 100%;
     padding: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    background: #ffffff;
+    color: #0f172a;
     font-size: 16px;
 }
 
@@ -145,9 +147,9 @@
 
 .amount-btn {
     padding: 8px 15px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid #e2e8f0;
     background: transparent;
-    color: white;
+    color: #0f172a;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -176,14 +178,14 @@
     display: flex;
     align-items: center;
     padding: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .payment-option:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: #f8fafc;
 }
 
 .payment-option input {
@@ -209,7 +211,7 @@
 
 .btn-primary {
     background: linear-gradient(135deg, #00d4ff, #0099cc);
-    color: white;
+    color: #0f172a;
 }
 
 .btn-primary:hover {
@@ -218,19 +220,20 @@
 
 .btn-secondary {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
 }
 
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: #f1f5f9;
 }
 
 .market-info {
-    background: rgba(255, 255, 255, 0.05);
+    background: #ffffff;
     border-radius: 12px;
     padding: 25px;
     height: fit-content;
+    border: 1px solid #e2e8f0;
 }
 
 .crypto-prices {
@@ -242,7 +245,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 12px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .price-item:last-child {
@@ -257,17 +260,19 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(15, 23, 42, 0.55);
 }
 
 .modal-content {
-    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    background: #ffffff;
     margin: 5% auto;
     padding: 0;
     border-radius: 12px;
     width: 90%;
     max-width: 500px;
-    color: white;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
 }
 
 .modal-content.success {
@@ -276,7 +281,7 @@
 
 .modal-header {
     padding: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -288,7 +293,7 @@
 
 .modal-actions {
     padding: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid #e2e8f0;
     display: flex;
     gap: 15px;
 }
@@ -301,7 +306,7 @@
 }
 
 .close:hover {
-    color: white;
+    color: #0f172a;
 }
 
 @media (max-width: 768px) {

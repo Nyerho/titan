@@ -13,12 +13,12 @@
 }
 
 .section-header h2 {
-    color: #fff;
+    color: #0f172a;
     margin-bottom: 0.5rem;
 }
 
 .section-header p {
-    color: #888;
+    color: #475569;
     margin: 0;
 }
 
@@ -38,14 +38,14 @@
 }
 
 .market-card {
-    background: #1e1e2e;
+    background: #ffffff;
     padding: 1.5rem;
     border-radius: 8px;
-    border: 1px solid #2d2d44;
+    border: 1px solid #e2e8f0;
 }
 
 .market-card h3 {
-    color: #fff;
+    color: #0f172a;
     margin-bottom: 1rem;
 }
 
@@ -72,10 +72,10 @@
 }
 
 .analytics-card {
-    background: #1e1e2e;
+    background: #ffffff;
     padding: 1.5rem;
     border-radius: 8px;
-    border: 1px solid #2d2d44;
+    border: 1px solid #e2e8f0;
     text-align: center;
 }
 
@@ -87,19 +87,19 @@
 }
 
 .education-card {
-    background: #1e1e2e;
+    background: #ffffff;
     padding: 2rem;
     border-radius: 8px;
-    border: 1px solid #2d2d44;
+    border: 1px solid #e2e8f0;
 }
 
 .education-card h3 {
-    color: #fff;
+    color: #0f172a;
     margin-bottom: 1rem;
 }
 
 .education-card p {
-    color: #888;
+    color: #475569;
     margin-bottom: 1.5rem;
 }
 
@@ -109,9 +109,9 @@
 }
 
 .filter-select {
-    background: #1e1e2e;
-    border: 1px solid #2d2d44;
-    color: #fff;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
     padding: 0.5rem 1rem;
     border-radius: 4px;
 }

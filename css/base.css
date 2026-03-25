@@ -72,8 +72,8 @@
 
 /* Central Trade Hub Brand Colors */
 --brand-gradient: linear-gradient(135deg, #8b5cf6 0%, #22d3ee 100%);
---trading-bg: #070a12;
---trading-card: #141b34;
+--trading-bg: #ffffff;
+--trading-card: #f6f7fb;
 --positive-green: #00d4aa;
 --negative-red: #ff6b6b;
 
@@ -92,7 +92,7 @@
     border-radius: 16px;
     padding: 24px;
     margin-bottom: var(--spacing-xl);
-    color: white;
+    color: var(--text-primary);
     grid-column: 1;
 }
 
@@ -127,11 +127,11 @@
 }
 
 .download-btn {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.06);
     border: none;
     border-radius: 8px;
     padding: 8px 12px;
-    color: white;
+    color: var(--text-primary);
     cursor: pointer;
 }
 
@@ -143,7 +143,7 @@
     font-size: 18px;
     font-weight: 500;
     margin-bottom: 8px;
-    color: white;
+    color: var(--text-primary);
 }
 
 .balance-amount-large {
@@ -182,14 +182,14 @@
 
 .pair-name {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(15, 23, 42, 0.7);
     margin-bottom: 4px;
 }
 
 .pair-price {
     font-size: 16px;
     font-weight: 600;
-    color: white;
+    color: var(--text-primary);
     margin-bottom: 4px;
 }
 
@@ -212,7 +212,7 @@
 
 .greeting-text {
     font-size: 16px;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(15, 23, 42, 0.7);
     margin: 0; /* Remove default paragraph margin */
 }
 
@@ -1678,14 +1678,7 @@ body::after {
     background: var(--primary-hover);
 }
 
-/* Global functions for support */
-window.openLiveChat = function() {
-    alert('Live chat feature coming soon! Please use email support for now.');
-};
-
-window.openKnowledgeBase = function() {
-    alert('Knowledge base coming soon! Please contact support for immediate help.');
-};
+/* Support links placeholders are handled in JS; keep CSS clean */
 
 .wallet-options {
     display: flex;
@@ -1698,18 +1691,18 @@ window.openKnowledgeBase = function() {
     align-items: center;
     gap: 16px;
     padding: 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
-    color: white;
+    color: #0f172a;
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 16px;
 }
 
 .wallet-option:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: #f8fafc;
+    border-color: #cbd5e1;
 }
 
 .buy-crypto-form {

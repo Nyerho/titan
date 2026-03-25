@@ -250,7 +250,7 @@
         width: 100%;
         flex-direction: column;
         text-align: center;
-        background-color: rgba(26, 26, 46, 0.98);
+        background-color: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(10px);
         box-shadow: 0 10px 27px rgba(0, 0, 0, 0.15);
         border-radius: 0 0 20px 20px;
@@ -1034,8 +1034,9 @@
     .stat-box {
         padding: 1.5rem;
         border-radius: 15px;
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        backdrop-filter: none;
     }
 
     .indices-features {
@@ -1471,16 +1472,6 @@
     }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg-primary: #0a0a0f;
-        --bg-secondary: #1a1a2e;
-        --text-primary: #ffffff;
-        --text-secondary: #b0b0b0;
-    }
-}
-
 /* Print Styles */
 @media print {
     .navbar,
@@ -1496,8 +1487,8 @@
     }
     
     body {
-        background: var(--bg-primary, #0f172a);
-        color: var(--text-primary, #ffffff);
+        background: var(--bg-primary, #ffffff);
+        color: var(--text-primary, #0f172a);
         font-size: 12pt;
         line-height: 1.4;
     }
@@ -1527,46 +1518,48 @@
 }
 
 /* Full width mobile layout fixes */
-body {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-    background: #0f1419 !important;
-    color: #ffffff;
-    font-size: 12pt;
-    line-height: 1.4;
-}
+@media (max-width: 768px) {
+    body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        background: #ffffff !important;
+        color: #0f172a;
+        font-size: 12pt;
+        line-height: 1.4;
+    }
 
-.container {
-    max-width: 100%;
-    padding: 0 10px; /* Minimal padding for readability */
-    margin: 0;
-}
+    .container {
+        max-width: 100%;
+        padding: 0 10px; /* Minimal padding for readability */
+        margin: 0;
+    }
 
-.nav-container {
-    padding: 0 15px; /* Slightly more padding for navigation */
-}
+    .nav-container {
+        padding: 0 15px; /* Slightly more padding for navigation */
+    }
 
-.hero-container {
-    padding: 3rem 15px; /* Reduce hero padding */
-}
+    .hero-container {
+        padding: 3rem 15px; /* Reduce hero padding */
+    }
 
-/* Remove extra margins from sections */
-.virtual-assets,
-.forex-trading,
-.indices-trading,
-.mobile-platforms,
-.global-presence,
-.introducing-brokers,
-.education-section {
-    padding: 40px 10px; /* Reduce section padding */
-}
+    /* Remove extra margins from sections */
+    .virtual-assets,
+    .forex-trading,
+    .indices-trading,
+    .mobile-platforms,
+    .global-presence,
+    .introducing-brokers,
+    .education-section {
+        padding: 40px 10px; /* Reduce section padding */
+    }
 
-/* Market ticker full width */
-.market-ticker {
-    margin: 1rem 0; /* Remove side margins */
-    border-radius: 0; /* Remove border radius for full width */
-    overflow-x: hidden; /* Prevent horizontal scrolling */
+    /* Market ticker full width */
+    .market-ticker {
+        margin: 1rem 0; /* Remove side margins */
+        border-radius: 0; /* Remove border radius for full width */
+        overflow-x: hidden; /* Prevent horizontal scrolling */
+    }
 }
 
 /* Extra small devices (Galaxy S9+, iPhone X, etc.) */

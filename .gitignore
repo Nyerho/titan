@@ -16,6 +16,14 @@ yarn-error.log*
 *.pem
 config/secrets.json
 ServiceAccountKey.json
+.serviceAccountKey.json
+serviceAccountKey.json
+serviceAccountKey.json.json
+serviceAccountKey*.json
+*.p12
+*.crt
+*.cer
+*.der
 .env
 
 # Build outputs

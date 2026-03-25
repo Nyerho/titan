@@ -1,7 +1,14 @@
 /* Trading Platform Styles */
 .platform-body {
-    background: #070a12;
-    color: #f8fafc;
+    --platform-bg: #ffffff;
+    --platform-surface: #ffffff;
+    --platform-surface-alt: #f6f7fb;
+    --platform-border: #e2e8f0;
+    --platform-text: #0f172a;
+    --platform-muted: rgba(15, 23, 42, 0.7);
+
+    background: var(--platform-bg);
+    color: var(--platform-text);
     margin: 0;
     font-family: 'Inter', sans-serif;
     padding-top: 0; /* Remove padding since navbar is no longer fixed */
@@ -11,7 +18,7 @@
 .trading-container {
     display: flex;
     height: calc(100vh - 70px);
-    background: #070a12;
+    background: var(--platform-surface-alt);
     gap: 1rem;
     padding: 1rem;
     margin-top: 0; /* Remove margin-top since we added padding to body */
@@ -25,11 +32,11 @@
 
 /* Sidebar Styles */
 .sidebar {
-    background: #0e1630;
+    background: var(--platform-surface);
     border-radius: 8px;
     padding: 1rem;
     overflow-y: auto;
-    border: 1px solid #2b2f55;
+    border: 1px solid var(--platform-border);
 }
 
 .left-sidebar {
@@ -50,18 +57,18 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: #141b34;
+    background: var(--platform-surface);
     border-radius: 8px;
     padding: 1rem;
-    border: 1px solid #2b2f55;
+    border: 1px solid var(--platform-border);
     /* Ensure no overflow issues */
     overflow: hidden;
     min-width: 0; /* Allow flex shrinking */
 }
 
 .platform-nav {
-    background: rgba(7, 10, 18, 0.92);
-    border-bottom: 1px solid rgba(139, 92, 246, 0.18);
+    background: rgba(255, 255, 255, 0.92);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.1);
     backdrop-filter: blur(10px);
 }
 
@@ -112,8 +119,8 @@
     padding: 0.5rem 1rem;
     border-radius: 8px;
     transition: all 0.3s ease;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(15, 23, 42, 0.12);
 }
 
 .user-info:hover {
@@ -131,7 +138,7 @@
 .hamburger-icon .bar {
     width: 16px;
     height: 2px;
-    background: #ffffff;
+    background: var(--platform-text);
     border-radius: 1px;
     transition: all 0.3s ease;
 }
@@ -154,10 +161,10 @@
     width: 320px;
     max-height: calc(100vh - 100px); /* Prevent overflow */
     overflow-y: auto;
-    background: rgba(14, 22, 48, 0.92);
-    border: 1px solid rgba(139, 92, 246, 0.22);
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(15, 23, 42, 0.1);
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.16);
     z-index: 9999;
     opacity: 0;
     visibility: hidden;
@@ -175,7 +182,7 @@
 
 .dropdown-section {
     padding: 0.75rem 0;
-    border-bottom: 1px solid rgba(45, 45, 68, 0.5);
+    border-bottom: 1px solid var(--platform-border);
     background: transparent;
 }
 
@@ -202,7 +209,7 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
-    color: #ffffff;
+    color: var(--platform-text);
     text-decoration: none;
     transition: all 0.3s ease;
     font-size: 0.9rem;
@@ -219,7 +226,7 @@
 
 .dropdown-item.highlight {
     background: linear-gradient(135deg, #8b5cf6, #22d3ee);
-    color: #070a12;
+    color: #0f172a;
     font-weight: 600;
 }
 
@@ -240,7 +247,7 @@
 
 .dropdown-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, #2b2f55, transparent);
+    background: linear-gradient(90deg, transparent, var(--platform-border), transparent);
     margin: 0.5rem 1rem;
 }
 
@@ -261,15 +268,15 @@
     left: auto;
     right: auto;
     width: 100%;
-    background: rgba(7, 10, 18, 0.92) !important;
+    background: rgba(255, 255, 255, 0.92) !important;
     z-index: 1000;
     transition: none;
     height: 70px;
 }
 
 .platform-nav {
-    background: rgba(7, 10, 18, 0.92) !important;
-    border-bottom: 1px solid rgba(139, 92, 246, 0.18);
+    background: rgba(255, 255, 255, 0.92) !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.1);
     backdrop-filter: blur(10px);
 }
 
@@ -300,7 +307,7 @@
 }
 
 .comprehensive-dropdown::-webkit-scrollbar-track {
-    background: rgba(45, 45, 68, 0.3);
+    background: rgba(226, 232, 240, 0.9);
     border-radius: 3px;
 }
 
@@ -321,8 +328,8 @@
 
 .trading-sidebar {
     width: 300px;
-    background: #0e1630;
-    border-right: 1px solid #2b2f55;
+    background: var(--platform-surface);
+    border-right: 1px solid var(--platform-border);
     padding: 1rem;
     overflow-y: auto;
 }
@@ -367,7 +374,7 @@
 }
 
 .order-form {
-    background: #141b34;
+    background: var(--platform-surface-alt);
     padding: 1rem;
     border-radius: 8px;
 }
@@ -384,9 +391,9 @@
 
 .tab-btn {
     padding: 0.5rem 1rem;
-    border: 1px solid #2b2f55;
+    border: 1px solid var(--platform-border);
     background: transparent;
-    color: #ffffff;
+    color: var(--platform-text);
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -395,7 +402,7 @@
 
 .tab-btn.active {
     background: #8b5cf6;
-    color: #070a12;
+    color: #ffffff;
     border-color: #8b5cf6;
 }
 
@@ -420,17 +427,17 @@
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
-    color: #cccccc;
+    color: var(--platform-muted);
 }
 
 .form-group input,
 .form-group select {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #2b2f55;
+    border: 1px solid var(--platform-border);
     border-radius: 5px;
-    background: #070a12;
-    color: #ffffff;
+    background: #ffffff;
+    color: var(--platform-text);
     font-size: 1rem;
 }
 
@@ -486,10 +493,11 @@
 
 .chart-container {
     flex: 1;
-    background: #141b34;
+    background: var(--platform-surface);
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1rem;
+    border: 1px solid var(--platform-border);
 }
 
 .chart-header {
@@ -511,9 +519,9 @@
 
 .chart-btn {
     padding: 0.5rem 1rem;
-    border: 1px solid #2b2f55;
+    border: 1px solid var(--platform-border);
     background: transparent;
-    color: #ffffff;
+    color: var(--platform-text);
     border-radius: 3px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -522,18 +530,18 @@
 .chart-btn.active,
 .chart-btn:hover {
     background: #8b5cf6;
-    color: #070a12;
+    color: #ffffff;
     border-color: #8b5cf6;
 }
 
 .chart-area {
     height: 400px;
-    background: #070a12;
+    background: var(--platform-surface-alt);
     border-radius: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #2b2f55;
+    border: 1px solid var(--platform-border);
     position: relative;
     overflow: hidden;
 }
@@ -546,10 +554,11 @@
 }
 
 .panel {
-    background: #141b34;
+    background: var(--platform-surface);
     border-radius: 8px;
     padding: 1rem;
     overflow-y: auto;
+    border: 1px solid var(--platform-border);
 }
 
 .panel h3 {
@@ -574,14 +583,14 @@
 .orders-table td {
     padding: 0.5rem;
     text-align: left;
-    border-bottom: 1px solid #2b2f55;
+    border-bottom: 1px solid var(--platform-border);
 }
 
 .positions-table th,
 .orders-table th {
-    background: #1a2550;
+    background: #f1f5f9;
     font-weight: 600;
-    color: #cccccc;
+    color: #475569;
 }
 
 .buy {
@@ -743,20 +752,20 @@
 
 .indicator .label {
     font-size: 0.8rem;
-    color: #cccccc;
+    color: var(--platform-muted);
     margin-bottom: 0.25rem;
 }
 
 .indicator .value {
     font-weight: 600;
-    color: #ffffff;
+    color: var(--platform-text);
 }
 
 #priceChart {
     flex: 1;
-    background: #070a12;
+    background: var(--platform-surface-alt);
     border-radius: 5px;
-    border: 1px solid #2b2f55;
+    border: 1px solid var(--platform-border);
 }
 
 .chart-tools {
@@ -768,9 +777,9 @@
 
 .tool-btn {
     padding: 0.5rem;
-    border: 1px solid #2b2f55;
+    border: 1px solid var(--platform-border);
     background: transparent;
-    color: #ffffff;
+    color: var(--platform-text);
     border-radius: 3px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -784,7 +793,7 @@
 .tool-btn.active,
 .tool-btn:hover {
     background: #8b5cf6;
-    color: #070a12;
+    color: #ffffff;
     border-color: #8b5cf6;
 }
 
@@ -831,9 +840,9 @@
 
 .quick-btn {
     padding: 0.5rem 1rem;
-    border: 1px solid #2b2f55;
+    border: 1px solid var(--platform-border);
     background: transparent;
-    color: #ffffff;
+    color: var(--platform-text);
     border-radius: 5px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -842,16 +851,17 @@
 
 .quick-btn:hover {
     background: #8b5cf6;
-    color: #070a12;
+    color: #ffffff;
     border-color: #8b5cf6;
 }
 
 /* Market Overview */
 .market-overview {
-    background: #141b34;
+    background: var(--platform-surface-alt);
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1rem;
+    border: 1px solid var(--platform-border);
 }
 
 .market-overview h3 {
@@ -876,13 +886,13 @@
 
 .market-stat .label {
     font-size: 0.8rem;
-    color: #cccccc;
+    color: var(--platform-muted);
     margin-bottom: 0.25rem;
 }
 
 .market-stat .value {
     font-weight: 600;
-    color: #ffffff;
+    color: var(--platform-text);
     font-size: 1rem;
 }
 
@@ -903,7 +913,7 @@
     padding: 0.5rem 0.75rem;
     border: none;
     background: transparent;
-    color: #cccccc;
+    color: var(--platform-muted);
     cursor: pointer;
     border-radius: 3px;
     font-size: 0.9rem;
@@ -912,7 +922,7 @@
 
 .watchlist-tab.active {
     background: #8b5cf6;
-    color: #070a12;
+    color: #ffffff;
 }
 
 .watchlist-tab:hover:not(.active) {
@@ -922,7 +932,7 @@
 
 .add-symbol {
     background: transparent;
-    border: 1px solid #2b2f55;
+    border: 1px solid var(--platform-border);
     color: #8b5cf6;
     padding: 0.25rem 0.5rem;
     border-radius: 3px;
@@ -933,7 +943,7 @@
 
 .add-symbol:hover {
     background: #8b5cf6;
-    color: #070a12;
+    color: #0f172a;
 }
 
 .mini-chart {
@@ -960,7 +970,7 @@
 .order-mode-toggle {
     display: flex;
     margin-bottom: 1rem;
-    background: #1a2550;
+    background: #f1f5f9;
     border-radius: 5px;
     padding: 0.25rem;
 }
@@ -970,7 +980,7 @@
     padding: 0.5rem;
     border: none;
     background: transparent;
-    color: #cccccc;
+    color: #475569;
     cursor: pointer;
     border-radius: 3px;
     transition: all 0.3s ease;
@@ -978,14 +988,14 @@
 
 .mode-btn.active {
     background: #8b5cf6;
-    color: #070a12;
+    color: #0f172a;
 }
 
 .advanced-options {
     display: none;
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid #2b2f55;
+    border-top: 1px solid var(--platform-border);
 }
 
 .advanced-options.show {
@@ -1018,10 +1028,11 @@
 
 /* Portfolio Summary */
 .portfolio-summary {
-    background: #141b34;
+    background: var(--platform-surface-alt);
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1rem;
+    border: 1px solid var(--platform-border);
 }
 
 .portfolio-summary h3 {
@@ -1048,14 +1059,14 @@
 
 .portfolio-item .label {
     font-size: 0.9rem;
-    color: #cccccc;
+    color: var(--platform-muted);
     margin-bottom: 0.5rem;
 }
 
 .portfolio-item .value {
     font-size: 1.2rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--platform-text);
 }
 
 .portfolio-item .change {
@@ -1099,7 +1110,7 @@
 .current-price-large {
     font-size: 2rem;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--platform-text);
 }
 
 .price-change-large {
@@ -1110,10 +1121,11 @@
 
 /* Market Depth */
 .market-depth {
-    background: #141b34;
+    background: var(--platform-surface-alt);
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1rem;
+    border: 1px solid var(--platform-border);
 }
 
 .market-depth h4 {
@@ -1153,7 +1165,7 @@
     justify-content: space-between;
     padding: 0.25rem 0;
     font-size: 0.9rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--platform-border);
 }
 
 .depth-row:last-child {
@@ -1173,20 +1185,21 @@
 }
 
 .depth-volume {
-    color: #cccccc;
+    color: var(--platform-muted);
 }
 
 /* Enhanced Trading Panels */
 .trading-panels-enhanced {
-    background: #141b34;
+    background: var(--platform-surface);
     border-radius: 8px;
     overflow: hidden;
+    border: 1px solid var(--platform-border);
 }
 
 .panel-tabs {
     display: flex;
-    background: #1a2550;
-    border-bottom: 1px solid #3d3d54;
+    background: var(--platform-surface-alt);
+    border-bottom: 1px solid var(--platform-border);
 }
 
 .panel-tab {
@@ -1194,14 +1207,14 @@
     padding: 1rem;
     border: none;
     background: transparent;
-    color: #cccccc;
+    color: var(--platform-muted);
     cursor: pointer;
     transition: all 0.3s ease;
     font-weight: 500;
 }
 
 .panel-tab.active {
-    background: #141b34;
+    background: var(--platform-surface);
     color: #8b5cf6;
     border-bottom: 2px solid #8b5cf6;
 }
@@ -1240,14 +1253,14 @@
 
 .analytics-card .title {
     font-size: 0.9rem;
-    color: #cccccc;
+    color: var(--platform-muted);
     margin-bottom: 0.5rem;
 }
 
 .analytics-card .value {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--platform-text);
     margin-bottom: 0.25rem;
 }
 
@@ -1258,13 +1271,13 @@
 
 .performance-chart {
     height: 200px;
-    background: #070a12;
+    background: var(--platform-surface-alt);
     border-radius: 5px;
-    border: 1px solid #2b2f55;
+    border: 1px solid var(--platform-border);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #cccccc;
+    color: var(--platform-muted);
     margin-top: 1rem;
 }
 
@@ -1337,13 +1350,13 @@
     align-items: center;
     justify-content: center;
     padding: 2rem;
-    color: #cccccc;
+    color: #475569;
 }
 
 .spinner {
     width: 20px;
     height: 20px;
-    border: 2px solid #2b2f55;
+    border: 2px solid var(--platform-border);
     border-top: 2px solid #8b5cf6;
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -1399,7 +1412,7 @@
 }
 
 .balance-item .label {
-    color: #cccccc;
+    color: #475569;
     font-size: 0.9rem;
 }
 
@@ -1591,9 +1604,9 @@
 }
 
 .symbol-selector select {
-    background: #1a2550;
-    color: #ffffff;
-    border: 1px solid #3d3d54;
+    background: #ffffff;
+    color: var(--platform-text);
+    border: 1px solid var(--platform-border);
     padding: 0.5rem 1rem;
     border-radius: 5px;
     font-size: 1rem;
@@ -1606,9 +1619,9 @@
 
 .timeframe-btn {
     padding: 0.5rem 0.75rem;
-    border: 1px solid #2b2f55;
+    border: 1px solid var(--platform-border);
     background: transparent;
-    color: #ffffff;
+    color: var(--platform-text);
     border-radius: 3px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -1618,7 +1631,7 @@
 .timeframe-btn.active,
 .timeframe-btn:hover {
     background: #8b5cf6;
-    color: #070a12;
+    color: #ffffff;
     border-color: #8b5cf6;
 }
 
@@ -1629,9 +1642,9 @@
 
 #trading-chart {
     flex: 1;
-    background: #070a12;
+    background: var(--platform-surface-alt);
     border-radius: 5px;
-    border: 1px solid #2b2f55;
+    border: 1px solid var(--platform-border);
     margin-bottom: 1rem;
     position: relative;
     overflow: hidden;
@@ -1640,7 +1653,7 @@
 
 .trading-chart {
     flex: 1;
-    background: #141b34;
+    background: var(--platform-surface);
     border-radius: 8px;
     overflow: hidden;
     position: relative;
@@ -1738,12 +1751,12 @@ iframe[src*="tradingview"] {
 
 .stat-label {
     font-size: 0.8rem;
-    color: #cccccc;
+    color: #475569;
 }
 
 .stat-value {
     font-weight: 600;
-    color: #ffffff;
+    color: #0f172a;
 }
 
 /* Order Panel */
@@ -1754,7 +1767,7 @@ iframe[src*="tradingview"] {
 .order-tabs {
     display: flex;
     margin-bottom: 1rem;
-    background: #1a2550;
+    background: #f1f5f9;
     border-radius: 5px;
     padding: 0.25rem;
 }
@@ -1764,7 +1777,7 @@ iframe[src*="tradingview"] {
     padding: 0.75rem;
     border: none;
     background: transparent;
-    color: #cccccc;
+    color: #475569;
     cursor: pointer;
     border-radius: 3px;
     transition: all 0.3s ease;
@@ -1772,7 +1785,7 @@ iframe[src*="tradingview"] {
 
 .order-tab.active {
     background: #8b5cf6;
-    color: #070a12;
+    color: #0f172a;
 }
 
 .order-type-buttons {
@@ -1817,7 +1830,7 @@ iframe[src*="tradingview"] {
     border: none;
     border-radius: 5px;
     background: #8b5cf6;
-    color: #070a12;
+    color: #0f172a;
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;

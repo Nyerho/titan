@@ -1,17 +1,17 @@
 /* Consolidated Utility Classes */
 :root {
-    --primary-bg: #0f0f23;
-    --secondary-bg: #1a1a2e;
-    --accent-bg: #16213e;
-    --border-color: #2d2d44;
-    --text-primary: #ffffff;
-    --text-secondary: #8b9dc3;
+    --primary-bg: #ffffff;
+    --secondary-bg: #f8fafc;
+    --accent-bg: #f1f5f9;
+    --border-color: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
     --accent-color: #4f46e5;
     --success-color: #10b981;
     --warning-color: #f59e0b;
     --danger-color: #ef4444;
-    --shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.2);
+    --shadow: 0 2px 10px rgba(15, 23, 42, 0.10);
+    --shadow-hover: 0 4px 20px rgba(15, 23, 42, 0.14);
     --border-radius: 8px;
     --border-radius-lg: 12px;
     --transition: all 0.3s ease;
@@ -65,7 +65,7 @@
 
 .btn-primary {
     background: var(--accent-color);
-    color: var(--text-primary);
+    color: #ffffff;
 }
 
 .btn-primary:hover {
@@ -86,7 +86,7 @@
 
 .btn-danger {
     background: var(--danger-color);
-    color: var(--text-primary);
+    color: #ffffff;
 }
 
 .btn-danger:hover {

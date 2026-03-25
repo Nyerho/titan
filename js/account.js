@@ -242,7 +242,7 @@ function renderMarketplace(botsOwnedMap, balance) {
 
     return `
       <div class="col-md-6">
-        <div class="border rounded p-3 h-100" style="border-color:#475569!important; background:#0b1220;">
+        <div class="border rounded p-3 h-100" style="border-color:#e2e8f0!important; background:#ffffff;">
           <div class="d-flex justify-content-between align-items-start">
             <div>
               <div class="fw-semibold">${bot.name}</div>
@@ -280,7 +280,7 @@ function renderOwnedBots(botsOwnedMap) {
     .map((bot) => {
       const isActive = !!bot.active;
       return `
-        <div class="border rounded p-3 d-flex align-items-center justify-content-between" style="border-color:#475569!important; background:#0b1220;">
+        <div class="border rounded p-3 d-flex align-items-center justify-content-between" style="border-color:#e2e8f0!important; background:#ffffff;">
           <div>
             <div class="fw-semibold">${bot.name || bot.id}</div>
             <div class="small text-secondary">${isActive ? 'Active (runs on the trading platform)' : 'Inactive'}</div>
@@ -308,7 +308,7 @@ function renderPropCurrent(propAccount) {
   const maxLimit = Number(propAccount.accountSize || 0) * Number(propAccount.maxDrawdownPct || 0);
 
   container.innerHTML = `
-    <div class="border rounded p-3" style="border-color:#475569!important; background:#0b1220;">
+    <div class="border rounded p-3" style="border-color:#e2e8f0!important; background:#ffffff;">
       <div class="d-flex justify-content-between align-items-start">
         <div>
           <div class="fw-semibold">${propAccount.firmName || 'Prop Account'} • ${formatCurrency(propAccount.accountSize)}</div>
@@ -345,7 +345,7 @@ function renderPropOptions(propAccount) {
     const isCurrent = propAccount?.planId === plan.planId;
     return `
       <div class="col-md-6">
-        <div class="border rounded p-3 h-100" style="border-color:#475569!important; background:#0b1220;">
+        <div class="border rounded p-3 h-100" style="border-color:#e2e8f0!important; background:#ffffff;">
           <div class="fw-semibold">${plan.label}</div>
           <div class="small text-secondary">Daily Drawdown: ${(plan.dailyDrawdownPct * 100).toFixed(0)}%</div>
           <div class="small text-secondary">Max Drawdown: ${(plan.maxDrawdownPct * 100).toFixed(0)}%</div>

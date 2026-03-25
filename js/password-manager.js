@@ -12,16 +12,19 @@ class PasswordManager {
         // Initialize Firebase if not already done
         try {
             if (typeof firebase !== 'undefined' && firebase.apps.length === 0) {
-                const firebaseConfig = {
-                    apiKey: "AIzaSyAwnWoLfrEc1EtXWCD0by5L0VtCmYf8Unw",
-                    authDomain: "centraltradehub-30f00.firebaseapp.com",
-                    projectId: "centraltradehub-30f00",
-                    storageBucket: "centraltradehub-30f00.firebasestorage.app",
-                    messagingSenderId: "745751687877",
-                    appId: "1:745751687877:web:4576449aa2e8360931b6ac",
-                    measurementId: "G-YHCS5CH450"
+                const firebaseConfig = window.FB_CONFIG || window.firebaseConfig || {
+                    apiKey: "AIzaSyB2wni5mJd7m9QZYRLubeyMB6mcPOL1dtA",
+                    authDomain: "titantrades-84777.firebaseapp.com",
+                    projectId: "titantrades-84777",
+                    storageBucket: "titantrades-84777.firebasestorage.app",
+                    messagingSenderId: "107204284825",
+                    appId: "1:107204284825:web:5d09b029feb91477ae8308",
+                    measurementId: "G-585HB34KK9"
                 };
-                
+
+                window.FB_CONFIG = window.FB_CONFIG || firebaseConfig;
+                window.firebaseConfig = window.firebaseConfig || firebaseConfig;
+
                 firebase.initializeApp(firebaseConfig);
                 console.log('Firebase initialized successfully in password manager');
             } else if (typeof firebase !== 'undefined') {

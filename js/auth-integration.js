@@ -1,11 +1,15 @@
 import FirebaseAuthService from './firebase-auth.js';
 import FirebaseDatabaseService from './firebase-database.js';
+import { db } from './firebase-config.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getIdTokenResult } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 class AuthManager {
   constructor() {
     this.currentUser = null;
     this.isLoggedIn = false;
     this.isInitialized = false;
+    this._isAdmin = false;
     this.initializeEmailService();
     this.initializeFirebaseAuth();
   }
@@ -106,6 +110,11 @@ class AuthManager {
         this.isInitialized = true; // Set initialization flag
         this.updateUI();
         console.log('AuthManager: Firebase auth state updated, user:', user ? user.email : 'No user');
+        if (user) {
+          this.checkAdminStatus().catch(() => {});
+        } else {
+          this._isAdmin = false;
+        }
     });
   }
 
@@ -133,20 +142,21 @@ class AuthManager {
                 loginTime: Date.now()
             }));
             
-            // Check if user is admin
-            const isAdmin = await this.checkAdminStatus();
+            // Check if user is admin (retry once to allow custom claims to propagate)
+            let isAdmin = await this.checkAdminStatus();
+            if (!isAdmin) {
+                await new Promise(resolve => setTimeout(resolve, 1200));
+                isAdmin = await this.checkAdminStatus();
+            }
             console.log('AuthManager: Admin status:', isAdmin);
             
-            // Redirect after a short delay
-            setTimeout(() => {
-                if (isAdmin) {
-                    console.log('Redirecting to admin panel');
-                    window.location.href = 'admin.html';
-                } else {
-                    console.log('Redirecting to dashboard');
-                    window.location.href = 'dashboard.html';
-                }
-            }, 1000);
+            if (isAdmin) {
+                console.log('Redirecting to admin panel');
+                window.location.href = 'admin.html';
+            } else {
+                console.log('Redirecting to dashboard');
+                window.location.href = 'dashboard.html';
+            }
             
             return true;
         } else {
@@ -352,21 +362,14 @@ async logout() {
   }
 
   isAdmin() {
-    if (!this.currentUser) return false;
-    
-    const adminEmails = [
-      'admin@centraltradehub.com',
-      'owner@centraltradehub.com'
-    ];
-    
-    return adminEmails.includes(this.currentUser.email);
+    return !!this._isAdmin;
   }
 
   async checkAdminStatus() {
     if (!this.currentUser) {
       // Wait for auth state to be ready
       await new Promise(resolve => {
-        const unsubscribe = FirebaseAuthService.onAuthStateChanged((user) => {
+        const unsubscribe = FirebaseAuthService.addAuthStateListener((user) => {
           this.currentUser = user;
           unsubscribe();
           resolve();
@@ -374,15 +377,51 @@ async logout() {
       });
     }
     
-    if (!this.currentUser) return false;
-    
-    // Use email-based admin validation (consistent with main.js)
-    const adminEmails = [
-      'admin@centraltradehub.com',
-      'owner@centraltradehub.com'
-    ];
-    
-    return adminEmails.includes(this.currentUser.email);
+    if (!this.currentUser) {
+      this._isAdmin = false;
+      return false;
+    }
+
+    try {
+      try {
+        if (typeof this.currentUser.getIdToken === 'function') {
+          const token = await this.currentUser.getIdToken(true);
+          try {
+            const base64Url = String(token || '').split('.')[1] || '';
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+            const payload = JSON.parse(atob(padded));
+            if (payload?.admin === true) {
+              this._isAdmin = true;
+              return true;
+            }
+          } catch (e) {}
+        }
+      } catch (e) {}
+
+      const tokenResult = await getIdTokenResult(this.currentUser);
+      if (tokenResult?.claims?.admin === true) {
+        this._isAdmin = true;
+        return true;
+      }
+
+      const userRef = doc(db, 'users', this.currentUser.uid);
+      const userDoc = await getDoc(userRef);
+      const isAdmin = userDoc.exists() && userDoc.data()?.role === 'admin';
+      this._isAdmin = !!isAdmin;
+      return !!isAdmin;
+    } catch (error) {
+      console.error('AuthManager: Error checking admin role:', error);
+      const message = String(error?.message || '');
+      if (
+        error?.code === 'permission-denied' ||
+        message.includes('Missing or insufficient permissions')
+      ) {
+        this.showMessage('Unable to verify admin access (Firestore permissions). Publish your Firestore rules and re-login.', 'error');
+      }
+      this._isAdmin = false;
+      return false;
+    }
   }
 }
 

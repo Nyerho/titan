@@ -7,21 +7,21 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #0f1419;
-    color: #e8eaed;
+    background-color: #ffffff;
+    color: #0f172a;
 }
 
 /* Admin Header */
 .admin-header {
-    background: #1a1a2e;
-    color: white;
+    background: #ffffff;
+    color: #0f172a;
     padding: 0.5rem 0;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.10);
     height: 60px;
 }
 
@@ -35,8 +35,8 @@ body {
 /* Sidebar */
 .admin-sidebar {
     width: 250px;
-    background: #16213e;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+    background: #f8fafc;
+    box-shadow: 2px 0 10px rgba(15, 23, 42, 0.08);
     position: fixed;
     left: 0;
     top: 60px; /* Reduced from 80px to 60px */
@@ -95,8 +95,8 @@ body {
 /* Sidebar */
 .admin-sidebar {
     width: 250px;
-    background: #16213e;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+    background: #f8fafc;
+    box-shadow: 2px 0 10px rgba(15, 23, 42, 0.08);
     position: fixed;
     left: 0;
     top: 80px;
@@ -118,14 +118,14 @@ body {
     align-items: center;
     gap: 10px;
     padding: 1rem 1.5rem;
-    color: #b3c1d1;
+    color: #475569;
     text-decoration: none;
     transition: all 0.3s ease;
 }
 
 .nav-item:hover,
 .nav-item.active {
-    background: #1e3a5f;
+    background: #e2e8f0;
     color: #00d4ff;
     border-right: 3px solid #00d4ff;
 }
@@ -140,7 +140,7 @@ body {
     flex: 1;
     margin-left: 250px;
     padding: 2rem;
-    background: #0f1419;
+    background: #ffffff;
 }
 
 .admin-section {
@@ -160,11 +160,11 @@ body {
 
 .section-header h1 {
     font-size: 2rem;
-    color: #e8eaed;
+    color: #0f172a;
 }
 
 .section-header p {
-    color: #b3c1d1;
+    color: #475569;
     margin-top: 0.5rem;
 }
 
@@ -212,14 +212,14 @@ body {
 }
 
 .stat-card {
-    background: #16213e;
+    background: #ffffff;
     padding: 1.5rem;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.10);
     display: flex;
     align-items: center;
     gap: 1rem;
-    border: 1px solid #2a3f5f;
+    border: 1px solid #e2e8f0;
 }
 
 .stat-icon {
@@ -236,12 +236,12 @@ body {
 
 .stat-info h3 {
     font-size: 1.8rem;
-    color: #e8eaed;
+    color: #0f172a;
     margin-bottom: 0.25rem;
 }
 
 .stat-info p {
-    color: #b3c1d1;
+    color: #475569;
     font-size: 0.9rem;
 }
 
@@ -254,21 +254,21 @@ body {
 
 .chart-container,
 .recent-activity {
-    background: #16213e;
+    background: #ffffff;
     padding: 1.5rem;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    border: 1px solid #2a3f5f;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.10);
+    border: 1px solid #e2e8f0;
 }
 
 .chart-placeholder {
     height: 200px; /* Reduced from 300px to 200px */
-    background: #1e3a5f;
+    background: #f1f5f9;
     border-radius: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #8b9dc3;
+    color: #64748b;
     margin-top: 1rem;
 }
 
@@ -295,7 +295,7 @@ canvas#userActivityChart {
     align-items: center;
     gap: 1rem;
     padding: 1rem 0;
-    border-bottom: 1px solid #2a3f5f;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .activity-item:last-child {
@@ -309,21 +309,21 @@ canvas#userActivityChart {
 
 .activity-item span {
     flex: 1;
-    color: #e8eaed;
+    color: #0f172a;
 }
 
 .activity-item time {
-    color: #b3c1d1;
+    color: #64748b;
     font-size: 0.85rem;
 }
 
 /* Table Styles */
 .table-container {
-    background: #16213e;
+    background: #ffffff;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.10);
     overflow: hidden;
-    border: 1px solid #2a3f5f;
+    border: 1px solid #e2e8f0;
 }
 
 .admin-table {
@@ -335,14 +335,14 @@ canvas#userActivityChart {
 .admin-table td {
     padding: 1rem;
     text-align: left;
-    border-bottom: 1px solid #2a3f5f;
-    color: #e8eaed;
+    border-bottom: 1px solid #e2e8f0;
+    color: #0f172a;
 }
 
 .admin-table th {
-    background: #1e3a5f;
+    background: #f1f5f9;
     font-weight: 600;
-    color: #e8eaed;
+    color: #0f172a;
 }
 
 .status {
@@ -370,20 +370,20 @@ canvas#userActivityChart {
 }
 
 .content-card {
-    background: #16213e;
+    background: #ffffff;
     padding: 1.5rem;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    border: 1px solid #2a3f5f;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.10);
+    border: 1px solid #e2e8f0;
 }
 
 .content-card h3 {
-    color: #e8eaed;
+    color: #0f172a;
     margin-bottom: 0.5rem;
 }
 
 .content-card p {
-    color: #b3c1d1;
+    color: #475569;
     margin-bottom: 1rem;
 }
 
@@ -394,7 +394,7 @@ canvas#userActivityChart {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(15, 23, 42, 0.55);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -402,17 +402,19 @@ canvas#userActivityChart {
 }
 
 .modal-content {
-    background: #1a1a2e;
+    background: #ffffff;
     border-radius: 12px;
     width: 90%;
     max-width: 500px;
     max-height: 80vh;
     overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
 }
 
 .modal-header {
     padding: 20px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -420,13 +422,13 @@ canvas#userActivityChart {
 
 .modal-header h2 {
     margin: 0;
-    color: #ffffff;
+    color: #0f172a;
 }
 
 .modal-close {
     background: none;
     border: none;
-    color: #ffffff;
+    color: #64748b;
     font-size: 24px;
     cursor: pointer;
     padding: 0;
@@ -453,8 +455,8 @@ canvas#userActivityChart {
     position: fixed;
     top: 20px;
     right: 20px;
-    background: #1a1a2e;
-    color: #ffffff;
+    background: #ffffff;
+    color: #0f172a;
     padding: 15px 20px;
     border-radius: 8px;
     display: flex;
@@ -462,7 +464,8 @@ canvas#userActivityChart {
     gap: 10px;
     z-index: 1001;
     min-width: 300px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+    border: 1px solid #e2e8f0;
 }
 
 .notification.success {
@@ -480,7 +483,7 @@ canvas#userActivityChart {
 .notification button {
     background: none;
     border: none;
-    color: #ffffff;
+    color: #64748b;
     font-size: 18px;
     cursor: pointer;
     margin-left: auto;
@@ -497,7 +500,7 @@ canvas#userActivityChart {
 .form-group label {
     display: block;
     margin-bottom: 5px;
-    color: #ffffff;
+    color: #0f172a;
     font-weight: 500;
 }
 
@@ -506,10 +509,10 @@ canvas#userActivityChart {
 .form-group textarea {
     width: 100%;
     padding: 10px;
-    border: 1px solid #333;
+    border: 1px solid #e2e8f0;
     border-radius: 6px;
-    background: #0f0f23;
-    color: #ffffff;
+    background: #ffffff;
+    color: #0f172a;
     font-size: 14px;
 }
 
@@ -523,7 +526,7 @@ canvas#userActivityChart {
 
 /* Chart Container Styles */
 .chart-placeholder {
-    background: #0f0f23;
+    background: #f8fafc;
     border-radius: 8px;
     padding: 20px;
     min-height: 300px;
@@ -595,7 +598,7 @@ canvas#userActivityChart {
         display: block;
         background: none;
         border: none;
-        color: white;
+        color: #0f172a;
         font-size: 1.5rem;
         cursor: pointer;
     }
@@ -624,9 +627,9 @@ canvas#userActivityChart {
     
     /* Enhanced form-control styling for mobile with full width */
     .form-control {
-        background-color: #0f0f23 !important;
-        border: 1px solid #333 !important;
-        color: #ffffff !important;
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
         font-size: 16px !important; /* Prevents zoom on iOS */
         min-height: 48px !important; /* Increased height for better touch targets */
         padding: 12px 16px !important; /* Increased padding for better visibility */
@@ -635,22 +638,22 @@ canvas#userActivityChart {
         max-width: 100% !important;
         box-sizing: border-box !important;
         -webkit-appearance: none;
-        -webkit-text-fill-color: #ffffff !important;
+        -webkit-text-fill-color: #0f172a !important;
     }
     
     .form-control:focus {
-        background-color: #0f0f23 !important;
+        background-color: #ffffff !important;
         border-color: #00d4ff !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
         box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2) !important;
         min-height: 48px !important;
         width: 100% !important;
     }
     
     .form-control::placeholder {
-        color: rgba(255, 255, 255, 0.5) !important;
-        -webkit-text-fill-color: rgba(255, 255, 255, 0.5) !important;
+        color: rgba(100, 116, 139, 0.7) !important;
+        -webkit-text-fill-color: rgba(100, 116, 139, 0.7) !important;
         font-size: 14px !important;
     }
     
@@ -664,9 +667,9 @@ canvas#userActivityChart {
     
     .input-group .form-control {
         flex: 1 1 auto !important;
-        background-color: #0f0f23 !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
         min-height: 48px !important;
         padding: 12px 16px !important;
         width: auto !important;
@@ -675,9 +678,9 @@ canvas#userActivityChart {
     
     /* Enhanced input group text styling */
     .input-group-text {
-        background-color: #1e3a5f !important;
-        border: 1px solid #333 !important;
-        color: #ffffff !important;
+        background-color: #f1f5f9 !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
         min-height: 48px !important;
         padding: 12px 16px !important;
         font-size: 16px !important;
@@ -695,10 +698,10 @@ canvas#userActivityChart {
     #depositDescription,
     #exactBalanceAmount,
     #exactBalanceReason {
-        background-color: #0f0f23 !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        border: 1px solid #333 !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        border: 1px solid #e2e8f0 !important;
         min-height: 48px !important;
         padding: 12px 16px !important;
         font-size: 16px !important;
@@ -824,10 +827,11 @@ canvas#userActivityChart {
 }
 
 .cot-form {
-    background: #2d2d2d;
+    background: #ffffff;
     border-radius: 12px;
     padding: 30px;
     margin-bottom: 30px;
+    border: 1px solid #e2e8f0;
 }
 
 .input-group {
@@ -861,14 +865,14 @@ canvas#userActivityChart {
 
 .cot-info {
     padding: 20px;
-    border: 1px solid #444;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
-    background: #1a1a1a;
+    background: #f8fafc;
 }
 
 .cot-info h4 {
     margin-bottom: 15px;
-    color: #fff;
+    color: #0f172a;
 }
 
 .info-grid {
@@ -885,28 +889,28 @@ canvas#userActivityChart {
 }
 
 .info-item strong {
-    color: #fff;
+    color: #0f172a;
 }
 
 .info-item span {
-    color: #888;
+    color: #475569;
 }
 
 .warning-box {
     padding: 15px;
-    background: #333;
+    background: rgba(251, 191, 36, 0.12);
     border-radius: 8px;
     border-left: 4px solid #ffc107;
 }
 
 .warning-box p {
-    color: #ffc107;
+    color: #b45309;
     margin-bottom: 10px;
     font-weight: 600;
 }
 
 .warning-box ul {
-    color: #888;
+    color: #475569;
     font-size: 14px;
     margin: 0;
     padding-left: 20px;
@@ -917,7 +921,7 @@ canvas#userActivityChart {
 }
 
 .form-text {
-    color: #888;
+    color: #64748b;
     font-size: 12px;
     margin-top: 5px;
     display: block;
@@ -949,9 +953,9 @@ canvas#userActivityChart {
     
     .cot-form .input-group .form-control {
         flex: 1 1 auto !important;
-        background-color: #0f0f23 !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
         min-height: 48px !important;
         padding: 12px 16px !important;
         width: auto !important;
@@ -1096,32 +1100,33 @@ canvas#userActivityChart {
 
 /* User Management Table Styles */
 .user-management-container {
-    background: #1a1f2e;
+    background: #ffffff;
     border-radius: 8px;
     padding: 20px;
     margin-top: 20px;
+    border: 1px solid #e2e8f0;
 }
 
 .users-table-container {
     overflow-x: auto;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.10);
 }
 
 .users-table {
     width: 100%;
     border-collapse: collapse;
-    background: #1a1a2e;
+    background: #ffffff;
     min-width: 800px;
 }
 
 .users-table th {
-    background: #16213e;
-    color: #ffffff;
+    background: #f1f5f9;
+    color: #0f172a;
     font-weight: 600;
     padding: 15px 12px;
     text-align: left;
-    border-bottom: 2px solid #2d2d44;
+    border-bottom: 2px solid #e2e8f0;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -1129,18 +1134,18 @@ canvas#userActivityChart {
 
 .users-table td {
     padding: 12px;
-    border-bottom: 1px solid #2d2d44;
-    color: #e8eaed;
+    border-bottom: 1px solid #e2e8f0;
+    color: #0f172a;
     vertical-align: middle;
 }
 
 .users-table tr:hover {
-    background: #16213e;
+    background: #f8fafc;
 }
 
 .user-details-row {
     display: none;
-    background: #16213e;
+    background: #f8fafc;
 }
 
 .user-details-row.active {
@@ -1149,9 +1154,9 @@ canvas#userActivityChart {
 
 .user-details-content {
     padding: 20px;
-    border: 1px solid #2d2d44;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
-    background: #1a1a2e;
+    background: #ffffff;
 }
 
 /* Enhanced Mobile Responsiveness - Fixed Version */
@@ -1182,8 +1187,8 @@ canvas#userActivityChart {
     transition: transform 0.3s ease;
     z-index: 999;
     width: 280px;
-    background: #1a1f2e;
-    border-right: 1px solid #2a2f3e;
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
     overflow-y: auto;
   }
   
@@ -1235,11 +1240,11 @@ canvas#userActivityChart {
 
 .section-header h1 {
     font-size: 2rem;
-    color: #e8eaed;
+    color: #0f172a;
 }
 
 .section-header p {
-    color: #b3c1d1;
+    color: #475569;
     margin-top: 0.5rem;
 }
 
@@ -1287,14 +1292,14 @@ canvas#userActivityChart {
 }
 
 .stat-card {
-    background: #16213e;
+    background: #ffffff;
     padding: 1.5rem;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.10);
     display: flex;
     align-items: center;
     gap: 1rem;
-    border: 1px solid #2a3f5f;
+    border: 1px solid #e2e8f0;
 }
 
 .stat-icon {
@@ -1311,12 +1316,12 @@ canvas#userActivityChart {
 
 .stat-info h3 {
     font-size: 1.8rem;
-    color: #e8eaed;
+    color: #0f172a;
     margin-bottom: 0.25rem;
 }
 
 .stat-info p {
-    color: #b3c1d1;
+    color: #475569;
     font-size: 0.9rem;
 }
 
@@ -1329,21 +1334,21 @@ canvas#userActivityChart {
 
 .chart-container,
 .recent-activity {
-    background: #16213e;
+    background: #ffffff;
     padding: 1.5rem;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    border: 1px solid #2a3f5f;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.10);
+    border: 1px solid #e2e8f0;
 }
 
 .chart-placeholder {
     height: 300px;
-    background: #1e3a5f;
+    background: #f1f5f9;
     border-radius: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #b3c1d1;
+    color: #64748b;
     margin-top: 1rem;
 }
 
@@ -1356,7 +1361,7 @@ canvas#userActivityChart {
     align-items: center;
     gap: 1rem;
     padding: 1rem 0;
-    border-bottom: 1px solid #2a3f5f;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .activity-item:last-child {
@@ -1370,21 +1375,21 @@ canvas#userActivityChart {
 
 .activity-item span {
     flex: 1;
-    color: #e8eaed;
+    color: #0f172a;
 }
 
 .activity-item time {
-    color: #b3c1d1;
+    color: #64748b;
     font-size: 0.85rem;
 }
 
 /* Table Styles */
 .table-container {
-    background: #16213e;
+    background: #ffffff;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.10);
     overflow: hidden;
-    border: 1px solid #2a3f5f;
+    border: 1px solid #e2e8f0;
 }
 
 .admin-table {
@@ -1396,14 +1401,14 @@ canvas#userActivityChart {
 .admin-table td {
     padding: 1rem;
     text-align: left;
-    border-bottom: 1px solid #2a3f5f;
-    color: #e8eaed;
+    border-bottom: 1px solid #e2e8f0;
+    color: #0f172a;
 }
 
 .admin-table th {
-    background: #1e3a5f;
+    background: #f1f5f9;
     font-weight: 600;
-    color: #e8eaed;
+    color: #0f172a;
 }
 
 .status {
@@ -1431,20 +1436,20 @@ canvas#userActivityChart {
 }
 
 .content-card {
-    background: #16213e;
+    background: #ffffff;
     padding: 1.5rem;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    border: 1px solid #2a3f5f;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.10);
+    border: 1px solid #e2e8f0;
 }
 
 .content-card h3 {
-    color: #e8eaed;
+    color: #0f172a;
     margin-bottom: 0.5rem;
 }
 
 .content-card p {
-    color: #b3c1d1;
+    color: #475569;
     margin-bottom: 1rem;
 }
 
@@ -1455,7 +1460,7 @@ canvas#userActivityChart {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(15, 23, 42, 0.55);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1463,17 +1468,19 @@ canvas#userActivityChart {
 }
 
 .modal-content {
-    background: #1a1a2e;
+    background: #ffffff;
     border-radius: 12px;
     width: 90%;
     max-width: 500px;
     max-height: 80vh;
     overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
 }
 
 .modal-header {
     padding: 20px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1481,13 +1488,13 @@ canvas#userActivityChart {
 
 .modal-header h2 {
     margin: 0;
-    color: #ffffff;
+    color: #0f172a;
 }
 
 .modal-close {
     background: none;
     border: none;
-    color: #ffffff;
+    color: #64748b;
     font-size: 24px;
     cursor: pointer;
     padding: 0;
@@ -1514,8 +1521,8 @@ canvas#userActivityChart {
     position: fixed;
     top: 20px;
     right: 20px;
-    background: #1a1a2e;
-    color: #ffffff;
+    background: #ffffff;
+    color: #0f172a;
     padding: 15px 20px;
     border-radius: 8px;
     display: flex;
@@ -1523,7 +1530,8 @@ canvas#userActivityChart {
     gap: 10px;
     z-index: 1001;
     min-width: 300px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+    border: 1px solid #e2e8f0;
 }
 
 .notification.success {
@@ -1541,7 +1549,7 @@ canvas#userActivityChart {
 .notification button {
     background: none;
     border: none;
-    color: #ffffff;
+    color: #64748b;
     font-size: 18px;
     cursor: pointer;
     margin-left: auto;
@@ -1558,7 +1566,7 @@ canvas#userActivityChart {
 .form-group label {
     display: block;
     margin-bottom: 5px;
-    color: #ffffff;
+    color: #0f172a;
     font-weight: 500;
 }
 
@@ -1567,10 +1575,10 @@ canvas#userActivityChart {
 .form-group textarea {
     width: 100%;
     padding: 10px;
-    border: 1px solid #333;
+    border: 1px solid #e2e8f0;
     border-radius: 6px;
-    background: #0f0f23;
-    color: #ffffff;
+    background: #ffffff;
+    color: #0f172a;
     font-size: 14px;
 }
 
@@ -1584,7 +1592,7 @@ canvas#userActivityChart {
 
 /* Chart Container Styles */
 .chart-placeholder {
-    background: #0f0f23;
+    background: #f8fafc;
     border-radius: 8px;
     padding: 20px;
     min-height: 300px;
@@ -1658,10 +1666,11 @@ canvas#userActivityChart {
 }
 
 .cot-form {
-    background: #2d2d2d;
+    background: #ffffff;
     border-radius: 12px;
     padding: 30px;
     margin-bottom: 30px;
+    border: 1px solid #e2e8f0;
 }
 
 .input-group {
@@ -1695,14 +1704,14 @@ canvas#userActivityChart {
 
 .cot-info {
     padding: 20px;
-    border: 1px solid #444;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
-    background: #1a1a1a;
+    background: #f8fafc;
 }
 
 .cot-info h4 {
     margin-bottom: 15px;
-    color: #fff;
+    color: #0f172a;
 }
 
 .info-grid {
@@ -1719,28 +1728,28 @@ canvas#userActivityChart {
 }
 
 .info-item strong {
-    color: #fff;
+    color: #0f172a;
 }
 
 .info-item span {
-    color: #888;
+    color: #475569;
 }
 
 .warning-box {
     padding: 15px;
-    background: #333;
+    background: rgba(251, 191, 36, 0.12);
     border-radius: 8px;
     border-left: 4px solid #ffc107;
 }
 
 .warning-box p {
-    color: #ffc107;
+    color: #b45309;
     margin-bottom: 10px;
     font-weight: 600;
 }
 
 .warning-box ul {
-    color: #888;
+    color: #475569;
     font-size: 14px;
     margin: 0;
     padding-left: 20px;
@@ -1751,7 +1760,7 @@ canvas#userActivityChart {
 }
 
 .form-text {
-    color: #888;
+    color: #64748b;
     font-size: 12px;
     margin-top: 5px;
     display: block;
