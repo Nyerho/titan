@@ -123,13 +123,16 @@
     </nav>
 
     <!-- Hero Section -->
-    <section id="home" class="hero">
+    <section id="home" class="hero hero-landing">
         <div class="container-fluid hero-container">
             <div class="row justify-content-center">
                 <div class="col-lg-10 col-xl-8">
                     <div class="hero-content text-center">
                         <h1 class="hero-title display-4 fw-bold mb-4">Professional Trading Platform for Global Markets</h1>
                         <p class="hero-subtitle lead mb-5">Execute trades with institutional-grade technology. Access forex, cryptocurrencies, commodities, and indices with ultra-low latency execution, advanced risk management, and comprehensive market analysis tools trusted by over 150,000 active traders worldwide.</p>
+                        <div class="hero-rotator" aria-live="polite">
+                            <span id="heroRotatorText" class="rotator-text rotator-animate">Lightning‑fast execution with ultra‑low spreads</span>
+                        </div>
                         <div class="hero-buttons d-flex flex-column flex-md-row gap-3 justify-content-center mb-5">
                             <a href="auth.html#register" class="btn btn-primary btn-lg">Start Trading</a>
                             <a href="auth.html" class="btn btn-outline-light btn-lg">Login to your Account</a>
@@ -1169,6 +1172,40 @@
 </div>
 
 <!-- <script src="js/ai-support-chat.js"></script> -->
+    <script>
+      (function () {
+        var messages = [
+          'Lightning‑fast execution with ultra‑low spreads',
+          'Trade forex, crypto, indices on one secure platform',
+          'Advanced risk tools and real‑time market insights',
+          'Segregated accounts and robust fund security',
+          '24/7 support and institutional‑grade technology'
+        ];
+        var el = null;
+        var i = 0;
+        function setText(t) {
+          if (!el) return;
+          el.classList.remove('rotator-animate');
+          void el.offsetWidth;
+          el.textContent = t;
+          el.classList.add('rotator-animate');
+        }
+        function tick() {
+          i = (i + 1) % messages.length;
+          setText(messages[i]);
+        }
+        function init() {
+          el = document.getElementById('heroRotatorText');
+          if (!el) return;
+          setInterval(tick, 3500);
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
+      })();
+    </script>
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     

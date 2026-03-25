@@ -31,10 +31,16 @@
         transform: none !important;
     }
     
-    /* Optimize hero section */
-    .hero {
+    /* Optimize hero section: keep image hero visible on mobile */
+    .hero:not(.hero-landing) {
         background: #ffffff !important;
         min-height: auto !important;
+    }
+    .hero-landing {
+        background-size: cover !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        min-height: 100vh !important;
     }
     
     /* Remove floating animations */

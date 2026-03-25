@@ -320,6 +320,55 @@ body {
     align-items: center;
 }
 
+.hero-landing {
+    background:
+      linear-gradient(180deg, rgba(15,23,42,0.55), rgba(15,23,42,0.55)),
+      url('../assets/images/PixVerse_Image_Effect_prompt_forex broker char (1).jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #ffffff;
+}
+
+.hero-landing .hero-title {
+    background: none;
+    -webkit-text-fill-color: inherit;
+    color: #ffffff;
+}
+
+.hero-landing .hero-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-rotator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    backdrop-filter: blur(8px);
+    margin-bottom: 24px;
+    min-height: 44px;
+}
+
+.rotator-text {
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+@keyframes fadeSlideIn {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.rotator-animate {
+    animation: fadeSlideIn 600ms ease both;
+}
+
 .hero-container {
     max-width: 1200px;
     margin: 0 auto;
