@@ -20,6 +20,18 @@
 }
 
 @media (max-width: 768px) {
+    /* Constrain brand logos on mobile to prevent oversized images */
+    .nav-logo img,
+    .footer-logo img,
+    .logo-link img,
+    img.dashboard-logo {
+        max-width: 32vw !important;
+        height: auto !important;
+        object-fit: contain !important;
+    }
+    .nav-logo img {
+        height: 32px !important;
+    }
     .nav-container {
         padding: 0 1rem;
     }
@@ -191,6 +203,18 @@
 }
 
 @media (max-width: 480px) {
+    /* Further clamp on very small devices */
+    .nav-logo img,
+    .footer-logo img,
+    .logo-link img,
+    img.dashboard-logo {
+        max-width: 28vw !important;
+        height: auto !important;
+        object-fit: contain !important;
+    }
+    .nav-logo img {
+        height: 28px !important;
+    }
     .nav-container {
         padding: 0 0.5rem;
     }

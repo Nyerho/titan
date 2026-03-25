@@ -4,7 +4,7 @@ const urlsToCache = [
   '/css/styles.css',
   '/css/responsive.css',
   '/js/firebase-config.js',
-  '/assets/images/logo.png'
+  '/assets/images/Artboard%201@2x.png'
 ];
 
 self.addEventListener('install', (event) => {
