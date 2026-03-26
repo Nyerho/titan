@@ -8,7 +8,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
       allow create: if isSignedIn() && request.auth.uid == userId && isSafeUserCreate();
-      allow update: if isSignedIn() && request.auth.uid == userId && isSafeUserUpdate();
+      allow update: if isAdmin() || (isSignedIn() && request.auth.uid == userId && isSafeUserUpdate());
       allow delete: if isAdmin();
     }
 
@@ -21,6 +21,24 @@ service cloud.firestore {
     match /transactions/{transactionId} {
       allow read, write: if isAdmin();
       allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Accounts used by admin panel to mirror user balances
+    match /accounts/{accountId} {
+      // Full access for admins
+      allow read, write: if isAdmin();
+
+      // Owners can read their own account
+      allow read: if isSignedIn() && (
+        accountId == request.auth.uid ||
+        (resource.data.userId != null && resource.data.userId == request.auth.uid)
+      );
+
+      // Owners can create their own account doc if needed
+      allow create: if isSignedIn() && (
+        accountId == request.auth.uid ||
+        (request.resource.data.userId != null && request.resource.data.userId == request.auth.uid)
+      );
     }
 
     match /conversations/{conversationId} {
