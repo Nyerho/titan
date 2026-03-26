@@ -38,6 +38,141 @@ function initializeAuthPage() {
     setupFormSubmissions();
 
     setupDemoLogin();
+    setupAlternativeAuth();
+}
+
+function setupAlternativeAuth() {
+    const loginGoogleBtn = document.getElementById('loginGoogleBtn');
+    const registerGoogleBtn = document.getElementById('registerGoogleBtn');
+    const togglePhoneAuthBtn = document.getElementById('togglePhoneAuthBtn');
+    const phoneAuthPanel = document.getElementById('phoneAuthPanel');
+
+    const authPhoneNumber = document.getElementById('authPhoneNumber');
+    const authPhoneCode = document.getElementById('authPhoneCode');
+    const authPhoneSendCodeBtn = document.getElementById('authPhoneSendCodeBtn');
+    const authPhoneVerifyBtn = document.getElementById('authPhoneVerifyBtn');
+
+    const registerPhoneBtn = document.getElementById('registerPhoneBtn');
+
+    if (loginGoogleBtn) {
+        loginGoogleBtn.addEventListener('click', async () => {
+            loginGoogleBtn.disabled = true;
+            const original = loginGoogleBtn.innerHTML;
+            loginGoogleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+            try {
+                await authManager.loginWithGoogle();
+            } catch (e) {
+                showNotification('Google sign-in failed. Please try again.', 'error');
+            } finally {
+                loginGoogleBtn.innerHTML = original;
+                loginGoogleBtn.disabled = false;
+            }
+        });
+    }
+
+    if (registerGoogleBtn) {
+        registerGoogleBtn.addEventListener('click', async () => {
+            registerGoogleBtn.disabled = true;
+            const original = registerGoogleBtn.innerHTML;
+            registerGoogleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+            try {
+                await authManager.loginWithGoogle();
+            } catch (e) {
+                showNotification('Google sign-in failed. Please try again.', 'error');
+            } finally {
+                registerGoogleBtn.innerHTML = original;
+                registerGoogleBtn.disabled = false;
+            }
+        });
+    }
+
+    const showPhonePanel = () => {
+        if (phoneAuthPanel) {
+            phoneAuthPanel.style.display = 'block';
+        }
+    };
+
+    if (togglePhoneAuthBtn) {
+        togglePhoneAuthBtn.addEventListener('click', () => {
+            if (!phoneAuthPanel) return;
+            const isVisible = phoneAuthPanel.style.display !== 'none';
+            phoneAuthPanel.style.display = isVisible ? 'none' : 'block';
+        });
+    }
+
+    if (registerPhoneBtn) {
+        registerPhoneBtn.addEventListener('click', () => {
+            const loginTab = document.querySelector('[data-tab="login"]');
+            if (loginTab) loginTab.click();
+            showPhonePanel();
+
+            const countryCode = document.getElementById('countryCode')?.value || '';
+            const regPhone = document.getElementById('phone')?.value || '';
+            const merged = normalizeE164Phone(countryCode, regPhone);
+            if (authPhoneNumber && merged) authPhoneNumber.value = merged;
+        });
+    }
+
+    if (authPhoneSendCodeBtn) {
+        authPhoneSendCodeBtn.addEventListener('click', async () => {
+            const phone = normalizeE164Phone('', authPhoneNumber?.value || '');
+            if (!phone) {
+                showNotification('Enter a valid phone number with country code (e.g. +233...)', 'error');
+                return;
+            }
+
+            authPhoneSendCodeBtn.disabled = true;
+            const original = authPhoneSendCodeBtn.innerHTML;
+            authPhoneSendCodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            try {
+                const ok = await authManager.startPhoneSignIn(phone, 'phoneRecaptcha');
+                if (ok && authPhoneCode) {
+                    authPhoneCode.focus();
+                }
+            } catch (e) {
+                showNotification('Failed to send code. Please try again.', 'error');
+            } finally {
+                authPhoneSendCodeBtn.innerHTML = original;
+                authPhoneSendCodeBtn.disabled = false;
+            }
+        });
+    }
+
+    if (authPhoneVerifyBtn) {
+        authPhoneVerifyBtn.addEventListener('click', async () => {
+            const code = String(authPhoneCode?.value || '').trim();
+            if (!code) {
+                showNotification('Enter the verification code', 'error');
+                return;
+            }
+
+            authPhoneVerifyBtn.disabled = true;
+            const original = authPhoneVerifyBtn.innerHTML;
+            authPhoneVerifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+            try {
+                await authManager.confirmPhoneCode(code);
+            } catch (e) {
+                showNotification('Verification failed. Please try again.', 'error');
+            } finally {
+                authPhoneVerifyBtn.innerHTML = original;
+                authPhoneVerifyBtn.disabled = false;
+            }
+        });
+    }
+}
+
+function normalizeE164Phone(countryCode, phone) {
+    const raw = String(phone || '').trim();
+    const cc = String(countryCode || '').trim();
+    const digits = raw.replace(/[^\d+]/g, '');
+
+    if (digits.startsWith('+') && digits.length >= 8) return digits;
+    const ccDigits = cc.replace(/[^\d+]/g, '');
+    if (ccDigits.startsWith('+') && digits && !digits.startsWith('+')) {
+        const combined = `${ccDigits}${digits.replace(/^\+/, '')}`;
+        return combined.length >= 8 ? combined : '';
+    }
+    return '';
 }
 
 function setupDemoLogin() {

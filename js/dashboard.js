@@ -1204,23 +1204,19 @@ document.addEventListener('DOMContentLoaded', function() {
 // Export for use in other modules
 export default DashboardManager;
 
-// Initialize enhanced market data service
-const marketDataService = new MarketDataService();
-const connectionStatus = new ConnectionStatus();
-
-// Initialize services
-marketDataService.init().then(() => {
-    connectionStatus.setMarketDataService(marketDataService);
-    
-    // Subscribe to real-time data for dashboard symbols
-    const dashboardSymbols = ['EUR/USD', 'GBP/USD', 'BTC/USD', 'AAPL', 'GOOGL'];
-    
-    dashboardSymbols.forEach(symbol => {
-        marketDataService.subscribeToSymbol(symbol, (data) => {
-            updateDashboardPrice(symbol, data);
+if (typeof MarketDataService !== 'undefined' && typeof ConnectionStatus !== 'undefined') {
+    const marketDataService = new MarketDataService();
+    const connectionStatus = new ConnectionStatus();
+    marketDataService.init().then(() => {
+        connectionStatus.setMarketDataService(marketDataService);
+        const dashboardSymbols = ['EUR/USD', 'GBP/USD', 'BTC/USD', 'AAPL', 'GOOGL'];
+        dashboardSymbols.forEach(symbol => {
+            marketDataService.subscribeToSymbol(symbol, (data) => {
+                updateDashboardPrice(symbol, data);
+            });
         });
     });
-});
+}
 
 function updateDashboardPrice(symbol, data) {
     const priceElement = document.querySelector(`[data-symbol="${symbol}"] .price`);

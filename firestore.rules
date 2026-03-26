@@ -25,12 +25,21 @@ service cloud.firestore {
 
     match /conversations/{conversationId} {
       allow read, write: if isAdmin();
-      allow read, write: if isSignedIn() && request.auth.uid in resource.data.participants;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId;
+      allow delete: if isAdmin();
     }
 
     match /conversations/{conversationId}/messages/{messageId} {
       allow read, write: if isAdmin();
-      allow read, write: if isSignedIn() && request.auth.uid == resource.data.senderId;
+      allow read: if isSignedIn() && conversationUserId(conversationId) == request.auth.uid;
+      allow create: if isSignedIn()
+        && conversationUserId(conversationId) == request.auth.uid
+        && request.resource.data.senderType == 'user'
+        && request.resource.data.senderId == request.auth.uid;
     }
 
     match /kyc/{userId} {
@@ -133,6 +142,10 @@ service cloud.firestore {
 
     function isSafeUserUpdate() {
       return !request.resource.data.keys().hasAny(['role']) || request.resource.data.role == resource.data.role;
+    }
+
+    function conversationUserId(conversationId) {
+      return get(/databases/$(database)/documents/conversations/$(conversationId)).data.userId;
     }
   }
 }

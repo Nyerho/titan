@@ -14,6 +14,13 @@ class AuthManager {
     this.initializeFirebaseAuth();
   }
 
+  clearDemoMode() {
+    try { localStorage.removeItem('tt_demo_mode'); } catch (_) {}
+    try { localStorage.removeItem('tt_demo_profile'); } catch (_) {}
+    try { localStorage.removeItem('tt_demo_balance'); } catch (_) {}
+    try { localStorage.removeItem('tt_demo_botsOwned'); } catch (_) {}
+  }
+
   // Add the missing initialize method
   async initialize() {
     try {
@@ -111,6 +118,7 @@ class AuthManager {
         this.updateUI();
         console.log('AuthManager: Firebase auth state updated, user:', user ? user.email : 'No user');
         if (user) {
+          this.clearDemoMode();
           this.checkAdminStatus().catch(() => {});
         } else {
           this._isAdmin = false;
@@ -134,6 +142,7 @@ class AuthManager {
             // Update internal state
             this.currentUser = result.user;
             this.isLoggedIn = true;
+            this.clearDemoMode();
             
             // Store session info to prevent interference
             sessionStorage.setItem('currentSession', JSON.stringify({
@@ -170,6 +179,103 @@ class AuthManager {
         return false;
     }
 }
+
+  async loginWithGoogle() {
+    try {
+      sessionStorage.clear();
+
+      const result = await FirebaseAuthService.signInWithGoogle();
+      if (!result.success) {
+        this.showMessage(result.message || 'Google sign-in failed', 'error');
+        return false;
+      }
+
+      if (result.pendingRedirect) {
+        this.showMessage(result.message || 'Redirecting...', 'info');
+        return true;
+      }
+
+      const user = result.user;
+      this.currentUser = user;
+      this.isLoggedIn = true;
+      this.clearDemoMode();
+
+      sessionStorage.setItem('currentSession', JSON.stringify({
+        userId: user.uid,
+        email: user.email,
+        loginTime: Date.now()
+      }));
+
+      this.showMessage('Login successful! Redirecting...', 'success');
+
+      let isAdmin = await this.checkAdminStatus();
+      if (!isAdmin) {
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        isAdmin = await this.checkAdminStatus();
+      }
+
+      window.location.href = isAdmin ? 'admin.html' : 'dashboard.html';
+      return true;
+    } catch (error) {
+      console.error('AuthManager: Google login error:', error);
+      this.showMessage(this.getErrorMessage(error.code) || 'Google sign-in failed. Please try again.', 'error');
+      return false;
+    }
+  }
+
+  async startPhoneSignIn(phoneNumber, recaptchaContainerId) {
+    try {
+      const result = await FirebaseAuthService.sendPhoneVerificationCode(phoneNumber, recaptchaContainerId);
+      if (!result.success) {
+        this.showMessage(result.message || 'Failed to send code', 'error');
+        return false;
+      }
+      this.showMessage('Verification code sent. Check your phone.', 'success');
+      return true;
+    } catch (error) {
+      console.error('AuthManager: Phone code send error:', error);
+      this.showMessage(this.getErrorMessage(error.code) || 'Failed to send verification code.', 'error');
+      return false;
+    }
+  }
+
+  async confirmPhoneCode(code) {
+    try {
+      sessionStorage.clear();
+
+      const result = await FirebaseAuthService.confirmPhoneVerificationCode(code);
+      if (!result.success) {
+        this.showMessage(result.message || 'Invalid code', 'error');
+        return false;
+      }
+
+      const user = result.user;
+      this.currentUser = user;
+      this.isLoggedIn = true;
+      this.clearDemoMode();
+
+      sessionStorage.setItem('currentSession', JSON.stringify({
+        userId: user.uid,
+        email: user.email,
+        loginTime: Date.now()
+      }));
+
+      this.showMessage('Login successful! Redirecting...', 'success');
+
+      let isAdmin = await this.checkAdminStatus();
+      if (!isAdmin) {
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        isAdmin = await this.checkAdminStatus();
+      }
+
+      window.location.href = isAdmin ? 'admin.html' : 'dashboard.html';
+      return true;
+    } catch (error) {
+      console.error('AuthManager: Phone verify error:', error);
+      this.showMessage(this.getErrorMessage(error.code) || 'Phone verification failed.', 'error');
+      return false;
+    }
+  }
 
 async logout() {
     try {

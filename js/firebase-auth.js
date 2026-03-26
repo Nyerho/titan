@@ -2,10 +2,16 @@
 import { 
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged,
   updateProfile,
   sendPasswordResetEmail,
+  GoogleAuthProvider,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
   EmailAuthProvider,
   reauthenticateWithCredential,
   updatePassword,
@@ -20,7 +26,10 @@ class FirebaseAuthService {
     this.currentUser = null;
     this.authStateListeners = [];
     this.emailService = null;
+    this.recaptchaVerifier = null;
+    this.phoneConfirmationResult = null;
     this.initializeAuthListener();
+    this.handleRedirectResult();
     this.initializeEmailService();
   }
 
@@ -68,6 +77,22 @@ class FirebaseAuthService {
         console.error('Auth state listener initialization error:', error);
     }
 }
+
+  async handleRedirectResult() {
+    try {
+      const result = await getRedirectResult(auth);
+      if (result?.user) {
+        try {
+          await this.updateLastLogin(result.user.uid);
+        } catch (e) {}
+      }
+    } catch (error) {
+      const code = String(error?.code || '');
+      if (code && code !== 'auth/no-auth-event') {
+        console.warn('Redirect auth result error:', error);
+      }
+    }
+  }
 
   // Register new user
   async register(email, password, userData = {}) {
@@ -182,6 +207,116 @@ class FirebaseAuthService {
         success: false,
         error: error.code,
         message: this.getErrorMessage(error.code)
+      };
+    }
+  }
+
+  async signInWithGoogle() {
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+
+      let userCredential;
+      try {
+        userCredential = await signInWithPopup(auth, provider);
+      } catch (error) {
+        const code = String(error?.code || '');
+        if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user') {
+          await signInWithRedirect(auth, provider);
+          return {
+            success: true,
+            pendingRedirect: true,
+            message: 'Redirecting to Google sign-in...'
+          };
+        }
+        throw error;
+      }
+
+      const user = userCredential.user;
+      await this.updateLastLogin(user.uid);
+
+      return {
+        success: true,
+        user,
+        message: 'Sign in successful'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.code,
+        message: this.getErrorMessage(error.code) || 'Google sign-in failed'
+      };
+    }
+  }
+
+  async initPhoneRecaptcha(containerOrId) {
+    const container =
+      typeof containerOrId === 'string'
+        ? document.getElementById(containerOrId)
+        : containerOrId;
+
+    if (!container) {
+      throw new Error('reCAPTCHA container not found');
+    }
+
+    try {
+      if (this.recaptchaVerifier) {
+        try {
+          this.recaptchaVerifier.clear();
+        } catch (e) {}
+        this.recaptchaVerifier = null;
+      }
+    } catch (e) {}
+
+    this.recaptchaVerifier = new RecaptchaVerifier(auth, container, {
+      size: 'normal'
+    });
+
+    await this.recaptchaVerifier.render();
+    return this.recaptchaVerifier;
+  }
+
+  async sendPhoneVerificationCode(phoneNumber, containerOrId) {
+    const verifier = await this.initPhoneRecaptcha(containerOrId);
+    try {
+      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, verifier);
+      this.phoneConfirmationResult = confirmationResult;
+      return {
+        success: true,
+        message: 'Verification code sent'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.code,
+        message: this.getErrorMessage(error.code) || 'Failed to send verification code'
+      };
+    }
+  }
+
+  async confirmPhoneVerificationCode(code) {
+    try {
+      if (!this.phoneConfirmationResult) {
+        return {
+          success: false,
+          message: 'Please request a code first'
+        };
+      }
+
+      const userCredential = await this.phoneConfirmationResult.confirm(code);
+      const user = userCredential.user;
+      await this.updateLastLogin(user.uid);
+
+      return {
+        success: true,
+        user,
+        message: 'Phone sign-in successful'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.code,
+        message: this.getErrorMessage(error.code) || 'Invalid verification code'
       };
     }
   }
@@ -371,6 +506,11 @@ class FirebaseAuthService {
       'auth/invalid-email': 'Please enter a valid email address.',
       'auth/too-many-requests': 'Too many requests. Please wait a few minutes before trying again.',
       'auth/network-request-failed': 'Network error. Please check your internet connection.',
+      'auth/invalid-phone-number': 'Please enter a valid phone number with country code (e.g. +233...).',
+      'auth/missing-phone-number': 'Please enter your phone number.',
+      'auth/invalid-verification-code': 'Invalid verification code. Please try again.',
+      'auth/code-expired': 'Verification code expired. Please request a new one.',
+      'auth/captcha-check-failed': 'reCAPTCHA failed. Please refresh and try again.',
       'auth/requires-recent-login': 'Please sign in again to complete this action.',
       'auth/invalid-action-code': 'The reset link is invalid or has expired.',
       'auth/expired-action-code': 'The reset link has expired. Please request a new one.',

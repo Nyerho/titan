@@ -27,25 +27,21 @@ class CryptoService {
       // Fetch real crypto data from CoinGecko API
       const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether&vs_currencies=usd&include_24hr_change=true');
       const data = await response.json();
-      
-      // Store in Firestore
-      await this.saveCryptoData('bitcoin', {
+      this.cryptoData.set('bitcoin', {
         name: 'Bitcoin',
         symbol: 'BTC',
         price: data.bitcoin.usd,
         change24h: data.bitcoin.usd_24h_change,
         status: 'High'
       });
-      
-      await this.saveCryptoData('ethereum', {
+      this.cryptoData.set('ethereum', {
         name: 'Ethereum',
         symbol: 'ETH',
         price: data.ethereum.usd,
         change24h: data.ethereum.usd_24h_change,
         status: 'High'
       });
-      
-      await this.saveCryptoData('tether', {
+      this.cryptoData.set('tether', {
         name: 'Usdt(Tether)',
         symbol: 'USDT',
         price: data.tether.usd,
@@ -208,17 +204,7 @@ class CryptoService {
   // Get all crypto data
   async getAllCryptoData() {
     try {
-      const cryptoRef = collection(db, 'cryptoData');
-      const snapshot = await getDocs(cryptoRef);
-      const cryptoList = [];
-      
-      snapshot.forEach((doc) => {
-        cryptoList.push({
-          id: doc.id,
-          ...doc.data()
-        });
-      });
-      
+      const cryptoList = Array.from(this.cryptoData.entries()).map(([id, v]) => ({ id, ...v }));
       return {
         success: true,
         data: cryptoList

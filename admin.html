@@ -1302,7 +1302,47 @@
                 <h1 class="h3 mb-1"><i class="fas fa-robot me-2"></i>AI Chat Management</h1>
                 <p class="text-muted">Monitor and manage AI chat interactions</p>
             </div>
-            <!-- AI chat management content will be loaded here -->
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <div class="card bg-dark">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-inbox me-2"></i>Conversations</h5>
+                            <button class="btn btn-outline-light btn-sm" id="aiChatRefreshBtn">
+                                <i class="fas fa-sync-alt me-1"></i>Refresh
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <input class="form-control form-control-sm mb-2" id="aiChatSearch" placeholder="Search by email">
+                            <div class="list-group list-group-flush" id="aiChatConversationList"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="card bg-dark h-100">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0" id="aiChatActiveTitle">Select a conversation</h5>
+                                    <small class="text-muted" id="aiChatActiveMeta"></small>
+                                </div>
+                                <span class="badge bg-secondary" id="aiChatActiveStatus">Idle</span>
+                            </div>
+                        </div>
+                        <div class="card-body" id="aiChatMessageThread" style="height: 420px; overflow: auto;">
+                            <div class="text-muted">Select a user to view messages.</div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="aiChatReplyInput" placeholder="Type a reply..." disabled>
+                                <button class="btn btn-primary" id="aiChatSendBtn" disabled>
+                                    <i class="fas fa-paper-plane me-1"></i>Send
+                                </button>
+                            </div>
+                            <div class="small text-muted mt-1" id="aiChatSendStatus"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- Security Section -->
@@ -2220,7 +2260,7 @@
     <script type="module" src="js/firebase-auth.js"></script>
     <script type="module" src="js/firebase-database.js"></script>
     <script type="module" src="js/auth-integration.js"></script>
-    <script type="module" src="js/admin.js?v=4"></script>
+    <script type="module" src="js/admin.js?v=5"></script>
     
     <script type="module">
       import { listAllKyc } from "./js/kyc-storage.js";

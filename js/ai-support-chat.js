@@ -212,6 +212,21 @@ class AISupportChat {
             document.body.style.overflow = '';
             document.body.style.position = '';
             document.body.style.width = '';
+            
+            // Clear inline styles applied during open
+            chatContainer.style.display = '';
+            chatContainer.style.visibility = '';
+            chatContainer.style.opacity = '';
+            chatContainer.style.pointerEvents = '';
+            chatContainer.style.position = '';
+            chatContainer.style.top = '';
+            chatContainer.style.left = '';
+            chatContainer.style.right = '';
+            chatContainer.style.bottom = '';
+            chatContainer.style.width = '';
+            chatContainer.style.height = '';
+            chatContainer.style.zIndex = '';
+            chatButton.style.zIndex = '';
         }
         
         chatContainer.classList.remove('open');
@@ -220,7 +235,7 @@ class AISupportChat {
         this.isOpen = false;
     }
 
-    sendMessage(message = null) {
+    async sendMessage(message = null) {
         const chatInput = document.getElementById('chatInput');
         const messageText = message || chatInput.value.trim();
         

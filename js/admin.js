@@ -2812,6 +2812,9 @@ class EnhancedAdminDashboard {
                 this.loadUsersSection();
                 this.updateUserStats();
                 break;
+            case 'ai-chat':
+                this.initAiChatManagement();
+                break;
             case 'withdrawals':
                 this.loadGlobalCotCode();
                 break;
@@ -3546,6 +3549,279 @@ class EnhancedAdminDashboard {
         this.renderTransactionsTable();
     }
 }
+
+EnhancedAdminDashboard.prototype.initAiChatManagement = function () {
+    const listEl = document.getElementById('aiChatConversationList');
+    const threadEl = document.getElementById('aiChatMessageThread');
+    const titleEl = document.getElementById('aiChatActiveTitle');
+    const metaEl = document.getElementById('aiChatActiveMeta');
+    const statusEl = document.getElementById('aiChatActiveStatus');
+    const searchEl = document.getElementById('aiChatSearch');
+    const refreshBtn = document.getElementById('aiChatRefreshBtn');
+    const replyInput = document.getElementById('aiChatReplyInput');
+    const sendBtn = document.getElementById('aiChatSendBtn');
+    const sendStatus = document.getElementById('aiChatSendStatus');
+
+    if (!listEl || !threadEl || !titleEl || !statusEl || !searchEl || !refreshBtn || !replyInput || !sendBtn) {
+        console.warn('AI chat UI elements not found');
+        return;
+    }
+
+    if (!this.aiChatState) {
+        this.aiChatState = {
+            conversations: [],
+            activeConversationId: null,
+            activeConversation: null,
+            unsubConversations: null,
+            unsubMessages: null
+        };
+    }
+
+    this.aiChatEls = {
+        listEl,
+        threadEl,
+        titleEl,
+        metaEl,
+        statusEl,
+        searchEl,
+        refreshBtn,
+        replyInput,
+        sendBtn,
+        sendStatus
+    };
+
+    if (!this.aiChatState.bound) {
+        this.aiChatState.bound = true;
+
+        refreshBtn.addEventListener('click', () => {
+            this.aiChatRenderConversationList();
+        });
+
+        searchEl.addEventListener('input', () => {
+            this.aiChatRenderConversationList();
+        });
+
+        const sendHandler = async () => {
+            await this.aiChatSendReply();
+        };
+
+        sendBtn.addEventListener('click', sendHandler);
+        replyInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendHandler();
+            }
+        });
+    }
+
+    if (!this.aiChatState.unsubConversations) {
+        const conversationsRef = collection(this.db, 'conversations');
+        const q = query(conversationsRef, orderBy('lastMessageTime', 'desc'));
+        this.aiChatState.unsubConversations = onSnapshot(
+            q,
+            (snapshot) => {
+                const conversations = [];
+                snapshot.forEach((docSnap) => {
+                    conversations.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                this.aiChatState.conversations = conversations;
+                this.aiChatRenderConversationList();
+                this.aiChatUpdateBadge();
+            },
+            (error) => {
+                console.error('AI chat conversations listener error:', error);
+                this.showNotification('Failed to load chat conversations', 'error');
+            }
+        );
+    }
+};
+
+EnhancedAdminDashboard.prototype.aiChatUpdateBadge = function () {
+    const badge = document.getElementById('activeChatSessions');
+    if (!badge || !this.aiChatState) return;
+    const activeCount = this.aiChatState.conversations.filter(c => (c.status || 'active') === 'active').length;
+    badge.textContent = String(activeCount);
+};
+
+EnhancedAdminDashboard.prototype.aiChatRenderConversationList = function () {
+    const { listEl, searchEl } = this.aiChatEls || {};
+    if (!listEl || !searchEl || !this.aiChatState) return;
+
+    const term = String(searchEl.value || '').trim().toLowerCase();
+    const conversations = this.aiChatState.conversations.filter((c) => {
+        const email = String(c.userEmail || '').toLowerCase();
+        return !term || email.includes(term);
+    });
+
+    listEl.innerHTML = '';
+    if (conversations.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'text-muted small';
+        empty.textContent = 'No conversations';
+        listEl.appendChild(empty);
+        return;
+    }
+
+    conversations.forEach((c) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'list-group-item list-group-item-action bg-dark text-white border-secondary';
+        if (this.aiChatState.activeConversationId === c.id) {
+            item.classList.add('active');
+        }
+
+        const email = c.userEmail || 'Unknown user';
+        const lastMessage = c.lastMessage ? String(c.lastMessage) : '';
+        const unread = Number(c.unreadByAdmin || 0);
+        const time = c.lastMessageTime?.toDate ? c.lastMessageTime.toDate() : null;
+        const timeStr = time ? time.toLocaleString() : '';
+
+        item.innerHTML = `
+            <div class="d-flex w-100 justify-content-between">
+                <div class="fw-semibold text-truncate" style="max-width: 220px;">${this.escapeHtml(email)}</div>
+                ${unread > 0 ? `<span class="badge bg-danger">${unread}</span>` : `<span class="text-muted small">${this.escapeHtml(timeStr)}</span>`}
+            </div>
+            <div class="text-muted small text-truncate">${this.escapeHtml(lastMessage)}</div>
+        `;
+
+        item.addEventListener('click', () => {
+            this.aiChatOpenConversation(c.id);
+        });
+
+        listEl.appendChild(item);
+    });
+};
+
+EnhancedAdminDashboard.prototype.aiChatOpenConversation = async function (conversationId) {
+    if (!this.aiChatState || !this.aiChatEls) return;
+
+    const convo = this.aiChatState.conversations.find(c => c.id === conversationId) || null;
+    this.aiChatState.activeConversationId = conversationId;
+    this.aiChatState.activeConversation = convo;
+
+    const { threadEl, titleEl, metaEl, statusEl, replyInput, sendBtn, sendStatus } = this.aiChatEls;
+    titleEl.textContent = convo?.userEmail || 'Conversation';
+    if (metaEl) metaEl.textContent = convo ? `ID: ${convo.id} • User: ${convo.userId || 'N/A'}` : '';
+    statusEl.textContent = convo?.status || 'active';
+    statusEl.className = `badge ${statusEl.textContent === 'active' ? 'bg-success' : 'bg-secondary'}`;
+
+    replyInput.disabled = false;
+    sendBtn.disabled = false;
+    if (sendStatus) sendStatus.textContent = '';
+
+    this.aiChatRenderConversationList();
+
+    if (this.aiChatState.unsubMessages) {
+        try { this.aiChatState.unsubMessages(); } catch (e) {}
+        this.aiChatState.unsubMessages = null;
+    }
+
+    threadEl.innerHTML = `<div class="text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Loading messages...</div>`;
+
+    const messagesRef = collection(this.db, 'conversations', conversationId, 'messages');
+    const q = query(messagesRef, orderBy('timestamp', 'asc'));
+    this.aiChatState.unsubMessages = onSnapshot(
+        q,
+        (snapshot) => {
+            const messages = [];
+            snapshot.forEach((docSnap) => {
+                messages.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            this.aiChatRenderThread(messages);
+        },
+        (error) => {
+            console.error('AI chat messages listener error:', error);
+            threadEl.innerHTML = `<div class="text-danger">Failed to load messages</div>`;
+        }
+    );
+
+    try {
+        await updateDoc(doc(this.db, 'conversations', conversationId), { unreadByAdmin: 0 });
+    } catch (e) {}
+};
+
+EnhancedAdminDashboard.prototype.aiChatRenderThread = function (messages) {
+    const { threadEl } = this.aiChatEls || {};
+    if (!threadEl) return;
+
+    if (!messages || messages.length === 0) {
+        threadEl.innerHTML = `<div class="text-muted">No messages yet.</div>`;
+        return;
+    }
+
+    const parts = messages.map((m) => {
+        const senderType = m.senderType || 'user';
+        const senderLabel = senderType === 'admin' ? 'Admin' : (senderType === 'ai' ? 'AI' : 'User');
+        const ts = m.timestamp?.toDate ? m.timestamp.toDate() : null;
+        const timeStr = ts ? ts.toLocaleString() : '';
+        const alignClass = senderType === 'admin' ? 'text-end' : 'text-start';
+        const bubbleClass = senderType === 'admin' ? 'bg-primary' : (senderType === 'ai' ? 'bg-secondary' : 'bg-dark border border-secondary');
+
+        return `
+            <div class="mb-2 ${alignClass}">
+                <div class="small text-muted">${this.escapeHtml(senderLabel)} ${timeStr ? '• ' + this.escapeHtml(timeStr) : ''}</div>
+                <div class="d-inline-block px-3 py-2 rounded ${bubbleClass}" style="max-width: 90%; white-space: pre-wrap;">${this.escapeHtml(String(m.text || ''))}</div>
+            </div>
+        `;
+    });
+
+    threadEl.innerHTML = parts.join('');
+    threadEl.scrollTop = threadEl.scrollHeight;
+};
+
+EnhancedAdminDashboard.prototype.aiChatSendReply = async function () {
+    if (!this.aiChatState || !this.aiChatEls) return;
+    const conversationId = this.aiChatState.activeConversationId;
+    const { replyInput, sendBtn, sendStatus } = this.aiChatEls;
+
+    if (!conversationId) {
+        this.showNotification('Select a conversation first', 'warning');
+        return;
+    }
+
+    const text = String(replyInput.value || '').trim();
+    if (!text) return;
+
+    sendBtn.disabled = true;
+    if (sendStatus) sendStatus.textContent = 'Sending...';
+
+    try {
+        const messagesRef = collection(this.db, 'conversations', conversationId, 'messages');
+        await addDoc(messagesRef, {
+            text,
+            senderType: 'admin',
+            senderId: this.currentUser?.uid || null,
+            senderName: this.currentUser?.email || 'Admin',
+            timestamp: serverTimestamp(),
+            read: false
+        });
+
+        await updateDoc(doc(this.db, 'conversations', conversationId), {
+            lastMessage: text,
+            lastMessageTime: serverTimestamp(),
+            unreadByUser: increment(1)
+        });
+
+        replyInput.value = '';
+        if (sendStatus) sendStatus.textContent = 'Sent';
+    } catch (error) {
+        console.error('AI chat send error:', error);
+        if (sendStatus) sendStatus.textContent = 'Failed to send';
+        this.showNotification('Failed to send message', 'error');
+    } finally {
+        sendBtn.disabled = false;
+        replyInput.focus();
+    }
+};
+
+EnhancedAdminDashboard.prototype.escapeHtml = function (value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+};
 
 // Declare adminDashboard variable in global scope
 let adminDashboard;

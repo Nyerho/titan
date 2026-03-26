@@ -138,9 +138,8 @@ class MarketNewsService {
 
     async fetchFromAlternativeSource(topic, limit) {
         try {
-            // Import API config
-            const { default: APIConfig } = await import('./api-config.js');
-            const apiConfig = new APIConfig();
+            const { default: API_CONFIG } = await import('./api-config.js');
+            const apiConfig = API_CONFIG;
             const newsApiKey = apiConfig.getApiKey('newsapi');
             
             if (!newsApiKey || newsApiKey === 'YOUR_NEWS_API_KEY') {

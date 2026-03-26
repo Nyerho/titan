@@ -66,16 +66,6 @@
 
   async function startSync() {
     try {
-      try {
-        if (localStorage.getItem('tt_demo_mode') === '1') {
-          const raw = localStorage.getItem('tt_demo_profile');
-          const profile = raw ? JSON.parse(raw) : { displayName: 'Demo Trader', email: 'demo@titantrades.com' };
-          updateDomFromProfile(profile);
-          window.dispatchEvent(new CustomEvent('user-profile-changed', { detail: profile }));
-          return;
-        }
-      } catch (_) {}
-
       const firebaseCompat = await ensureFirebaseAppInitialized();
       const auth = firebaseCompat.auth();
       const db = firebaseCompat.firestore();
@@ -96,7 +86,25 @@
           unsubscribe = null;
         }
 
-        if (!user) {
+        if (user) {
+          try {
+            if (localStorage.getItem('tt_demo_mode') === '1') {
+              try { localStorage.removeItem('tt_demo_mode'); } catch (_) {}
+              try { localStorage.removeItem('tt_demo_profile'); } catch (_) {}
+              try { localStorage.removeItem('tt_demo_balance'); } catch (_) {}
+              try { localStorage.removeItem('tt_demo_botsOwned'); } catch (_) {}
+            }
+          } catch (_) {}
+        } else {
+          try {
+            if (localStorage.getItem('tt_demo_mode') === '1') {
+              const raw = localStorage.getItem('tt_demo_profile');
+              const profile = raw ? JSON.parse(raw) : { displayName: 'Demo Trader', email: 'demo@titantrades.com' };
+              updateDomFromProfile(profile);
+              window.dispatchEvent(new CustomEvent('user-profile-changed', { detail: profile }));
+              return;
+            }
+          } catch (_) {}
           try { localStorage.removeItem('userProfileCache'); } catch (_) {}
           updateDomFromProfile({ displayName: '', email: '', phoneNumber: '' });
           window.dispatchEvent(new CustomEvent('user-profile-changed', { detail: null }));
