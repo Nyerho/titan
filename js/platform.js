@@ -984,6 +984,8 @@ class TradingPlatform {
                 
                 this.updatePortfolioDisplay();
             }
+
+            this.startBalanceListener();
         } catch (error) {
             console.error('Error updating account info:', error);
             // Fallback to demo data
@@ -993,10 +995,25 @@ class TradingPlatform {
     
     // Get user data from authentication service
     async getUserData() {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            return this.getDemoUserData();
+        const authManager = window.authManager;
+        const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+        if (user) {
+            const displayName =
+                user.displayName ||
+                (user.email ? user.email.split('@')[0] : '') ||
+                'Trader';
+
+            return {
+                displayName,
+                firstName: displayName.split(' ')[0] || displayName,
+                lastName: displayName.split(' ').slice(1).join(' ') || '',
+                email: user.email || '',
+                accountType: 'Live'
+            };
         }
+
+        const token = localStorage.getItem('authToken');
+        if (!token) return this.getDemoUserData();
         
         try {
             const response = await fetch('/api/user/profile', {
@@ -1018,10 +1035,39 @@ class TradingPlatform {
     
     // Get account data from trading service
     async getAccountData() {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            return this.portfolio; // Use demo data
+        const authManager = window.authManager;
+        const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+        const dbService = window.FirebaseDatabaseService;
+
+        if (user && dbService?.getUserBalance) {
+            try {
+                const balanceResult = await dbService.getUserBalance(user.uid);
+                const balance = balanceResult.success ? Number(balanceResult.balance || 0) : 0;
+                const equity = balance * 1.025;
+                const margin = balance * 0.05;
+                const freeMargin = balance - margin;
+                return {
+                    balance,
+                    equity,
+                    margin,
+                    freeMargin,
+                    marginLevel: 0,
+                    totalPnL: this.portfolio.totalPnL || 0
+                };
+            } catch (_) {
+                return {
+                    balance: 0,
+                    equity: 0,
+                    margin: 0,
+                    freeMargin: 0,
+                    marginLevel: 0,
+                    totalPnL: this.portfolio.totalPnL || 0
+                };
+            }
         }
+
+        const token = localStorage.getItem('authToken');
+        if (!token) return this.portfolio;
         
         try {
             const response = await fetch('/api/account/summary', {
@@ -1068,7 +1114,7 @@ class TradingPlatform {
             'account-balance': this.formatCurrency(this.portfolio.balance),
             'account-equity': this.formatCurrency(this.portfolio.equity),
             'account-margin': this.formatCurrency(this.portfolio.margin),
-            'account-free-margin': this.formatCurrency(this.portfolio.freeMargin)
+            'free-margin': this.formatCurrency(this.portfolio.freeMargin)
         };
         
         Object.entries(elements).forEach(([id, value]) => {
@@ -1205,7 +1251,28 @@ class TradingPlatform {
         });
         
         this.updatePositionsTable();
-        this.updateAccountInfo();
+        this.updatePortfolioDisplay();
+    }
+
+    startBalanceListener() {
+        const authManager = window.authManager;
+        const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+        const dbService = window.FirebaseDatabaseService;
+        if (!user?.uid || !dbService?.subscribeToUserBalance) return;
+
+        if (this._balanceUnsubscribe) return;
+
+        this._balanceUnsubscribe = dbService.subscribeToUserBalance(user.uid, (balance) => {
+            const nextBalance = Number(balance || 0);
+            const equity = nextBalance * 1.025;
+            const margin = nextBalance * 0.05;
+            const freeMargin = nextBalance - margin;
+            this.portfolio.balance = nextBalance;
+            this.portfolio.equity = equity;
+            this.portfolio.margin = margin;
+            this.portfolio.freeMargin = freeMargin;
+            this.updatePortfolioDisplay();
+        });
     }
 
     updatePriceDisplay() {

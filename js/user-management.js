@@ -1595,6 +1595,9 @@ window.updateUserFinancials = async function(userId) {
             totalProfits: newProfits,
             totalDeposits: newDeposits,
             balance: firebase.firestore.FieldValue.increment(totalBalanceChange),
+            accountBalance: firebase.firestore.FieldValue.increment(totalBalanceChange),
+            walletBalance: firebase.firestore.FieldValue.increment(totalBalanceChange),
+            balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
@@ -1687,6 +1690,8 @@ window.calculateBalance = async function(userId) {
         const userRef = db.collection('users').doc(userId);
         await userRef.update({
             balance: Math.max(0, calculatedBalance), // Ensure balance doesn't go negative
+            accountBalance: Math.max(0, calculatedBalance),
+            walletBalance: Math.max(0, calculatedBalance),
             totalDeposits: Math.max(0, totalDeposits),
             totalProfits: Math.max(0, totalProfits),
             calculatedAt: firebase.firestore.FieldValue.serverTimestamp(),

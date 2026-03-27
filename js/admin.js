@@ -3967,6 +3967,7 @@ function setupGlobalExports() {
     window.clearTradeFilters = () => adminDashboard.clearTradeFilters();
     window.openEditTransactionModal = (transactionId) => adminDashboard.openEditTransactionModal(transactionId);
     window.deleteTransactionRecord = (transactionId) => adminDashboard.deleteTransactionRecord(transactionId);
+    window.handleLogout = () => adminDashboard.handleLogout();
 }
 
 // Export for module usage

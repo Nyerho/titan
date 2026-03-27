@@ -78,6 +78,8 @@ class FirebaseDatabaseService {
           userRef,
           {
             accountBalance: nextBalance,
+            balance: nextBalance,
+            walletBalance: nextBalance,
             botsOwned: nextBotsOwned,
             updatedAt: serverTimestamp()
           },
@@ -158,13 +160,15 @@ class FirebaseDatabaseService {
       const result = await runTransaction(db, async (tx) => {
         const snap = await tx.get(userRef);
         const data = snap.exists() ? snap.data() : {};
-        const currentBalance = Number(data.accountBalance || 0);
+        const currentBalance = Number(data.accountBalance ?? data.walletBalance ?? data.balance ?? 0);
         const nextBalance = Math.max(0, currentBalance + Number(delta || 0));
 
         tx.set(
           userRef,
           {
             accountBalance: nextBalance,
+            balance: nextBalance,
+            walletBalance: nextBalance,
             balanceUpdatedAt: new Date().toISOString()
           },
           { merge: true }
@@ -488,7 +492,7 @@ class FirebaseDatabaseService {
         const userData = userDoc.data();
         return {
           success: true,
-          balance: userData.accountBalance || 0
+          balance: Number(userData.accountBalance ?? userData.walletBalance ?? userData.balance ?? 0)
         };
       } else {
         // Initialize user with default balance if profile doesn't exist
@@ -506,11 +510,29 @@ class FirebaseDatabaseService {
     }
   }
 
+  subscribeToUserBalance(uid, callback) {
+    const userRef = doc(db, 'users', uid);
+    const unsubscribe = onSnapshot(userRef, (snap) => {
+      if (!snap.exists()) {
+        callback(0);
+        return;
+      }
+      const data = snap.data() || {};
+      const balance = Number(data.accountBalance ?? data.walletBalance ?? data.balance ?? 0);
+      callback(balance);
+    });
+
+    this.listeners.set(`balance_${uid}`, unsubscribe);
+    return unsubscribe;
+  }
+
   async updateUserBalance(uid, newBalance) {
     try {
       const userRef = doc(db, 'users', uid);
       await updateDoc(userRef, {
         accountBalance: newBalance,
+        balance: newBalance,
+        walletBalance: newBalance,
         balanceUpdatedAt: new Date().toISOString()
       });
       
@@ -531,6 +553,8 @@ class FirebaseDatabaseService {
       const userRef = doc(db, 'users', uid);
       await setDoc(userRef, {
         accountBalance: initialBalance,
+        balance: initialBalance,
+        walletBalance: initialBalance,
         createdAt: new Date().toISOString(),
         balanceUpdatedAt: new Date().toISOString()
       }, { merge: true });

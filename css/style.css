@@ -1674,7 +1674,7 @@ body {
 
 .about-stats {
     display: grid;
-    gap: 20px;
+    gap: 18px;
 }
 
 .stat-card {

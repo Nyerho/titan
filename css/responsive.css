@@ -1720,7 +1720,7 @@
     }
     #about .about-stats {
         grid-template-columns: 1fr !important;
-        gap: 12px !important;
+        gap: 20px !important;
     }
     #about .about-content > *,
     #about .about-stats > * {
@@ -1776,7 +1776,7 @@
     .about-stats {
         display: grid !important;
         grid-template-columns: 1fr !important;
-        gap: 12px !important;
+        gap: 20px !important;
         align-items: stretch !important;
         justify-items: stretch !important;
         width: 100% !important;

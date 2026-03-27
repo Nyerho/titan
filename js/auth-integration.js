@@ -118,19 +118,189 @@ class AuthManager {
 
   ensureVerificationBanner() {
     try {
+      const removeUi = () => {
+        const existing = document.getElementById('ttVerificationBanner');
+        if (existing) existing.remove();
+        const modal = document.getElementById('ttPhoneVerifyModal');
+        if (modal) modal.remove();
+        try { document.body.style.paddingTop = ''; } catch (_) {}
+        try { document.body.style.overflow = ''; } catch (_) {}
+      };
+
+      const path = String(window.location?.pathname || '').toLowerCase();
+      const file = (path.split('/').pop() || '').toLowerCase();
+      const isBlockedPage =
+        file === 'auth.html' ||
+        file === 'admin.html' ||
+        file === 'user-management.html' ||
+        file === 'cot-admin.html' ||
+        file === 'index.html' ||
+        file === '' ||
+        path.includes('/admin');
+
+      if (isBlockedPage) {
+        removeUi();
+        return;
+      }
+
       const existing = document.getElementById('ttVerificationBanner');
       if (!this.currentUser || this._isAdmin) {
-        if (existing) existing.remove();
+        removeUi();
         return;
       }
 
       const verified = !!this.currentUser.emailVerified || !!this.currentUser.phoneNumber;
       if (verified) {
-        if (existing) existing.remove();
+        removeUi();
         return;
       }
 
       if (existing) return;
+
+      const openPhoneModal = () => {
+        const existingModal = document.getElementById('ttPhoneVerifyModal');
+        if (existingModal) existingModal.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'ttPhoneVerifyModal';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px';
+
+        const card = document.createElement('div');
+        card.style.cssText = 'width:100%;max-width:420px;background:#0b1220;color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px;box-shadow:0 10px 40px rgba(0,0,0,.35);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial';
+
+        const header = document.createElement('div');
+        header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px';
+
+        const title = document.createElement('div');
+        title.textContent = 'Verify phone number';
+        title.style.cssText = 'font-weight:700;font-size:16px';
+
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.textContent = 'Close';
+        closeBtn.style.cssText = 'border:0;background:transparent;color:#93c5fd;cursor:pointer;padding:6px 8px';
+
+        const phoneLabel = document.createElement('div');
+        phoneLabel.textContent = 'Phone number (include country code)';
+        phoneLabel.style.cssText = 'font-size:13px;opacity:.9;margin:10px 0 6px';
+
+        const phoneInput = document.createElement('input');
+        phoneInput.type = 'tel';
+        phoneInput.placeholder = '+1 555 123 4567';
+        phoneInput.autocomplete = 'tel';
+        phoneInput.style.cssText = 'width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#111827;color:#fff;outline:none';
+
+        const recaptcha = document.createElement('div');
+        recaptcha.id = 'ttPhoneRecaptcha';
+        recaptcha.style.cssText = 'margin:12px 0';
+
+        const sendBtn = document.createElement('button');
+        sendBtn.type = 'button';
+        sendBtn.textContent = 'Send code';
+        sendBtn.style.cssText = 'border:0;background:#2563eb;color:#fff;padding:10px 12px;border-radius:10px;cursor:pointer;width:100%;font-weight:600';
+
+        const codeLabel = document.createElement('div');
+        codeLabel.textContent = 'Verification code';
+        codeLabel.style.cssText = 'font-size:13px;opacity:.9;margin:12px 0 6px';
+
+        const codeInput = document.createElement('input');
+        codeInput.type = 'text';
+        codeInput.inputMode = 'numeric';
+        codeInput.placeholder = '123456';
+        codeInput.autocomplete = 'one-time-code';
+        codeInput.disabled = true;
+        codeInput.style.cssText = 'width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#111827;color:#fff;outline:none;opacity:.7';
+
+        const confirmBtn = document.createElement('button');
+        confirmBtn.type = 'button';
+        confirmBtn.textContent = 'Confirm';
+        confirmBtn.disabled = true;
+        confirmBtn.style.cssText = 'border:0;background:#22c55e;color:#0b1220;padding:10px 12px;border-radius:10px;cursor:pointer;width:100%;font-weight:800;margin-top:10px;opacity:.7';
+
+        const cleanup = () => {
+          try { document.body.style.overflow = ''; } catch (_) {}
+          overlay.remove();
+        };
+
+        closeBtn.onclick = cleanup;
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) cleanup();
+        });
+
+        sendBtn.onclick = async () => {
+          const phone = String(phoneInput.value || '').trim();
+          if (!phone) {
+            this.showMessage('Enter your phone number first', 'error');
+            return;
+          }
+
+          sendBtn.disabled = true;
+          sendBtn.style.opacity = '.7';
+          try {
+            const result = await FirebaseAuthService.sendPhoneLinkVerificationCode(phone, recaptcha);
+            if (!result.success) {
+              this.showMessage(result.message || 'Failed to send verification code', 'error');
+              sendBtn.disabled = false;
+              sendBtn.style.opacity = '1';
+              return;
+            }
+            this.showMessage('Verification code sent', 'success');
+            codeInput.disabled = false;
+            codeInput.style.opacity = '1';
+            confirmBtn.disabled = false;
+            confirmBtn.style.opacity = '1';
+          } catch (err) {
+            this.showMessage('Failed to send verification code', 'error');
+            sendBtn.disabled = false;
+            sendBtn.style.opacity = '1';
+          }
+        };
+
+        confirmBtn.onclick = async () => {
+          const code = String(codeInput.value || '').trim();
+          if (!code) {
+            this.showMessage('Enter the verification code', 'error');
+            return;
+          }
+
+          confirmBtn.disabled = true;
+          confirmBtn.style.opacity = '.7';
+          try {
+            const result = await FirebaseAuthService.confirmPhoneLinkVerificationCode(code);
+            if (!result.success) {
+              this.showMessage(result.message || 'Invalid code', 'error');
+              confirmBtn.disabled = false;
+              confirmBtn.style.opacity = '1';
+              return;
+            }
+
+            this.currentUser = result.user;
+            try { await this.currentUser?.reload?.(); } catch (_) {}
+            cleanup();
+            this.ensureVerificationBanner();
+            this.showMessage('Phone verified successfully', 'success');
+          } catch (err) {
+            this.showMessage('Phone verification failed', 'error');
+            confirmBtn.disabled = false;
+            confirmBtn.style.opacity = '1';
+          }
+        };
+
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+        card.appendChild(header);
+        card.appendChild(phoneLabel);
+        card.appendChild(phoneInput);
+        card.appendChild(recaptcha);
+        card.appendChild(sendBtn);
+        card.appendChild(codeLabel);
+        card.appendChild(codeInput);
+        card.appendChild(confirmBtn);
+        overlay.appendChild(card);
+
+        try { document.body.style.overflow = 'hidden'; } catch (_) {}
+        document.body.appendChild(overlay);
+      };
 
       const banner = document.createElement('div');
       banner.id = 'ttVerificationBanner';
@@ -165,8 +335,12 @@ class AuthManager {
 
       const verifyPhone = document.createElement('a');
       verifyPhone.textContent = 'Verify Phone';
-      verifyPhone.href = 'auth.html';
+      verifyPhone.href = '#';
       verifyPhone.style.cssText = 'color:#93c5fd;text-decoration:underline';
+      verifyPhone.onclick = (e) => {
+        try { e.preventDefault(); } catch (_) {}
+        openPhoneModal();
+      };
 
       actions.appendChild(resend);
       actions.appendChild(refresh);
@@ -642,5 +816,6 @@ async logout() {
 // Create and export auth manager instance
 const authManager = new AuthManager();
 window.authManager = authManager;
+window.FirebaseDatabaseService = FirebaseDatabaseService;
 
 export default authManager;

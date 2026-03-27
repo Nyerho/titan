@@ -168,10 +168,14 @@ class FundingManager {
                 
                 // Update user balance
                 const userRef = db.collection('users').doc(user.uid);
-                await userRef.update({
+                await userRef.set({
                     balance: firebase.firestore.FieldValue.increment(amount),
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                    accountBalance: firebase.firestore.FieldValue.increment(amount),
+                    walletBalance: firebase.firestore.FieldValue.increment(amount),
+                    totalDeposits: firebase.firestore.FieldValue.increment(amount),
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                    balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
             }
             
             return simulatedResult;
@@ -216,10 +220,14 @@ class FundingManager {
                 });
                 
                 const userRef = db.collection('users').doc(user.uid);
-                await userRef.update({
+                await userRef.set({
                     balance: firebase.firestore.FieldValue.increment(amount),
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                    accountBalance: firebase.firestore.FieldValue.increment(amount),
+                    walletBalance: firebase.firestore.FieldValue.increment(amount),
+                    totalDeposits: firebase.firestore.FieldValue.increment(amount),
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                    balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
             }
             
             return simulatedResult;

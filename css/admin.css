@@ -602,6 +602,20 @@ canvas#userActivityChart {
         font-size: 1.5rem;
         cursor: pointer;
     }
+
+    #sidebarToggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 10px;
+        margin: 0;
+        color: #0f172a;
+        font-size: 1.25rem;
+        position: relative;
+        z-index: 1002;
+        touch-action: manipulation;
+    }
+    
     
     .stats-grid {
         grid-template-columns: 1fr;

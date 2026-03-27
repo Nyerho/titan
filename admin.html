@@ -94,7 +94,7 @@
                             <li><a class="dropdown-item" href="#" onclick="openAdminProfile()"><i class="fas fa-user me-2"></i>Profile</a></li>
                             <li><a class="dropdown-item" href="#" onclick="openAdminSettings()"><i class="fas fa-cog me-2"></i>Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            <li><a class="dropdown-item text-danger" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
                         </ul>
                     </div>
                 </div>
@@ -2914,7 +2914,9 @@
                 const userRef = firebase.firestore().collection('users').doc(userId);
                 batch.update(userRef, {
                     accountBalance: newAccountBalance,
-                    walletBalance: newWalletBalance,
+                    walletBalance: newAccountBalance,
+                    balance: newAccountBalance,
+                    balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
