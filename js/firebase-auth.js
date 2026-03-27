@@ -292,21 +292,38 @@ class FirebaseAuthService {
       throw new Error('reCAPTCHA container not found');
     }
 
+    if (this.recaptchaVerifier && this._recaptchaContainer === container) {
+      return this.recaptchaVerifier;
+    }
+
+    this.clearPhoneRecaptcha();
+
+    try {
+      container.innerHTML = '';
+    } catch (_) {}
+
+    this.recaptchaVerifier = new RecaptchaVerifier(auth, container, {
+      size: 'invisible',
+      theme: 'light',
+      callback: () => {},
+      'expired-callback': () => {}
+    });
+    this._recaptchaContainer = container;
+
+    await this.recaptchaVerifier.render();
+    return this.recaptchaVerifier;
+  }
+
+  clearPhoneRecaptcha() {
     try {
       if (this.recaptchaVerifier) {
         try {
           this.recaptchaVerifier.clear();
-        } catch (e) {}
-        this.recaptchaVerifier = null;
+        } catch (_) {}
       }
-    } catch (e) {}
-
-    this.recaptchaVerifier = new RecaptchaVerifier(auth, container, {
-      size: 'normal'
-    });
-
-    await this.recaptchaVerifier.render();
-    return this.recaptchaVerifier;
+    } catch (_) {}
+    this.recaptchaVerifier = null;
+    this._recaptchaContainer = null;
   }
 
   async sendPhoneVerificationCode(phoneNumber, containerOrId) {
@@ -319,6 +336,7 @@ class FirebaseAuthService {
         message: 'Verification code sent'
       };
     } catch (error) {
+      this.clearPhoneRecaptcha();
       return {
         success: false,
         error: error.code,
@@ -366,6 +384,7 @@ class FirebaseAuthService {
       this.phoneLinkConfirmationResult = confirmationResult;
       return { success: true, message: 'Verification code sent' };
     } catch (error) {
+      this.clearPhoneRecaptcha();
       return { success: false, error: error.code, message: this.getErrorMessage(error.code) || 'Failed to send verification code' };
     }
   }

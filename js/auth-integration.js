@@ -248,6 +248,7 @@ class AuthManager {
 
         const cleanup = () => {
           try { document.body.style.overflow = ''; } catch (_) {}
+          try { FirebaseAuthService.clearPhoneRecaptcha?.(); } catch (_) {}
           overlay.remove();
         };
 
