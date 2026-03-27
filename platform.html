@@ -212,19 +212,19 @@
                 <div class="balance-info">
                     <div class="balance-item">
                         <span class="label">Balance:</span>
-                        <span class="value" id="account-balance">$10,000.00</span>
+                        <span class="value" id="account-balance">Loading...</span>
                     </div>
                     <div class="balance-item">
                         <span class="label">Equity:</span>
-                        <span class="value" id="account-equity">$10,250.00</span>
+                        <span class="value" id="account-equity">Loading...</span>
                     </div>
                     <div class="balance-item">
                         <span class="label">Margin:</span>
-                        <span class="value" id="account-margin">$500.00</span>
+                        <span class="value" id="account-margin">Loading...</span>
                     </div>
                     <div class="balance-item">
                         <span class="label">Free Margin:</span>
-                        <span class="value" id="free-margin">$9,750.00</span>
+                        <span class="value" id="free-margin">Loading...</span>
                     </div>
                 </div>
             </div>
@@ -955,68 +955,4 @@
     </style>
 </body>
 </html>
-
-<!-- Market Notifications Script -->
-    <script src="js/market-notifications.js"></script>
-</body>
-
-<!-- Account Summary with Real Data -->
-<div class="account-summary">
-    <h3>Account Summary</h3>
-    <div class="summary-item">
-        <span class="label">Balance:</span>
-        <span class="value" id="account-balance">Loading...</span>
-    </div>
-    <div class="summary-item">
-        <span class="label">Equity:</span>
-        <span class="value" id="account-equity">Loading...</span>
-    </div>
-    <div class="summary-item">
-        <span class="label">Margin:</span>
-        <span class="value" id="account-margin">Loading...</span>
-    </div>
-    <div class="summary-item">
-        <span class="label">Free Margin:</span>
-        <span class="value" id="account-free-margin">Loading...</span>
-    </div>
-</div>
-    <style>
-        .btn-dashboard {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-            color: #ffffff;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-dashboard:hover {
-            background: linear-gradient(135deg, #0099cc 0%, #007399 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
-        }
-
-        .btn-dashboard i {
-            font-size: 16px;
-        }
-
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .btn-dashboard {
-                padding: 8px 16px;
-                font-size: 13px;
-            }
-            
-            .btn-dashboard span {
-                display: none;
-            }
-        }
-    </style>
 

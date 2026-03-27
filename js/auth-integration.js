@@ -10,6 +10,8 @@ class AuthManager {
     this.isLoggedIn = false;
     this.isInitialized = false;
     this._isAdmin = false;
+    this._verificationPollInterval = null;
+    this._verificationPollStartedAt = 0;
     this.initializeEmailService();
     this.initializeFirebaseAuth();
   }
@@ -125,6 +127,11 @@ class AuthManager {
         if (modal) modal.remove();
         try { document.body.style.paddingTop = ''; } catch (_) {}
         try { document.body.style.overflow = ''; } catch (_) {}
+        if (this._verificationPollInterval) {
+          clearInterval(this._verificationPollInterval);
+          this._verificationPollInterval = null;
+        }
+        this._verificationPollStartedAt = 0;
       };
 
       const path = String(window.location?.pathname || '').toLowerCase();
@@ -156,6 +163,28 @@ class AuthManager {
       }
 
       if (existing) return;
+
+      const startAutoClearPoll = () => {
+        if (this._verificationPollInterval) return;
+        this._verificationPollStartedAt = Date.now();
+        this._verificationPollInterval = setInterval(async () => {
+          const user = this.currentUser;
+          if (!user) {
+            removeUi();
+            return;
+          }
+
+          if (Date.now() - this._verificationPollStartedAt > 2 * 60 * 1000) {
+            clearInterval(this._verificationPollInterval);
+            this._verificationPollInterval = null;
+            return;
+          }
+
+          try { await user.reload(); } catch (_) {}
+          const verifiedNow = !!user.emailVerified || !!user.phoneNumber;
+          if (verifiedNow) removeUi();
+        }, 5000);
+      };
 
       const openPhoneModal = () => {
         const existingModal = document.getElementById('ttPhoneVerifyModal');
@@ -351,7 +380,40 @@ class AuthManager {
 
       document.body.style.paddingTop = '56px';
       document.body.appendChild(banner);
+      startAutoClearPoll();
     } catch (e) {}
+  }
+
+  async handleEmailVerificationActionLink() {
+    try {
+      const href = typeof window !== 'undefined' ? String(window.location?.href || '') : '';
+      const url = href ? new URL(href) : null;
+      if (!url) return;
+
+      const mode = url.searchParams.get('mode');
+      const oobCode = url.searchParams.get('oobCode');
+      if (mode !== 'verifyEmail' || !oobCode) return;
+
+      const result = await FirebaseAuthService.applyEmailVerificationCode(oobCode);
+      if (!result.success) {
+        this.showMessage(result.message || 'Email verification failed', 'error');
+      } else {
+        this.showMessage('Email verified successfully', 'success');
+      }
+
+      try {
+        url.searchParams.delete('mode');
+        url.searchParams.delete('oobCode');
+        url.searchParams.delete('apiKey');
+        url.searchParams.delete('lang');
+        url.searchParams.delete('continueUrl');
+        url.searchParams.delete('state');
+        window.history.replaceState({}, document.title, url.pathname + (url.search ? `?${url.searchParams.toString()}` : '') + url.hash);
+      } catch (_) {}
+
+      try { await this.currentUser?.reload?.(); } catch (_) {}
+      this.ensureVerificationBanner();
+    } catch (_) {}
   }
 
   initializeFirebaseAuth() {
@@ -361,6 +423,7 @@ class AuthManager {
         this.isLoggedIn = !!user; // Properly sync isLoggedIn with auth state
         this.isInitialized = true; // Set initialization flag
         this.updateUI();
+        this.handleEmailVerificationActionLink().catch(() => {});
         this.ensureVerificationBanner();
         console.log('AuthManager: Firebase auth state updated, user:', user ? user.email : 'No user');
         if (user) {

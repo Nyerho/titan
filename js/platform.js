@@ -45,7 +45,7 @@ class TradingPlatform {
         this.initMarketDepth();
         this.initQuickActions();
         this.startRealTimeUpdates();
-        this.updateAccountInfo();
+        await this.refreshAccountInfo();
         await this.loadInitialData();
         
         // Subscribe to current symbol updates
@@ -959,7 +959,7 @@ class TradingPlatform {
         this.showNotification('All orders cancelled', 'info');
     }
 
-    async updateAccountInfo() {
+    async refreshAccountInfo() {
         try {
             // Get user data from authentication service
             const userData = await this.getUserData();
@@ -2057,24 +2057,8 @@ class TradingPlatform {
     }
 
     updateAccountInfo() {
-        // Update balance display
-        const balanceEl = document.querySelector('.balance .value');
-        if (balanceEl) {
-            balanceEl.textContent = `$${this.portfolio.balance.toLocaleString()}`;
-        }
-
-        // Update P&L display
-        const pnlEl = document.querySelector('.pnl .value');
-        if (pnlEl) {
-            pnlEl.textContent = `$${this.portfolio.totalPnL.toFixed(2)}`;
-            pnlEl.className = `value ${this.portfolio.totalPnL >= 0 ? 'positive' : 'negative'}`;
-        }
-
-        // Update equity display
-        const equityEl = document.querySelector('.equity .value');
-        if (equityEl) {
-            equityEl.textContent = `$${this.portfolio.equity.toLocaleString()}`;
-        }
+        this.updatePortfolioDisplay();
+        this.updatePortfolioSummary();
     }
 
     switchSymbol(symbol) {

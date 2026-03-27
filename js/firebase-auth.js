@@ -17,7 +17,8 @@ import {
   reauthenticateWithCredential,
   updatePassword,
   deleteUser,
-  sendEmailVerification
+  sendEmailVerification,
+  applyActionCode
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { auth, db } from './firebase-config.js';
@@ -123,7 +124,11 @@ class FirebaseAuthService {
       }
 
       try {
-        await sendEmailVerification(user);
+        const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
+        const baseUrl = origin && origin !== 'null' ? origin : '';
+        const url = baseUrl ? `${baseUrl}/dashboard.html` : undefined;
+        const actionCodeSettings = url ? { url, handleCodeInApp: true } : undefined;
+        await sendEmailVerification(user, actionCodeSettings);
         console.log('Email verification sent successfully');
       } catch (emailError) {
         console.warn('Failed to send email verification:', emailError.message);
@@ -156,10 +161,25 @@ class FirebaseAuthService {
     }
 
     try {
-      await sendEmailVerification(user);
+      const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
+      const baseUrl = origin && origin !== 'null' ? origin : '';
+      const url = baseUrl ? `${baseUrl}/dashboard.html` : undefined;
+      const actionCodeSettings = url ? { url, handleCodeInApp: true } : undefined;
+      await sendEmailVerification(user, actionCodeSettings);
       return { success: true, message: 'Verification email sent' };
     } catch (error) {
       return { success: false, error: error.code, message: this.getErrorMessage(error.code) || 'Failed to send verification email' };
+    }
+  }
+
+  async applyEmailVerificationCode(oobCode) {
+    const code = String(oobCode || '').trim();
+    if (!code) return { success: false, message: 'Missing verification code' };
+    try {
+      await applyActionCode(auth, code);
+      return { success: true, message: 'Email verified successfully' };
+    } catch (error) {
+      return { success: false, error: error.code, message: this.getErrorMessage(error.code) || 'Failed to verify email' };
     }
   }
 
