@@ -1,31 +1,73 @@
 import { auth, db } from './firebase-config.js';
 import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import cryptoService from './crypto-service.js';
+import FirebaseDatabaseService from './firebase-database.js';
 
 class CryptoPurchasePortal {
     constructor() {
         this.selectedCrypto = null;
         this.userBalance = 0;
         this.cryptoData = new Map();
+        this._balanceUnsubscribe = null;
         this.init();
     }
 
     async init() {
-        await this.loadUserBalance();
-        await this.loadCryptoData();
         this.setupEventListeners();
+        this.setupAuthBalance();
+        await this.loadCryptoData();
         this.startPriceUpdates();
     }
 
-    async loadUserBalance() {
-        try {
-            const user = auth.currentUser;
-            if (user) {
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                if (userDoc.exists()) {
-                    this.userBalance = userDoc.data().accountBalance || 0;
-                    document.getElementById('userBalance').textContent = this.userBalance.toFixed(2);
+    setupAuthBalance() {
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                this.setBalance(0);
+                if (this._balanceUnsubscribe) {
+                    this._balanceUnsubscribe();
+                    this._balanceUnsubscribe = null;
                 }
+                return;
+            }
+
+            this.loadUserBalance(user.uid).catch(() => {});
+
+            if (this._balanceUnsubscribe) {
+                this._balanceUnsubscribe();
+                this._balanceUnsubscribe = null;
+            }
+            if (FirebaseDatabaseService?.subscribeToUserBalance) {
+                this._balanceUnsubscribe = FirebaseDatabaseService.subscribeToUserBalance(user.uid, (balance) => {
+                    this.setBalance(balance);
+                });
+            }
+        });
+    }
+
+    setBalance(balance) {
+        this.userBalance = Number(balance || 0);
+        const el = document.getElementById('userBalance');
+        if (el) el.textContent = this.userBalance.toFixed(2);
+        this.updatePreview();
+    }
+
+    async loadUserBalance(uid) {
+        try {
+            if (!uid) return;
+            if (FirebaseDatabaseService?.getUserBalance) {
+                const result = await FirebaseDatabaseService.getUserBalance(uid);
+                if (result?.success) {
+                    this.setBalance(result.balance);
+                    return;
+                }
+            }
+
+            const userDoc = await getDoc(doc(db, 'users', uid));
+            if (userDoc.exists()) {
+                const data = userDoc.data() || {};
+                const balance = Number(data.accountBalance ?? data.walletBalance ?? data.balance ?? 0);
+                this.setBalance(balance);
             }
         } catch (error) {
             console.error('Error loading user balance:', error);
@@ -229,11 +271,17 @@ class CryptoPurchasePortal {
                 const fee = amount * 0.01;
                 const total = amount + fee;
                 const newBalance = this.userBalance - total;
-                
-                await updateDoc(doc(db, 'users', user.uid), {
-                    accountBalance: newBalance,
-                    lastUpdated: serverTimestamp()
-                });
+
+                if (FirebaseDatabaseService?.updateUserBalance) {
+                    await FirebaseDatabaseService.updateUserBalance(user.uid, newBalance);
+                } else {
+                    await updateDoc(doc(db, 'users', user.uid), {
+                        accountBalance: newBalance,
+                        walletBalance: newBalance,
+                        balance: newBalance,
+                        lastUpdated: serverTimestamp()
+                    });
+                }
                 
                 // Record transaction
                 await cryptoService.recordTransaction(user.uid, {
@@ -252,8 +300,7 @@ class CryptoPurchasePortal {
                 this.showSuccess(result);
                 
                 // Update balance display
-                this.userBalance = newBalance;
-                document.getElementById('userBalance').textContent = newBalance.toFixed(2);
+                this.setBalance(newBalance);
                 
             } else {
                 alert(`Purchase failed: ${result.error}`);
