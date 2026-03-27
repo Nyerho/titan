@@ -246,9 +246,15 @@ class AuthManager {
         confirmBtn.disabled = true;
         confirmBtn.style.cssText = 'border:0;background:#22c55e;color:#0b1220;padding:10px 12px;border-radius:10px;cursor:pointer;width:100%;font-weight:800;margin-top:10px;opacity:.7';
 
+        let resendCooldownInterval = null;
+
         const cleanup = () => {
           try { document.body.style.overflow = ''; } catch (_) {}
           try { FirebaseAuthService.clearPhoneRecaptcha?.(); } catch (_) {}
+          if (resendCooldownInterval) {
+            clearInterval(resendCooldownInterval);
+            resendCooldownInterval = null;
+          }
           overlay.remove();
         };
 
@@ -258,9 +264,14 @@ class AuthManager {
         });
 
         sendBtn.onclick = async () => {
-          const phone = String(phoneInput.value || '').trim();
+          const rawPhone = String(phoneInput.value || '').trim();
+          const phone = rawPhone.replace(/[^\d+]/g, '');
           if (!phone) {
             this.showMessage('Enter your phone number first', 'error');
+            return;
+          }
+          if (!phone.startsWith('+') || phone.length < 8) {
+            this.showMessage('Use full country code format like +233XXXXXXXXX', 'error');
             return;
           }
 
@@ -274,11 +285,29 @@ class AuthManager {
               sendBtn.style.opacity = '1';
               return;
             }
-            this.showMessage('Verification code sent', 'success');
+            this.showMessage('Verification code sent. If you don’t receive it in 2 minutes, try Resend or a different number.', 'success');
             codeInput.disabled = false;
             codeInput.style.opacity = '1';
             confirmBtn.disabled = false;
             confirmBtn.style.opacity = '1';
+
+            if (resendCooldownInterval) clearInterval(resendCooldownInterval);
+            let remaining = 30;
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '.7';
+            sendBtn.textContent = `Resend (${remaining})`;
+            resendCooldownInterval = setInterval(() => {
+              remaining -= 1;
+              if (remaining <= 0) {
+                clearInterval(resendCooldownInterval);
+                resendCooldownInterval = null;
+                sendBtn.disabled = false;
+                sendBtn.style.opacity = '1';
+                sendBtn.textContent = 'Resend code';
+                return;
+              }
+              sendBtn.textContent = `Resend (${remaining})`;
+            }, 1000);
           } catch (err) {
             this.showMessage('Failed to send verification code', 'error');
             sendBtn.disabled = false;

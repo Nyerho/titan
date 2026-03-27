@@ -282,7 +282,7 @@ class FirebaseAuthService {
     }
   }
 
-  async initPhoneRecaptcha(containerOrId) {
+  async initPhoneRecaptcha(containerOrId, options = {}) {
     const container =
       typeof containerOrId === 'string'
         ? document.getElementById(containerOrId)
@@ -292,7 +292,13 @@ class FirebaseAuthService {
       throw new Error('reCAPTCHA container not found');
     }
 
-    if (this.recaptchaVerifier && this._recaptchaContainer === container) {
+    const size = String(options.size || 'invisible');
+
+    if (
+      this.recaptchaVerifier &&
+      this._recaptchaContainer === container &&
+      this._recaptchaSize === size
+    ) {
       return this.recaptchaVerifier;
     }
 
@@ -303,12 +309,13 @@ class FirebaseAuthService {
     } catch (_) {}
 
     this.recaptchaVerifier = new RecaptchaVerifier(auth, container, {
-      size: 'invisible',
+      size,
       theme: 'light',
       callback: () => {},
       'expired-callback': () => {}
     });
     this._recaptchaContainer = container;
+    this._recaptchaSize = size;
 
     await this.recaptchaVerifier.render();
     return this.recaptchaVerifier;
@@ -324,10 +331,11 @@ class FirebaseAuthService {
     } catch (_) {}
     this.recaptchaVerifier = null;
     this._recaptchaContainer = null;
+    this._recaptchaSize = null;
   }
 
   async sendPhoneVerificationCode(phoneNumber, containerOrId) {
-    const verifier = await this.initPhoneRecaptcha(containerOrId);
+    const verifier = await this.initPhoneRecaptcha(containerOrId, { size: 'invisible' });
     try {
       const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, verifier);
       this.phoneConfirmationResult = confirmationResult;
@@ -336,11 +344,21 @@ class FirebaseAuthService {
         message: 'Verification code sent'
       };
     } catch (error) {
-      this.clearPhoneRecaptcha();
+      const code = String(error?.code || '');
+      if (
+        code === 'auth/captcha-check-failed' ||
+        code === 'auth/missing-recaptcha-token' ||
+        code === 'auth/too-many-requests'
+      ) {
+        this.clearPhoneRecaptcha();
+      }
+      const fallbackMessage =
+        String(error?.message || '') ||
+        'Failed to send verification code. Please try again later.';
       return {
         success: false,
         error: error.code,
-        message: this.getErrorMessage(error.code) || 'Failed to send verification code'
+        message: this.getErrorMessage(error.code) || fallbackMessage
       };
     }
   }
@@ -378,14 +396,58 @@ class FirebaseAuthService {
       return { success: false, message: 'No authenticated user' };
     }
 
-    const verifier = await this.initPhoneRecaptcha(containerOrId);
     try {
+      const verifier = await this.initPhoneRecaptcha(containerOrId, { size: 'invisible' });
       const confirmationResult = await linkWithPhoneNumber(user, phoneNumber, verifier);
       this.phoneLinkConfirmationResult = confirmationResult;
       return { success: true, message: 'Verification code sent' };
     } catch (error) {
-      this.clearPhoneRecaptcha();
-      return { success: false, error: error.code, message: this.getErrorMessage(error.code) || 'Failed to send verification code' };
+      const code = String(error?.code || '');
+      const message = String(error?.message || '');
+
+      if (code === 'auth/provider-already-linked') {
+        return { success: true, user, message: 'Phone number already verified' };
+      }
+
+      const shouldFallbackToVisible =
+        code === 'auth/missing-recaptcha-token' ||
+        code === 'auth/captcha-check-failed' ||
+        message.toLowerCase().includes('recaptcha') ||
+        message.toLowerCase().includes('captcha');
+
+      if (shouldFallbackToVisible) {
+        try {
+          const verifier = await this.initPhoneRecaptcha(containerOrId, { size: 'normal' });
+          const confirmationResult = await linkWithPhoneNumber(user, phoneNumber, verifier);
+          this.phoneLinkConfirmationResult = confirmationResult;
+          return { success: true, message: 'Verification code sent' };
+        } catch (retryError) {
+          const retryCode = String(retryError?.code || '');
+          if (
+            retryCode === 'auth/captcha-check-failed' ||
+            retryCode === 'auth/missing-recaptcha-token' ||
+            retryCode === 'auth/too-many-requests'
+          ) {
+            this.clearPhoneRecaptcha();
+          }
+          const retryFallbackMessage =
+            String(retryError?.message || '') ||
+            'Failed to send verification code. Please try again later.';
+          return { success: false, error: retryError.code, message: this.getErrorMessage(retryError.code) || 'Failed to send verification code' };
+        }
+      }
+
+      if (
+        code === 'auth/captcha-check-failed' ||
+        code === 'auth/missing-recaptcha-token' ||
+        code === 'auth/too-many-requests'
+      ) {
+        this.clearPhoneRecaptcha();
+      }
+      const fallbackMessage =
+        String(error?.message || '') ||
+        'Failed to send verification code. Please try again later.';
+      return { success: false, error: error.code, message: this.getErrorMessage(error.code) || fallbackMessage };
     }
   }
 
@@ -627,11 +689,19 @@ class FirebaseAuthService {
       'auth/invalid-verification-code': 'Invalid verification code. Please try again.',
       'auth/code-expired': 'Verification code expired. Please request a new one.',
       'auth/captcha-check-failed': 'reCAPTCHA failed. Please refresh and try again.',
+      'auth/missing-recaptcha-token': 'Please complete reCAPTCHA and try again.',
+      'auth/quota-exceeded': 'SMS quota exceeded for phone verification. Please try again later.',
+      'auth/unauthorized-domain': 'Phone verification is not enabled for this website domain. Please contact support.',
+      'auth/app-not-authorized': 'Phone verification is not enabled for this app/domain. Please contact support.',
+      'auth/invalid-app-credential': 'Phone verification is not configured correctly. Please contact support.',
+      'auth/provider-already-linked': 'Phone number is already verified.',
+      'auth/internal-error': 'Phone verification failed due to a temporary error. Please try again later.',
+      'auth/session-expired': 'Verification session expired. Please request a new code.',
       'auth/requires-recent-login': 'Please sign in again to complete this action.',
       'auth/invalid-action-code': 'The reset link is invalid or has expired.',
       'auth/expired-action-code': 'The reset link has expired. Please request a new one.',
       'auth/missing-email': 'Please enter your email address.',
-      'auth/operation-not-allowed': 'Password reset is not enabled. Please contact support.'
+      'auth/operation-not-allowed': 'This action is not enabled. Please contact support.'
     };
 
     return errorMessages[errorCode] || 'An unexpected error occurred. Please try again later.';

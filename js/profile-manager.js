@@ -1,7 +1,7 @@
 // Profile Management JavaScript
 import userProfileService from './user-profile-service.js';
 import { auth } from './firebase-config.js';
-import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { updatePassword, reauthenticateWithCredential, EmailAuthProvider, updateEmail, sendEmailVerification } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { db } from './firebase-config.js';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 
@@ -280,26 +280,53 @@ class ProfileManager {
         e.preventDefault();
         
         const formData = new FormData(e.target);
+        const newEmail = String(formData.get('email') || '').trim();
         const profileData = {
             firstName: formData.get('firstName'),
             lastName: formData.get('lastName'),
             phone: formData.get('phone'),
             country: formData.get('country'),
-            displayName: `${formData.get('firstName')} ${formData.get('lastName')}`.trim()
+            displayName: `${formData.get('firstName')} ${formData.get('lastName')}`.trim(),
+            email: newEmail
         };
 
         try {
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                this.showNotification('You must be signed in', 'error');
+                return;
+            }
+
+            const needsEmailChange = !!newEmail && newEmail !== currentUser.email;
+            if (needsEmailChange) {
+                const currentPassword = window.prompt('Enter your current password to change your email');
+                if (!currentPassword) {
+                    this.showNotification('Email change cancelled', 'info');
+                    return;
+                }
+
+                const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+                await reauthenticateWithCredential(currentUser, credential);
+                await updateEmail(currentUser, newEmail);
+
+                const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
+                const baseUrl = origin && origin !== 'null' ? origin : '';
+                const url = baseUrl ? `${baseUrl}/dashboard.html` : undefined;
+                const actionCodeSettings = url ? { url, handleCodeInApp: true } : undefined;
+                await sendEmailVerification(currentUser, actionCodeSettings);
+            }
+
             const result = await userProfileService.updateUserProfile(auth.currentUser.uid, profileData);
             
             if (result.success) {
-                this.showNotification('Profile updated successfully!', 'success');
-                this.toggleEditMode();
+                this.showNotification(needsEmailChange ? 'Profile updated. Check your email to verify the new address.' : 'Profile updated successfully!', 'success');
+                window.toggleEditMode();
             } else {
                 this.showNotification('Error updating profile: ' + result.error, 'error');
             }
         } catch (error) {
             console.error('Error updating profile:', error);
-            this.showNotification('Error updating profile', 'error');
+            this.showNotification('Error updating profile: ' + (error?.message || 'Please try again later.'), 'error');
         }
     }
 
@@ -363,10 +390,8 @@ window.toggleEditMode = function() {
     profileManager.isEditMode = !profileManager.isEditMode;
     
     inputs.forEach(input => {
-        if (input.name !== 'email') { // Keep email readonly
-            input.readOnly = !profileManager.isEditMode;
-            input.disabled = !profileManager.isEditMode;
-        }
+        input.readOnly = !profileManager.isEditMode;
+        input.disabled = !profileManager.isEditMode;
     });
     
     actions.style.display = profileManager.isEditMode ? 'block' : 'none';
