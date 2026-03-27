@@ -66,6 +66,7 @@ class EnhancedAdminDashboard {
         this.retryAttempts = 0;
         this.maxRetries = 3;
         this.isOnline = navigator.onLine;
+        this.depositAddressSaveInFlight = false;
         
         // Setup network listeners
         window.addEventListener('online', () => {
@@ -317,6 +318,111 @@ class EnhancedAdminDashboard {
         
         // COT management events
         this.setupCotEventListeners();
+
+        // Funding settings events
+        this.setupFundingSettingsEvents();
+    }
+
+    setupFundingSettingsEvents() {
+        const saveBtn = document.getElementById('saveDepositAddressesBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => this.saveCryptoDepositAddresses());
+        }
+
+        const reloadBtn = document.getElementById('reloadDepositAddressesBtn');
+        if (reloadBtn) {
+            reloadBtn.addEventListener('click', () => this.loadCryptoDepositAddresses());
+        }
+    }
+
+    getDefaultDepositAddresses() {
+        return {
+            BTC: 'bc1qvke2527gzazwpgfaxu0lnq8c2mx98jfgwqdn8x',
+            ETH: '0x0248172c922BEdAb4EE8DD01523Ef072615b06De',
+            USDT: '0x0248172c922BEdAb4EE8DD01523Ef072615b06De'
+        };
+    }
+
+    getDepositAddressFieldBindings() {
+        return [
+            { key: 'BTC', elementId: 'depositAddressBTC' },
+            { key: 'ETH', elementId: 'depositAddressETH' },
+            { key: 'USDT', elementId: 'depositAddressUSDT' }
+        ];
+    }
+
+    async loadCryptoDepositAddresses() {
+        const bindings = this.getDepositAddressFieldBindings();
+        const hasAnyField = bindings.some(({ elementId }) => !!document.getElementById(elementId));
+        if (!hasAnyField) return;
+
+        const statusEl = document.getElementById('depositAddressSaveStatus');
+        if (statusEl) statusEl.textContent = '';
+
+        const docRef = doc(this.db, 'admin', 'crypto-addresses');
+        let addresses = this.getDefaultDepositAddresses();
+
+        try {
+            const snap = await getDoc(docRef);
+            if (snap.exists()) {
+                const data = snap.data() || {};
+                if (data.addresses && typeof data.addresses === 'object') {
+                    addresses = { ...addresses, ...data.addresses };
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load crypto deposit addresses:', error);
+            if (statusEl) statusEl.textContent = 'Could not load saved addresses. Showing defaults.';
+        }
+
+        bindings.forEach(({ key, elementId }) => {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.value = (addresses[key] || '').toString();
+            }
+        });
+    }
+
+    async saveCryptoDepositAddresses() {
+        if (this.depositAddressSaveInFlight) return;
+        this.depositAddressSaveInFlight = true;
+
+        const statusEl = document.getElementById('depositAddressSaveStatus');
+        if (statusEl) statusEl.textContent = '';
+
+        const bindings = this.getDepositAddressFieldBindings();
+        const addresses = {};
+
+        bindings.forEach(({ key, elementId }) => {
+            const el = document.getElementById(elementId);
+            if (el) {
+                addresses[key] = (el.value || '').trim();
+            }
+        });
+
+        const hasAny = Object.values(addresses).some(v => !!v);
+        if (!hasAny) {
+            this.depositAddressSaveInFlight = false;
+            if (statusEl) statusEl.textContent = 'Nothing to save.';
+            return;
+        }
+
+        try {
+            await setDoc(doc(this.db, 'admin', 'crypto-addresses'), {
+                addresses,
+                updatedAt: serverTimestamp(),
+                updatedBy: this.currentUser ? this.currentUser.uid : null
+            }, { merge: true });
+
+            if (statusEl) statusEl.textContent = 'Saved.';
+            this.showNotification('Deposit addresses saved', 'success');
+        } catch (error) {
+            console.error('Failed to save crypto deposit addresses:', error);
+            if (statusEl) statusEl.textContent = 'Save failed.';
+            this.showNotification('Failed to save deposit addresses', 'error');
+        } finally {
+            this.depositAddressSaveInFlight = false;
+        }
     }
 
     setupUserManagementEvents() {
@@ -2823,6 +2929,7 @@ class EnhancedAdminDashboard {
                 break;
             case 'funding':
                 this.loadFundingData();
+                this.loadCryptoDepositAddresses();
                 break;
             case 'user-financial':
                 this.loadUserFinancialSection();

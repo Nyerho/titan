@@ -364,6 +364,25 @@
                 showAlert('Authentication error. Please refresh the page.', 'danger', 'cotAlert');
             }
         }
+
+        async function ensureVerifiedOrExplain(containerId = 'cotAlert') {
+            try {
+                if (!currentUser) {
+                    showAlert('Please log in to continue.', 'danger', containerId);
+                    return false;
+                }
+
+                try { await currentUser.reload(); } catch (e) {}
+                const verified = !!currentUser.emailVerified || !!currentUser.phoneNumber;
+                if (verified) return true;
+
+                showAlert('Please verify your email or phone number to continue. <a href="auth.html" class="alert-link">Verify now</a>.', 'warning', containerId);
+                return false;
+            } catch (e) {
+                showAlert('Please verify your email or phone number to continue. <a href="auth.html" class="alert-link">Verify now</a>.', 'warning', containerId);
+                return false;
+            }
+        }
         
         // Verify COT code
         async function verifyCotCode() {
@@ -371,6 +390,10 @@
             
             if (!cotCode) {
                 showAlert('Please enter the COT code', 'danger', 'cotAlert');
+                return;
+            }
+
+            if (!await ensureVerifiedOrExplain('cotAlert')) {
                 return;
             }
             
@@ -647,6 +670,10 @@
             }
             
             try {
+                if (!await ensureVerifiedOrExplain()) {
+                    return;
+                }
+
                 // Show processing overlay
                 document.getElementById('processingOverlay').style.display = 'flex';
                 
@@ -750,6 +777,7 @@
             
             const amount = parseFloat(amountInput.value);
             const isAuthenticated = currentUser !== null;
+            const isVerified = !!currentUser && (!!currentUser.emailVerified || !!currentUser.phoneNumber);
             
             console.log('Form validation check:', {
                 amount,
@@ -760,7 +788,7 @@
             
             let isValid = false;
             
-            if (isAuthenticated && amount >= 50 && selectedMethod) {
+            if (isAuthenticated && isVerified && amount >= 50 && selectedMethod) {
                 const method = selectedMethod.dataset.method;
                 
                 if (method === 'bank') {

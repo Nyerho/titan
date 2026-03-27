@@ -20,6 +20,8 @@ class DashboardManager {
         this.userDataListener = null;
         this.accountDataListener = null;
         this.currentUser = null;
+        this.balanceFieldSyncInFlight = false;
+        this.verificationBannerInitialized = false;
         this.chartSymbols = {
             indices: {
                 'S&P 500': 'TVC:SPX',
@@ -73,6 +75,67 @@ class DashboardManager {
             }
         };
         this.init();
+    }
+
+    ensureVerificationBanner() {
+        try {
+            const existing = document.getElementById('ttVerificationBanner');
+            const user = this.currentUser || auth.currentUser;
+            if (!user) {
+                if (existing) existing.remove();
+                return;
+            }
+
+            const verified = !!user.emailVerified || !!user.phoneNumber;
+            if (verified) {
+                if (existing) existing.remove();
+                return;
+            }
+
+            if (existing) return;
+
+            const banner = document.createElement('div');
+            banner.id = 'ttVerificationBanner';
+            banner.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:10001;background:#111827;color:#fff;padding:12px 14px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;font-size:14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.25)';
+
+            const text = document.createElement('div');
+            text.textContent = 'Verify your email or phone number to unlock deposits, withdrawals, and trading.';
+
+            const actions = document.createElement('div');
+            actions.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap';
+
+            const go = document.createElement('a');
+            go.textContent = 'Verify Now';
+            go.href = 'auth.html';
+            go.style.cssText = 'color:#93c5fd;text-decoration:underline';
+
+            const refresh = document.createElement('button');
+            refresh.type = 'button';
+            refresh.textContent = "I've Verified";
+            refresh.style.cssText = 'border:0;background:#22c55e;color:#111827;padding:8px 10px;border-radius:6px;cursor:pointer;font-weight:600';
+            refresh.onclick = async () => {
+                try { await user.reload(); } catch (e) {}
+                this.ensureVerificationBanner();
+            };
+
+            actions.appendChild(refresh);
+            actions.appendChild(go);
+
+            banner.appendChild(text);
+            banner.appendChild(actions);
+
+            document.body.style.paddingTop = '56px';
+            document.body.appendChild(banner);
+        } catch (e) {}
+    }
+
+    async requireVerified() {
+        const user = this.currentUser || auth.currentUser;
+        if (!user) return false;
+        try { await user.reload(); } catch (e) {}
+        const verified = !!user.emailVerified || !!user.phoneNumber;
+        if (!verified) this.ensureVerificationBanner();
+        return verified;
     }
 
     init() {
@@ -280,8 +343,14 @@ class DashboardManager {
         }
         
         // Update account balance if present in user data
-        if (userData.accountBalance !== undefined) {
-            this.accountData.balance = userData.accountBalance;
+        const balanceFromUser = userData.accountBalance ?? userData.walletBalance ?? userData.balance;
+        if (balanceFromUser !== undefined) {
+            this.accountData.balance = balanceFromUser;
+            this.accountData.accountBalance = balanceFromUser;
+            this.accountData.walletBalance = balanceFromUser;
+            this.accountData.totalDeposits = userData.totalDeposits ?? this.accountData.totalDeposits;
+            this.accountData.totalProfits = userData.totalProfits ?? this.accountData.totalProfits;
+            this.accountData.totalWithdrawals = userData.totalWithdrawals ?? this.accountData.totalWithdrawals;
             this.updateAccountSummary();
         }
     }
@@ -303,10 +372,20 @@ class DashboardManager {
                 const accountData = doc.data();
                 console.log('Real-time account data update:', accountData);
                 
-                // Update local account data immediately
+                const {
+                    balance,
+                    accountBalance,
+                    walletBalance,
+                    totalDeposits,
+                    totalProfits,
+                    totalWithdrawals,
+                    ...nonFinancialAccountData
+                } = accountData || {};
+
+                // Update local account data immediately (do not let stale account docs overwrite balances)
                 this.accountData = {
                     ...this.accountData,
-                    ...accountData
+                    ...nonFinancialAccountData
                 };
                 
                 // Update UI immediately
@@ -324,47 +403,23 @@ class DashboardManager {
                     const userData = doc.data();
                     console.log('Real-time user data update:', userData);
                     this.updateUserInterface(userData, user);
-                    
-                    // Check if admin made updates
-                    if (userData.lastAdminUpdate) {
-                        // Force refresh account data from users collection
-                        const accountRef = doc(db, 'accounts', user.uid);
-                        const accountDoc = await getDoc(accountRef);
-                        
-                        if (accountDoc.exists()) {
-                            const currentAccountData = accountDoc.data();
-                            
-                            // Check if sync is needed
-                            const needsSync = 
-                                currentAccountData.balance !== userData.accountBalance ||
-                                currentAccountData.totalProfits !== userData.totalProfits;
-                            
-                            if (needsSync) {
-                                // Update accounts collection with latest user data
-                                await updateDoc(accountRef, {
-                                    balance: userData.accountBalance || userData.balance || 0,
-                                    accountBalance: userData.accountBalance || userData.balance || 0,
-                                    walletBalance: userData.balance || userData.walletBalance || userData.accountBalance || 0,
-                                    totalProfits: userData.totalProfits || 0,
-                                    totalDeposits: userData.totalDeposits || 0,
-                                    lastSyncedAt: new Date().toISOString(),
-                                    adminUpdated: true
-                                });
-                                
-                                // Update local data
-                                this.accountData = {
-                                    ...this.accountData,
-                                    balance: userData.accountBalance || userData.balance || 0,
-                                    accountBalance: userData.accountBalance || userData.balance || 0,
-                                    walletBalance: userData.walletBalance || userData.accountBalance || userData.balance || 0,
-                                    totalProfits: userData.totalProfits || 0,
-                                    totalDeposits: userData.totalDeposits || 0
-                                };
-                                
-                                // Update UI
-                                this.updateAccountSummary();
-                                console.log('Synced admin changes to dashboard');
-                            }
+
+                    const hasAccountBalance = userData.accountBalance !== undefined && userData.accountBalance !== null;
+                    const hasWalletBalance = userData.walletBalance !== undefined && userData.walletBalance !== null;
+                    const walletNeedsSync = hasAccountBalance && (!hasWalletBalance || userData.walletBalance !== userData.accountBalance);
+                    const balanceNeedsSync = hasAccountBalance && (userData.balance === undefined || userData.balance === null || userData.balance !== userData.accountBalance);
+
+                    if (!this.balanceFieldSyncInFlight && (walletNeedsSync || balanceNeedsSync)) {
+                        this.balanceFieldSyncInFlight = true;
+                        try {
+                            await updateDoc(userRef, {
+                                walletBalance: userData.accountBalance,
+                                balance: userData.accountBalance
+                            });
+                        } catch (syncError) {
+                            console.error('Failed to sync balance fields:', syncError);
+                        } finally {
+                            this.balanceFieldSyncInFlight = false;
                         }
                     }
                     
@@ -398,7 +453,7 @@ class DashboardManager {
     async loadAccountData(user) {
         try {
             // Clear any cached data first
-            this.accountData = null;
+            this.accountData = {};
             localStorage.removeItem('cachedAccountData');
             localStorage.removeItem('lastAccountUpdate');
             
@@ -416,34 +471,18 @@ class DashboardManager {
             const userData = userDoc.data();
             
             // Use users collection as the authoritative source (admin updates)
-            const authoritativeBalance = userData.accountBalance || userData.balance || 0;
+            const authoritativeBalance = userData.accountBalance ?? userData.walletBalance ?? userData.balance ?? 0;
             const authoritativeProfits = userData.totalProfits || 0;
             const authoritativeDeposits = userData.totalDeposits || 0;
+            const authoritativeWithdrawals = userData.totalWithdrawals || 0;
             
             console.log('AUTHORITATIVE DATA from users collection:', {
                 balance: authoritativeBalance,
                 totalProfits: authoritativeProfits,
                 totalDeposits: authoritativeDeposits,
+                totalWithdrawals: authoritativeWithdrawals,
                 rawUserData: userData
             });
-            
-            // Force update accounts collection to match users collection
-            const accountRef = doc(db, 'accounts', user.uid);
-            const syncedAccountData = {
-                balance: authoritativeBalance,
-                accountBalance: authoritativeBalance,
-                walletBalance: authoritativeBalance,
-                totalProfits: authoritativeProfits,
-                totalDeposits: authoritativeDeposits,
-                currency: 'USD',
-                lastSyncedAt: new Date().toISOString(),
-                syncedFromUsers: true,
-                forceRefreshAt: new Date().toISOString()
-            };
-            
-            // Always update/create the accounts document with fresh data
-            await setDoc(accountRef, syncedAccountData, { merge: true });
-            console.log('FORCED SYNC: Updated accounts collection with users data');
             
             // Set the dashboard data to the authoritative values
             this.accountData = {
@@ -452,6 +491,7 @@ class DashboardManager {
                 walletBalance: authoritativeBalance,
                 totalProfits: authoritativeProfits,
                 totalDeposits: authoritativeDeposits,
+                totalWithdrawals: authoritativeWithdrawals,
                 currency: 'USD'
             };
             
@@ -504,7 +544,7 @@ class DashboardManager {
         });
         
         // Use the stored balance from Firebase (which is authoritative)
-        const displayBalance = this.accountData.balance || calculatedWalletBalance;
+        const displayBalance = (this.accountData.balance ?? calculatedWalletBalance);
         
         if (balanceElement) {
             const formattedBalance = `${displayBalance.toLocaleString('en-US', {
@@ -987,15 +1027,21 @@ class DashboardManager {
     }
     
     goToTrading() {
-        window.location.href = 'platform.html';
+        this.requireVerified().then((ok) => {
+            if (ok) window.location.href = 'platform.html';
+        });
     }
 
     goToWithdrawal() {
-        window.location.href = 'withdrawal.html';
+        this.requireVerified().then((ok) => {
+            if (ok) window.location.href = 'withdrawal.html';
+        });
     }
 
     goToDeposit() {
-        window.location.href = 'funding.html';
+        this.requireVerified().then((ok) => {
+            if (ok) window.location.href = 'funding.html';
+        });
     }
 
     goToSupport() {
@@ -1147,10 +1193,18 @@ window.openTradingModal = () => {
 };
 
 window.showDeposit = () => {
+    if (window.dashboardManager && typeof window.dashboardManager.goToDeposit === 'function') {
+        window.dashboardManager.goToDeposit();
+        return;
+    }
     window.location.href = 'funding.html';
 };
 
 window.showWithdraw = () => {
+    if (window.dashboardManager && typeof window.dashboardManager.goToWithdrawal === 'function') {
+        window.dashboardManager.goToWithdrawal();
+        return;
+    }
     window.location.href = 'withdrawal.html';
 };
 

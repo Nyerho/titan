@@ -1,3 +1,6 @@
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { db } from './firebase-config.js';
+
 class FundingManager {
     constructor() {
         this.apiKeys = {
@@ -47,6 +50,8 @@ class FundingManager {
         };
         
         this.transactions = [];
+        this.cryptoDepositAddressesCache = null;
+        this.cryptoDepositAddressesCacheAt = 0;
         this.loadStripe();
         this.loadPayPal();
     }
@@ -348,18 +353,40 @@ class FundingManager {
     }
 
     async generateCryptoAddress(currency) {
-        // Generate or retrieve wallet address for the specified currency
-        const addresses = {
-            'BTC': 'bc1qvke2527gzazwpgfaxu0lnq8c2mx98jfgwqdn8x',
-            'ETH': '0x0248172c922BEdAb4EE8DD01523Ef072615b06De',
-            'LTC': 'LgQsH8WPTRZCZNYi2nrFPafx8xDhYDoWhR',
-            'XRP': 'rJs4fv6FDxukHYMWpnBFvNKsAtwGUaSiCo',
-            'SOL': 'EU4Xrb7fLsqmxoWZhuXFLGMrq3Q1ivZcuJe8yoAivf17',
-            'USDC': '0x0248172c922BEdAb4EE8DD01523Ef072615b06De', // ETH Network
-            'USDC-SOL': 'EU4Xrb7fLsqmxoWZhuXFLGMrq3Q1ivZcuJe8yoAivf17', // SOL Network
-            'USDT': '0x0248172c922BEdAb4EE8DD01523Ef072615b06De'  // ETH Network
+        const fallbackAddresses = {
+            BTC: 'bc1qvke2527gzazwpgfaxu0lnq8c2mx98jfgwqdn8x',
+            ETH: '0x0248172c922BEdAb4EE8DD01523Ef072615b06De',
+            LTC: 'LgQsH8WPTRZCZNYi2nrFPafx8xDhYDoWhR',
+            XRP: 'rJs4fv6FDxukHYMWpnBFvNKsAtwGUaSiCo',
+            SOL: 'EU4Xrb7fLsqmxoWZhuXFLGMrq3Q1ivZcuJe8yoAivf17',
+            USDC: '0x0248172c922BEdAb4EE8DD01523Ef072615b06De',
+            'USDC-SOL': 'EU4Xrb7fLsqmxoWZhuXFLGMrq3Q1ivZcuJe8yoAivf17',
+            USDT: '0x0248172c922BEdAb4EE8DD01523Ef072615b06De'
         };
-        return addresses[currency] || addresses['BTC'];
+
+        const requested = (currency || 'BTC').toString();
+
+        try {
+            const now = Date.now();
+            const cacheFresh = this.cryptoDepositAddressesCache && (now - this.cryptoDepositAddressesCacheAt) < 5 * 60 * 1000;
+
+            if (!cacheFresh && db) {
+                const snap = await getDoc(doc(db, 'admin', 'crypto-addresses'));
+                if (snap.exists()) {
+                    const data = snap.data() || {};
+                    if (data.addresses && typeof data.addresses === 'object') {
+                        this.cryptoDepositAddressesCache = data.addresses;
+                        this.cryptoDepositAddressesCacheAt = now;
+                    }
+                }
+            }
+
+            const addresses = this.cryptoDepositAddressesCache || {};
+            const configured = addresses[requested] || addresses[requested.toUpperCase?.() || requested];
+            if (configured) return configured;
+        } catch (e) {}
+
+        return fallbackAddresses[requested] || fallbackAddresses.BTC;
     }
 
     async estimateNetworkFee(currency) {

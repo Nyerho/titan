@@ -1019,6 +1019,40 @@
                     </div>
                 </div>
             </div>
+
+            <div class="card bg-dark mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Deposit Wallet Addresses</h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-secondary" id="reloadDepositAddressesBtn">
+                            <i class="fas fa-rotate"></i> Reload
+                        </button>
+                        <button class="btn btn-sm btn-success" id="saveDepositAddressesBtn">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-secondary mb-3">
+                        Paste the receiving wallet address for each currency/network, then click Save.
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Bitcoin (BTC)</label>
+                            <input type="text" class="form-control bg-secondary text-white" id="depositAddressBTC" placeholder="BTC address">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Ethereum (ETH)</label>
+                            <input type="text" class="form-control bg-secondary text-white" id="depositAddressETH" placeholder="ETH address">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Tether (USDT) - ETH Network</label>
+                            <input type="text" class="form-control bg-secondary text-white" id="depositAddressUSDT" placeholder="USDT address">
+                        </div>
+                    </div>
+                    <div class="small text-muted mt-3" id="depositAddressSaveStatus"></div>
+                </div>
+            </div>
             
             <!-- Deposit Requests -->
             <div class="card bg-dark">

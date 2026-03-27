@@ -515,32 +515,10 @@ function handleRegister(e) {
                     if (success) {
                         // Registration successful
                         console.log('Registration successful');
-                        showNotification('Account created successfully! Please login with your credentials.', 'success');
-                        // Redirect to login form instead of index
+                        showNotification('Account created successfully! Please verify your email or phone number to unlock deposits, withdrawals, and trading.', 'success');
                         setTimeout(() => {
-                            // Switch to login tab on the same page
-                            const loginTab = document.querySelector('[data-tab="login"]');
-                            const registerTab = document.querySelector('[data-tab="register"]');
-                            const loginForm = document.getElementById('loginForm');
-                            const registerForm = document.getElementById('registerForm');
-                            
-                            if (loginTab && registerTab && loginForm && registerForm) {
-                                // Switch tabs
-                                registerTab.classList.remove('active');
-                                loginTab.classList.add('active');
-                                registerForm.classList.remove('active');
-                                loginForm.classList.add('active');
-                                
-                                // Clear the registration form
-                                registerForm.reset();
-                                
-                                // Pre-fill email in login form
-                                const loginEmailField = loginForm.querySelector('[name="email"]');
-                                if (loginEmailField) {
-                                    loginEmailField.value = userData.email;
-                                }
-                            }
-                        }, 2000);
+                            window.location.href = 'dashboard.html';
+                        }, 1500);
                     } else {
                         showNotification('Registration failed. Please try again.', 'error');
                     }

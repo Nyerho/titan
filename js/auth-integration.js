@@ -109,6 +109,77 @@ class AuthManager {
     }, 5000);
   }
 
+  async isUserVerified() {
+    const user = this.currentUser;
+    if (!user) return false;
+    try { await user.reload(); } catch (e) {}
+    return !!user.emailVerified || !!user.phoneNumber;
+  }
+
+  ensureVerificationBanner() {
+    try {
+      const existing = document.getElementById('ttVerificationBanner');
+      if (!this.currentUser || this._isAdmin) {
+        if (existing) existing.remove();
+        return;
+      }
+
+      const verified = !!this.currentUser.emailVerified || !!this.currentUser.phoneNumber;
+      if (verified) {
+        if (existing) existing.remove();
+        return;
+      }
+
+      if (existing) return;
+
+      const banner = document.createElement('div');
+      banner.id = 'ttVerificationBanner';
+      banner.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:10001;background:#111827;color:#fff;padding:12px 14px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;font-size:14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.25)';
+
+      const text = document.createElement('div');
+      text.textContent = 'Verify your email or phone number to unlock deposits, withdrawals, and trading.';
+
+      const actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap';
+
+      const resend = document.createElement('button');
+      resend.type = 'button';
+      resend.textContent = 'Resend Email';
+      resend.style.cssText = 'border:0;background:#2563eb;color:#fff;padding:8px 10px;border-radius:6px;cursor:pointer';
+      resend.onclick = async () => {
+        const result = await FirebaseAuthService.resendEmailVerification();
+        this.showMessage(result.success ? 'Verification email sent' : (result.message || 'Failed to send verification email'), result.success ? 'success' : 'error');
+      };
+
+      const refresh = document.createElement('button');
+      refresh.type = 'button';
+      refresh.textContent = "I've Verified";
+      refresh.style.cssText = 'border:0;background:#22c55e;color:#111827;padding:8px 10px;border-radius:6px;cursor:pointer;font-weight:600';
+      refresh.onclick = async () => {
+        try { await this.currentUser.reload(); } catch (e) {}
+        this.ensureVerificationBanner();
+        if (!!this.currentUser?.emailVerified || !!this.currentUser?.phoneNumber) {
+          this.showMessage('Account verified', 'success');
+        }
+      };
+
+      const verifyPhone = document.createElement('a');
+      verifyPhone.textContent = 'Verify Phone';
+      verifyPhone.href = 'auth.html';
+      verifyPhone.style.cssText = 'color:#93c5fd;text-decoration:underline';
+
+      actions.appendChild(resend);
+      actions.appendChild(refresh);
+      actions.appendChild(verifyPhone);
+
+      banner.appendChild(text);
+      banner.appendChild(actions);
+
+      document.body.style.paddingTop = '56px';
+      document.body.appendChild(banner);
+    } catch (e) {}
+  }
+
   initializeFirebaseAuth() {
     // Fix: Use addAuthStateListener and set isInitialized flag
     FirebaseAuthService.addAuthStateListener((user) => {
@@ -116,6 +187,7 @@ class AuthManager {
         this.isLoggedIn = !!user; // Properly sync isLoggedIn with auth state
         this.isInitialized = true; // Set initialization flag
         this.updateUI();
+        this.ensureVerificationBanner();
         console.log('AuthManager: Firebase auth state updated, user:', user ? user.email : 'No user');
         if (user) {
           this.clearDemoMode();
@@ -330,7 +402,7 @@ async logout() {
       
       if (result.success) {
         console.log('Registration successful');
-        this.showMessage('Registration successful! Please check your email for verification.', 'success');
+        this.showMessage('Registration successful! Please verify your email or phone number to unlock deposits, withdrawals, and trading.', 'success');
         
         // Send welcome email only if email service is available
         if (this.emailService) {
@@ -453,9 +525,45 @@ async logout() {
           el.textContent = name.charAt(0).toUpperCase();
         });
       }
+
+      this.ensureVerificationBanner();
     } else {
       userElements.forEach(el => el.style.display = 'none');
       guestElements.forEach(el => el.style.display = 'block');
+      this.ensureVerificationBanner();
+    }
+  }
+
+  async startPhoneLink(phoneNumber, recaptchaContainerId) {
+    try {
+      const result = await FirebaseAuthService.sendPhoneLinkVerificationCode(phoneNumber, recaptchaContainerId);
+      if (!result.success) {
+        this.showMessage(result.message || 'Failed to send code', 'error');
+        return false;
+      }
+      this.showMessage('Verification code sent. Check your phone.', 'success');
+      return true;
+    } catch (error) {
+      this.showMessage(this.getErrorMessage(error.code) || 'Failed to send verification code.', 'error');
+      return false;
+    }
+  }
+
+  async confirmPhoneLinkCode(code) {
+    try {
+      const result = await FirebaseAuthService.confirmPhoneLinkVerificationCode(code);
+      if (!result.success) {
+        this.showMessage(result.message || 'Invalid code', 'error');
+        return false;
+      }
+      this.currentUser = result.user;
+      this.isLoggedIn = true;
+      this.ensureVerificationBanner();
+      this.showMessage('Phone verified successfully', 'success');
+      return true;
+    } catch (error) {
+      this.showMessage(this.getErrorMessage(error.code) || 'Phone verification failed.', 'error');
+      return false;
     }
   }
 

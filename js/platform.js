@@ -54,6 +54,36 @@ class TradingPlatform {
         // Initialize user profile integration
         await this.initializeUserProfile();
     }
+
+    async ensureUserVerifiedForTrading() {
+        try {
+            if (localStorage.getItem('tt_demo_mode') === '1') return true;
+        } catch (e) {}
+
+        const authManager = window.authManager;
+        const user = authManager?.getCurrentUser?.() || null;
+        if (!user) {
+            this.showNotification('Please log in to trade', 'warning');
+            try { window.location.href = 'auth.html'; } catch (e) {}
+            return false;
+        }
+
+        let verified = false;
+        try {
+            if (typeof authManager?.isUserVerified === 'function') {
+                verified = await authManager.isUserVerified();
+            } else {
+                try { await user?.reload?.(); } catch (e) {}
+                verified = !!user?.emailVerified || !!user?.phoneNumber;
+            }
+        } catch (e) {}
+
+        if (verified) return true;
+
+        this.showNotification('Verify your email or phone number to trade', 'warning');
+        try { authManager?.ensureVerificationBanner?.(); } catch (e) {}
+        return false;
+    }
     
     // Load initial market data
     async loadInitialData() {
@@ -253,9 +283,11 @@ class TradingPlatform {
                     timestamp: new Date().toISOString()
                 };
                 
-                // Execute the order
-                this.executeOrder(order);
-                this.showNotification(`${orderType} order executed for ${volume} ${symbol}`, 'success');
+                this.ensureUserVerifiedForTrading().then((ok) => {
+                    if (!ok) return;
+                    this.executeOrder(order);
+                    this.showNotification(`${orderType} order executed for ${volume} ${symbol}`, 'success');
+                });
             });
         });
 
@@ -760,7 +792,8 @@ class TradingPlatform {
         ctx.stroke();
     }
 
-    placeOrder(formData) {
+    async placeOrder(formData) {
+        if (!await this.ensureUserVerifiedForTrading()) return;
         const order = {
             id: Date.now(),
             symbol: this.currentSymbol,
@@ -1277,9 +1310,11 @@ class TradingPlatform {
                     timestamp: new Date().toISOString()
                 };
                 
-                // Execute the order
-                this.executeOrder(order);
-                this.showNotification(`${orderType} order executed for ${volume} ${symbol}`, 'success');
+                this.ensureUserVerifiedForTrading().then((ok) => {
+                    if (!ok) return;
+                    this.executeOrder(order);
+                    this.showNotification(`${orderType} order executed for ${volume} ${symbol}`, 'success');
+                });
             });
         });
 
@@ -1787,7 +1822,8 @@ class TradingPlatform {
         ctx.stroke();
     }
 
-    placeOrder(formData) {
+    async placeOrder(formData) {
+        if (!await this.ensureUserVerifiedForTrading()) return;
         const order = {
             id: Date.now(),
             symbol: this.currentSymbol,

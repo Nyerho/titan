@@ -428,11 +428,6 @@
                                     <select class="form-select" id="crypto-currency">
                                         <option value="BTC">Bitcoin (BTC)</option>
                                         <option value="ETH">Ethereum (ETH)</option>
-                                        <option value="LTC">Litecoin (LTC)</option>
-                                        <option value="XRP">XRP (XRP)</option>
-                                        <option value="SOL">Solana (SOL)</option>
-                                        <option value="USDC">USD Coin (USDC) - ETH Network</option>
-                                        <option value="USDC-SOL">USD Coin (USDC) - SOL Network</option>
                                         <option value="USDT">Tether (USDT) - ETH Network</option>
                                     </select>
                                 </div>
@@ -663,8 +658,31 @@
                 block: 'start' 
             });
         }
+
+        async function isVerifiedUser() {
+            try {
+                const authManager = window.authManager;
+                if (authManager && typeof authManager.isUserVerified === 'function') {
+                    return await authManager.isUserVerified();
+                }
+                const user = authManager?.getCurrentUser?.() || null;
+                try { await user?.reload?.(); } catch (e) {}
+                return !!user?.emailVerified || !!user?.phoneNumber;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        async function requireVerifiedOrExplain(actionLabel) {
+            const ok = await isVerifiedUser();
+            if (ok) return true;
+            showAlert(`Please verify your email or phone number to ${actionLabel}. <a href="auth.html" class="alert-link">Verify now</a>.`, 'warning');
+            try { window.authManager?.ensureVerificationBanner?.(); } catch (e) {}
+            return false;
+        }
         
         async function generateCryptoPayment() {
+            if (!await requireVerifiedOrExplain('make a deposit')) return;
             if (!currentAmount || currentAmount < 25) {
                 showAlert('Please enter an amount of at least $25', 'warning');
                 return;
@@ -713,6 +731,11 @@
             const originalText = btn.innerHTML; // Move this outside try block
             
             try {
+                if (!await requireVerifiedOrExplain('confirm a deposit')) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
                 btn.disabled = true;
                 
@@ -749,18 +772,26 @@
         }
         
         function generateWireInstructions() {
-            if (!currentAmount || currentAmount < 1000) {
-                showAlert('Minimum wire transfer amount is $1,000', 'warning');
-                return;
-            }
-            
-            // Generate unique reference
-            const reference = `CTH-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-            document.getElementById('wire-reference').textContent = reference;
-            
-            // Show instructions
-            document.getElementById('wire-instructions').style.display = 'block';
-            document.getElementById('wire-generate').style.display = 'none';
+            isVerifiedUser().then((ok) => {
+                if (!ok) {
+                    showAlert('Please verify your email or phone number to make a deposit. <a href="auth.html" class="alert-link">Verify now</a>.', 'warning');
+                    try { window.authManager?.ensureVerificationBanner?.(); } catch (e) {}
+                    return;
+                }
+
+                if (!currentAmount || currentAmount < 1000) {
+                    showAlert('Minimum wire transfer amount is $1,000', 'warning');
+                    return;
+                }
+                
+                // Generate unique reference
+                const reference = `CTH-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+                document.getElementById('wire-reference').textContent = reference;
+                
+                // Show instructions
+                document.getElementById('wire-instructions').style.display = 'block';
+                document.getElementById('wire-generate').style.display = 'none';
+            });
         }
         
        

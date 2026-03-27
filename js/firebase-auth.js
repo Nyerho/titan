@@ -12,6 +12,7 @@ import {
   GoogleAuthProvider,
   RecaptchaVerifier,
   signInWithPhoneNumber,
+  linkWithPhoneNumber,
   EmailAuthProvider,
   reauthenticateWithCredential,
   updatePassword,
@@ -28,6 +29,7 @@ class FirebaseAuthService {
     this.emailService = null;
     this.recaptchaVerifier = null;
     this.phoneConfirmationResult = null;
+    this.phoneLinkConfirmationResult = null;
     this.initializeAuthListener();
     this.handleRedirectResult();
     this.initializeEmailService();
@@ -120,20 +122,17 @@ class FirebaseAuthService {
         throw firestoreError;
       }
 
-      // Try to send verification email, but don't fail registration if it fails
       try {
-        const verificationToken = this.generateVerificationToken();
-        await this.sendCustomVerificationEmail(user.email, userData.firstName || 'User', verificationToken);
-        console.log('Verification email sent successfully');
+        await sendEmailVerification(user);
+        console.log('Email verification sent successfully');
       } catch (emailError) {
-        console.warn('Failed to send verification email:', emailError.message);
-        // Continue with registration even if email fails
+        console.warn('Failed to send email verification:', emailError.message);
       }
 
       return {
         success: true,
         user: user,
-        message: 'Registration successful. You can now log in with your credentials.'
+        message: 'Registration successful. Please verify your email or phone number to unlock deposits, withdrawals, and trading.'
       };
     } catch (error) {
       console.error('Registration error:', error);
@@ -147,6 +146,20 @@ class FirebaseAuthService {
           ? 'Registration failed due to database permissions. Please contact support.'
           : this.getErrorMessage(error.code)
       };
+    }
+  }
+
+  async resendEmailVerification() {
+    const user = auth.currentUser;
+    if (!user) {
+      return { success: false, message: 'No authenticated user' };
+    }
+
+    try {
+      await sendEmailVerification(user);
+      return { success: true, message: 'Verification email sent' };
+    } catch (error) {
+      return { success: false, error: error.code, message: this.getErrorMessage(error.code) || 'Failed to send verification email' };
     }
   }
 
@@ -321,6 +334,45 @@ class FirebaseAuthService {
     }
   }
 
+  async sendPhoneLinkVerificationCode(phoneNumber, containerOrId) {
+    const user = auth.currentUser;
+    if (!user) {
+      return { success: false, message: 'No authenticated user' };
+    }
+
+    const verifier = await this.initPhoneRecaptcha(containerOrId);
+    try {
+      const confirmationResult = await linkWithPhoneNumber(user, phoneNumber, verifier);
+      this.phoneLinkConfirmationResult = confirmationResult;
+      return { success: true, message: 'Verification code sent' };
+    } catch (error) {
+      return { success: false, error: error.code, message: this.getErrorMessage(error.code) || 'Failed to send verification code' };
+    }
+  }
+
+  async confirmPhoneLinkVerificationCode(code) {
+    try {
+      if (!this.phoneLinkConfirmationResult) {
+        return { success: false, message: 'Please request a code first' };
+      }
+
+      const userCredential = await this.phoneLinkConfirmationResult.confirm(code);
+      const user = userCredential.user;
+
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          phoneVerified: !!user.phoneNumber,
+          emailVerified: !!user.emailVerified
+        });
+      } catch (e) {}
+
+      return { success: true, user, message: 'Phone verified successfully' };
+    } catch (error) {
+      return { success: false, error: error.code, message: this.getErrorMessage(error.code) || 'Invalid verification code' };
+    }
+  }
+
   // Sign out user
   async signOut() {
     try {
@@ -388,11 +440,14 @@ class FirebaseAuthService {
   // Create user document in Firestore
   async createUserDocument(user, userData) {
     const userRef = doc(db, 'users', user.uid);
+    const isVerified = !!user.emailVerified || !!user.phoneNumber;
     const userDoc = {
       uid: user.uid,
       email: user.email,
       displayName: user.displayName,
       emailVerified: user.emailVerified,
+      phoneVerified: !!user.phoneNumber,
+      verificationStatus: isVerified ? 'verified' : 'pending',
       role: userData.role || 'user',
       balance: 0, // Start with 0 balance for synchronicity
       totalDeposits: 0,
@@ -401,7 +456,7 @@ class FirebaseAuthService {
       profile: {
         firstName: userData.firstName || '',
         lastName: userData.lastName || '',
-        phone: userData.phone || '',
+        phone: user.phoneNumber || userData.phone || '',
         country: userData.country || '',
         dateOfBirth: userData.dateOfBirth || null,
         address: userData.address || ''
@@ -446,6 +501,28 @@ class FirebaseAuthService {
       
       if (!userDoc.exists()) {
         await this.createUserDocument(user, {});
+        return;
+      }
+
+      const data = userDoc.data() || {};
+      const emailVerified = !!user.emailVerified;
+      const phoneVerified = !!user.phoneNumber;
+      const nextVerificationStatus = (emailVerified || phoneVerified) ? 'verified' : 'pending';
+
+      const updates = {};
+      if (data.emailVerified !== emailVerified) updates.emailVerified = emailVerified;
+      if (data.phoneVerified !== phoneVerified) updates.phoneVerified = phoneVerified;
+      if (data.verificationStatus !== nextVerificationStatus) updates.verificationStatus = nextVerificationStatus;
+
+      const existingPhone = data?.profile?.phone;
+      if (!existingPhone && user.phoneNumber) {
+        updates['profile.phone'] = user.phoneNumber;
+      }
+
+      if (Object.keys(updates).length) {
+        try {
+          await updateDoc(userRef, updates);
+        } catch (e) {}
       }
     } catch (error) {
       if (error?.code === 'permission-denied' || String(error?.message || '').includes('Missing or insufficient permissions')) {

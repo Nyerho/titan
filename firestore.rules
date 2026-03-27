@@ -1,6 +1,16 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    match /admin/withdrawal-settings {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /admin/crypto-addresses {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
     match /admin/{document=**} {
       allow read, write: if isAdmin();
     }
@@ -14,13 +24,34 @@ service cloud.firestore {
 
     match /withdrawals/{withdrawalId} {
       allow read, write: if isAdmin();
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.uid == request.auth.uid
+      );
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.uid == request.auth.uid
+      );
+    }
+
+    match /withdrawal-requests/{requestId} {
+      allow read, write: if isAdmin();
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.uid == request.auth.uid
+      );
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.uid == request.auth.uid
+      );
     }
 
     match /transactions/{transactionId} {
       allow read, write: if isAdmin();
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.uid == request.auth.uid
+      );
     }
 
     // Accounts used by admin panel to mirror user balances
@@ -138,6 +169,12 @@ service cloud.firestore {
       allow read, write: if isAdmin();
       allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
       allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    match /users/{userId}/transactions/{transactionId} {
+      allow read, write: if isAdmin();
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isSignedIn() && request.auth.uid == userId;
     }
 
     function isSignedIn() {

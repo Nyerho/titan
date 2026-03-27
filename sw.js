@@ -1,10 +1,10 @@
-const CACHE_NAME = 'cth-v2';
+const CACHE_NAME = 'cth-v3';
 const urlsToCache = [
   '/',
   '/css/styles.css',
   '/css/responsive.css',
   '/js/firebase-config.js',
-  '/assets/images/Artboard%201@2x.png'
+  '/assets/images/IMG_9877.PNG'
 ];
 
 self.addEventListener('install', (event) => {
