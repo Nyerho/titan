@@ -23,10 +23,26 @@ class AISupportChat {
     }
 
     setupAuthListener() {
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             this.currentUser = user;
-            if (user && this.conversationId) {
+            if (!user) {
+                this.conversationId = null;
+                if (this.messageListener) {
+                    try { this.messageListener(); } catch (_) {}
+                    this.messageListener = null;
+                }
+                return;
+            }
+
+            try {
+                const conversation = await this.chatService.getOrCreateConversation(
+                    user.uid,
+                    user.email
+                );
+                this.conversationId = conversation.id;
                 this.setupMessageListener();
+            } catch (e) {
+                console.error('Failed to initialize support chat conversation:', e);
             }
         });
     }
@@ -192,6 +208,15 @@ class AISupportChat {
         chatButton.classList.add('active');
         chatButton.innerHTML = '<i class="fas fa-times"></i>';
         this.isOpen = true;
+
+        if (this.currentUser && !this.conversationId) {
+            this.chatService.getOrCreateConversation(this.currentUser.uid, this.currentUser.email)
+                .then((conversation) => {
+                    this.conversationId = conversation.id;
+                    this.setupMessageListener();
+                })
+                .catch((e) => console.error('Failed to open support chat conversation:', e));
+        }
         
         // Focus on input
         setTimeout(() => {

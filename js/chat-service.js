@@ -20,6 +20,19 @@ class ChatService {
         this.messageListeners = new Map();
     }
 
+    toMillis(value) {
+        try {
+            if (!value) return 0;
+            if (typeof value.toMillis === 'function') return value.toMillis();
+            if (typeof value.toDate === 'function') return value.toDate().getTime();
+            if (typeof value.seconds === 'number') return value.seconds * 1000;
+            if (typeof value === 'number') return value;
+            return 0;
+        } catch (_) {
+            return 0;
+        }
+    }
+
     // Create or get existing conversation
     async getOrCreateConversation(userId, userEmail) {
         try {
@@ -28,8 +41,14 @@ class ChatService {
             const querySnapshot = await getDocs(q);
             
             if (!querySnapshot.empty) {
-                const doc = querySnapshot.docs[0];
-                return { id: doc.id, ...doc.data() };
+                const docs = querySnapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+                const best = docs.reduce((acc, cur) => {
+                    if (!acc) return cur;
+                    const accTs = this.toMillis(acc.lastMessageTime) || this.toMillis(acc.createdAt);
+                    const curTs = this.toMillis(cur.lastMessageTime) || this.toMillis(cur.createdAt);
+                    return curTs > accTs ? cur : acc;
+                }, null);
+                return best || { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() };
             }
             
             // Create new conversation
