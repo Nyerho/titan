@@ -505,10 +505,27 @@ class FirebaseAuthService {
   // Reset password
   async resetPassword(email) {
     try {
-      await sendPasswordResetEmail(auth, email, {
-        url: 'https://www.centraltradekeplr.com/forgot-password.html',
-        handleCodeInApp: false
-      });
+      const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
+      const baseUrl = origin && origin !== 'null' ? origin : '';
+      const isProdDomain =
+        baseUrl.startsWith('https://www.centraltradekeplr.com') ||
+        baseUrl.startsWith('https://centraltradekeplr.com') ||
+        baseUrl.startsWith('https://www.titantrades.com') ||
+        baseUrl.startsWith('https://titantrades.com');
+      const continueBase = isProdDomain ? baseUrl : 'https://www.centraltradekeplr.com';
+
+      try {
+        await sendPasswordResetEmail(auth, email, {
+          url: `${continueBase}/reset-password.html`,
+          handleCodeInApp: false
+        });
+      } catch (innerError) {
+        if (innerError?.code === 'auth/unauthorized-continue-uri') {
+          await sendPasswordResetEmail(auth, email);
+        } else {
+          throw innerError;
+        }
+      }
       return {
         success: true,
         message: 'Password reset email sent successfully'

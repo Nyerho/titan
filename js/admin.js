@@ -3862,7 +3862,7 @@ EnhancedAdminDashboard.prototype.aiChatRenderThread = function (messages) {
         const ts = m.timestamp?.toDate ? m.timestamp.toDate() : null;
         const timeStr = ts ? ts.toLocaleString() : '';
         const alignClass = senderType === 'admin' ? 'text-end' : 'text-start';
-        const bubbleClass = senderType === 'admin' ? 'bg-primary' : (senderType === 'ai' ? 'bg-secondary' : 'bg-dark border border-secondary');
+        const bubbleClass = senderType === 'admin' ? 'bg-primary text-white' : (senderType === 'ai' ? 'bg-secondary text-white' : 'bg-dark border border-secondary text-white');
 
         return `
             <div class="mb-2 ${alignClass}">

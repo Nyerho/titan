@@ -26,8 +26,15 @@ class ForgotPasswordManager {
 
     // Use a production, allowlisted URL to avoid unauthorized-continue-uri in dev
     computeResetUrl() {
-        // Replace with your preferred domain if different
-        return 'https://www.centraltradekeplr.com/forgot-password.html';
+        const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
+        const baseUrl = origin && origin !== 'null' ? origin : '';
+        const isProdDomain =
+            baseUrl.startsWith('https://www.centraltradekeplr.com') ||
+            baseUrl.startsWith('https://centraltradekeplr.com') ||
+            baseUrl.startsWith('https://www.titantrades.com') ||
+            baseUrl.startsWith('https://titantrades.com');
+        const continueBase = isProdDomain ? baseUrl : 'https://www.centraltradekeplr.com';
+        return `${continueBase}/reset-password.html`;
     }
 
     async handleForgotPassword(e) {
@@ -57,10 +64,18 @@ class ForgotPasswordManager {
         resetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
         
         try {
-            await sendPasswordResetEmail(auth, email, {
-                url: this.computeResetUrl(),
-                handleCodeInApp: false
-            });
+            try {
+                await sendPasswordResetEmail(auth, email, {
+                    url: this.computeResetUrl(),
+                    handleCodeInApp: false
+                });
+            } catch (innerError) {
+                if (innerError?.code === 'auth/unauthorized-continue-uri') {
+                    await sendPasswordResetEmail(auth, email);
+                } else {
+                    throw innerError;
+                }
+            }
             
             // Store email for resend functionality
             sessionStorage.setItem('resetEmail', email);
@@ -87,7 +102,7 @@ class ForgotPasswordManager {
                     errorMessage = 'Network error. Please check your connection';
                     break;
                 case 'auth/unauthorized-continue-uri':
-                    errorMessage = 'Password reset temporarily unavailable. Please contact support.';
+                    errorMessage = 'Password reset failed. Please try again.';
                     break;
             }
             
@@ -113,10 +128,18 @@ class ForgotPasswordManager {
         resendLink.textContent = 'Sending...';
         
         try {
-            await sendPasswordResetEmail(auth, email, {
-                url: this.computeResetUrl(),
-                handleCodeInApp: false
-            });
+            try {
+                await sendPasswordResetEmail(auth, email, {
+                    url: this.computeResetUrl(),
+                    handleCodeInApp: false
+                });
+            } catch (innerError) {
+                if (innerError?.code === 'auth/unauthorized-continue-uri') {
+                    await sendPasswordResetEmail(auth, email);
+                } else {
+                    throw innerError;
+                }
+            }
             
             resendLink.textContent = 'Sent!';
             setTimeout(() => {
