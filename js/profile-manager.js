@@ -318,7 +318,15 @@ class ProfileManager {
                     baseUrl.startsWith('https://titantrades.com');
                 const continueBase = isProdDomain ? baseUrl : 'https://www.centraltradekeplr.com';
                 const actionCodeSettings = { url: `${continueBase}/dashboard.html`, handleCodeInApp: false };
-                await sendEmailVerification(currentUser, actionCodeSettings);
+                try {
+                    await sendEmailVerification(currentUser, actionCodeSettings);
+                } catch (innerError) {
+                    if (innerError?.code === 'auth/unauthorized-continue-uri') {
+                        await sendEmailVerification(currentUser);
+                    } else {
+                        throw innerError;
+                    }
+                }
             }
 
             const result = await userProfileService.updateUserProfile(auth.currentUser.uid, profileData);

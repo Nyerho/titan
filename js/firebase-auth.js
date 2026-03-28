@@ -133,7 +133,15 @@ class FirebaseAuthService {
           baseUrl.startsWith('https://titantrades.com');
         const continueBase = isProdDomain ? baseUrl : 'https://www.centraltradekeplr.com';
         const actionCodeSettings = { url: `${continueBase}/dashboard.html`, handleCodeInApp: false };
-        await sendEmailVerification(user, actionCodeSettings);
+        try {
+          await sendEmailVerification(user, actionCodeSettings);
+        } catch (innerError) {
+          if (innerError?.code === 'auth/unauthorized-continue-uri') {
+            await sendEmailVerification(user);
+          } else {
+            throw innerError;
+          }
+        }
         console.log('Email verification sent successfully');
       } catch (emailError) {
         console.warn('Failed to send email verification:', emailError.message);
@@ -176,7 +184,15 @@ class FirebaseAuthService {
       const continueBase = isProdDomain ? baseUrl : 'https://www.centraltradekeplr.com';
       const url = `${continueBase}/dashboard.html`;
       const actionCodeSettings = { url, handleCodeInApp: false };
-      await sendEmailVerification(user, actionCodeSettings);
+      try {
+        await sendEmailVerification(user, actionCodeSettings);
+      } catch (innerError) {
+        if (innerError?.code === 'auth/unauthorized-continue-uri') {
+          await sendEmailVerification(user);
+        } else {
+          throw innerError;
+        }
+      }
       return { success: true, message: 'Verification email sent' };
     } catch (error) {
       return { success: false, error: error.code, message: this.getErrorMessage(error.code) || 'Failed to send verification email' };
