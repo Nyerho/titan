@@ -381,7 +381,13 @@ class AuthManager {
           resend.style.opacity = '.75';
           resend.textContent = 'Sending...';
           const result = await FirebaseAuthService.resendEmailVerification();
-          this.showMessage(result.success ? 'Verification email sent. Open it and click the link to verify, then you will be redirected to the dashboard.' : (result.message || 'Failed to send verification email'), result.success ? 'success' : 'error');
+          const errorDetails = !result.success && result?.error ? ` (${result.error})` : '';
+          this.showMessage(
+            result.success
+              ? 'Verification email sent. Open it and click the link to verify, then you will be redirected to the dashboard.'
+              : `${result.message || 'Failed to send verification email'}${errorDetails}`,
+            result.success ? 'success' : 'error'
+          );
         } finally {
           resend.disabled = false;
           resend.style.opacity = '1';

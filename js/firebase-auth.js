@@ -36,6 +36,66 @@ class FirebaseAuthService {
     this.initializeEmailService();
   }
 
+  computeContinueBaseUrl() {
+    const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
+    const baseUrl = origin && origin !== 'null' ? origin : '';
+    const isHttpOrigin = baseUrl.startsWith('http://') || baseUrl.startsWith('https://');
+    const isLocal =
+      baseUrl.startsWith('http://localhost') ||
+      baseUrl.startsWith('http://127.0.0.1') ||
+      baseUrl.startsWith('https://localhost') ||
+      baseUrl.startsWith('https://127.0.0.1') ||
+      baseUrl.startsWith('file:');
+
+    if (baseUrl.startsWith('https://www.titantrades.org') || baseUrl.startsWith('https://titantrades.org')) {
+      return baseUrl;
+    }
+    if (baseUrl.startsWith('https://www.titantrades.com') || baseUrl.startsWith('https://titantrades.com')) {
+      return baseUrl;
+    }
+    if (baseUrl.startsWith('https://www.centraltradekeplr.com') || baseUrl.startsWith('https://centraltradekeplr.com')) {
+      return baseUrl;
+    }
+    if (isHttpOrigin && !isLocal) return baseUrl;
+    return 'https://titantrades.org';
+  }
+
+  async sendVerificationEmailWithFallbacks(user) {
+    if (!user) throw new Error('Missing user');
+    if (!user.email) {
+      const err = new Error('This account has no email address.');
+      err.code = 'auth/missing-email';
+      throw err;
+    }
+
+    try { await user.reload(); } catch (_) {}
+    try { await user.getIdToken(true); } catch (_) {}
+
+    const continueBase = this.computeContinueBaseUrl();
+    const url = `${continueBase}/dashboard.html`;
+    const attempts = [
+      { url, handleCodeInApp: false },
+      { url, handleCodeInApp: true }
+    ];
+
+    let lastError = null;
+    for (const actionCodeSettings of attempts) {
+      try {
+        await sendEmailVerification(user, actionCodeSettings);
+        return { url, usedSettings: actionCodeSettings };
+      } catch (e) {
+        lastError = e;
+      }
+    }
+
+    if (lastError?.code === 'auth/unauthorized-continue-uri') {
+      await sendEmailVerification(user);
+      return { url: '', usedSettings: null };
+    }
+
+    throw lastError || new Error('Failed to send verification email');
+  }
+
   // Add email service initialization
   async initializeEmailService() {
     try {
@@ -124,24 +184,7 @@ class FirebaseAuthService {
       }
 
       try {
-        const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
-        const baseUrl = origin && origin !== 'null' ? origin : '';
-        const isProdDomain =
-          baseUrl.startsWith('https://www.centraltradekeplr.com') ||
-          baseUrl.startsWith('https://centraltradekeplr.com') ||
-          baseUrl.startsWith('https://www.titantrades.com') ||
-          baseUrl.startsWith('https://titantrades.com');
-        const continueBase = isProdDomain ? baseUrl : 'https://www.centraltradekeplr.com';
-        const actionCodeSettings = { url: `${continueBase}/dashboard.html`, handleCodeInApp: false };
-        try {
-          await sendEmailVerification(user, actionCodeSettings);
-        } catch (innerError) {
-          if (innerError?.code === 'auth/unauthorized-continue-uri') {
-            await sendEmailVerification(user);
-          } else {
-            throw innerError;
-          }
-        }
+        await this.sendVerificationEmailWithFallbacks(user);
         console.log('Email verification sent successfully');
       } catch (emailError) {
         console.warn('Failed to send email verification:', emailError.message);
@@ -174,28 +217,15 @@ class FirebaseAuthService {
     }
 
     try {
-      const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
-      const baseUrl = origin && origin !== 'null' ? origin : '';
-      const isProdDomain =
-        baseUrl.startsWith('https://www.centraltradekeplr.com') ||
-        baseUrl.startsWith('https://centraltradekeplr.com') ||
-        baseUrl.startsWith('https://www.titantrades.com') ||
-        baseUrl.startsWith('https://titantrades.com');
-      const continueBase = isProdDomain ? baseUrl : 'https://www.centraltradekeplr.com';
-      const url = `${continueBase}/dashboard.html`;
-      const actionCodeSettings = { url, handleCodeInApp: false };
-      try {
-        await sendEmailVerification(user, actionCodeSettings);
-      } catch (innerError) {
-        if (innerError?.code === 'auth/unauthorized-continue-uri') {
-          await sendEmailVerification(user);
-        } else {
-          throw innerError;
-        }
+      if (user.emailVerified) {
+        return { success: true, message: 'Your email is already verified.' };
       }
-      return { success: true, message: 'Verification email sent' };
+      await this.sendVerificationEmailWithFallbacks(user);
+      return { success: true, message: 'Verification email sent. Open it and click the link to verify.' };
     } catch (error) {
-      return { success: false, error: error.code, message: this.getErrorMessage(error.code) || 'Failed to send verification email' };
+      const code = error?.code || '';
+      const msg = this.getErrorMessage(code) || error?.message || 'Failed to send verification email';
+      return { success: false, error: code, message: msg };
     }
   }
 
@@ -526,9 +556,11 @@ class FirebaseAuthService {
       const isProdDomain =
         baseUrl.startsWith('https://www.centraltradekeplr.com') ||
         baseUrl.startsWith('https://centraltradekeplr.com') ||
+        baseUrl.startsWith('https://www.titantrades.org') ||
+        baseUrl.startsWith('https://titantrades.org') ||
         baseUrl.startsWith('https://www.titantrades.com') ||
         baseUrl.startsWith('https://titantrades.com');
-      const continueBase = isProdDomain ? baseUrl : 'https://www.centraltradekeplr.com';
+      const continueBase = isProdDomain ? baseUrl : 'https://titantrades.org';
 
       try {
         await sendPasswordResetEmail(auth, email, {
@@ -728,6 +760,12 @@ class FirebaseAuthService {
       'auth/invalid-email': 'Please enter a valid email address.',
       'auth/too-many-requests': 'Too many requests. Please wait a few minutes before trying again.',
       'auth/network-request-failed': 'Network error. Please check your internet connection.',
+      'auth/invalid-api-key': 'Email sending failed due to an invalid API key configuration. Please contact support.',
+      'auth/user-token-expired': 'Your session expired. Please sign in again and resend the verification email.',
+      'auth/requires-recent-login': 'Please sign in again to complete this action.',
+      'auth/missing-continue-uri': 'Email verification redirect URL is missing. Please contact support.',
+      'auth/invalid-continue-uri': 'Email verification redirect URL is invalid. Please contact support.',
+      'auth/unauthorized-continue-uri': 'Email verification redirect URL is not authorized. Please contact support.',
       'auth/invalid-phone-number': 'Please enter a valid phone number with country code (e.g. +233...).',
       'auth/missing-phone-number': 'Please enter your phone number.',
       'auth/invalid-verification-code': 'Invalid verification code. Please try again.',
@@ -741,7 +779,6 @@ class FirebaseAuthService {
       'auth/provider-already-linked': 'Phone number is already verified.',
       'auth/internal-error': 'Phone verification failed due to a temporary error. Please try again later.',
       'auth/session-expired': 'Verification session expired. Please request a new code.',
-      'auth/requires-recent-login': 'Please sign in again to complete this action.',
       'auth/invalid-action-code': 'The reset link is invalid or has expired.',
       'auth/expired-action-code': 'The reset link has expired. Please request a new one.',
       'auth/missing-email': 'Please enter your email address.',

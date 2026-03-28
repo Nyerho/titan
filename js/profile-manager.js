@@ -314,9 +314,11 @@ class ProfileManager {
                 const isProdDomain =
                     baseUrl.startsWith('https://www.centraltradekeplr.com') ||
                     baseUrl.startsWith('https://centraltradekeplr.com') ||
+                    baseUrl.startsWith('https://www.titantrades.org') ||
+                    baseUrl.startsWith('https://titantrades.org') ||
                     baseUrl.startsWith('https://www.titantrades.com') ||
                     baseUrl.startsWith('https://titantrades.com');
-                const continueBase = isProdDomain ? baseUrl : 'https://www.centraltradekeplr.com';
+                const continueBase = isProdDomain ? baseUrl : 'https://titantrades.org';
                 const actionCodeSettings = { url: `${continueBase}/dashboard.html`, handleCodeInApp: false };
                 try {
                     await sendEmailVerification(currentUser, actionCodeSettings);
