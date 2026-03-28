@@ -202,7 +202,14 @@ class CryptoPurchasePortal {
     updatePreview() {
         const amount = parseFloat(document.getElementById('purchaseAmount').value) || 0;
         const preview = document.getElementById('purchasePreview');
+        const confirmBtn = document.getElementById('confirmPurchaseBtn');
         
+        if (!this.selectedCrypto || !(amount > 0)) {
+            preview.innerHTML = '';
+            if (confirmBtn) confirmBtn.disabled = true;
+            return;
+        }
+
         if (amount > 0 && this.selectedCrypto) {
             const cryptoAmount = amount / this.selectedCrypto.price;
             const fee = amount * 0.01; // 1% fee
@@ -218,17 +225,29 @@ class CryptoPurchasePortal {
                 ${total > this.userBalance ? '<div style="color: #ff4757; margin-top: 10px;">⚠️ Insufficient balance</div>' : ''}
             `;
             
-            document.getElementById('confirmPurchaseBtn').disabled = total > this.userBalance;
-        } else {
-            preview.innerHTML = '';
+            if (confirmBtn) confirmBtn.disabled = total > this.userBalance;
         }
     }
 
     showConfirmation() {
+        if (!this.selectedCrypto) {
+            alert('Please select a cryptocurrency first.');
+            return;
+        }
+
         const amount = parseFloat(document.getElementById('purchaseAmount').value);
+        if (!Number.isFinite(amount) || !(amount > 0)) {
+            alert('Please enter a valid amount to spend.');
+            return;
+        }
+
         const cryptoAmount = amount / this.selectedCrypto.price;
         const fee = amount * 0.01;
         const total = amount + fee;
+        if (total > this.userBalance) {
+            alert('Insufficient balance for this purchase.');
+            return;
+        }
         
         const confirmationDetails = document.getElementById('confirmationDetails');
         confirmationDetails.innerHTML = `
@@ -255,8 +274,17 @@ class CryptoPurchasePortal {
 
     async processPurchase() {
         try {
+            if (!this.selectedCrypto) {
+                alert('Please select a cryptocurrency first.');
+                return;
+            }
+
             const amount = parseFloat(document.getElementById('purchaseAmount').value);
             const user = auth.currentUser;
+            if (!Number.isFinite(amount) || !(amount > 0)) {
+                alert('Please enter a valid amount to spend.');
+                return;
+            }
             
             if (!user) {
                 alert('Please log in to make a purchase');
@@ -270,6 +298,10 @@ class CryptoPurchasePortal {
                 // Update user balance
                 const fee = amount * 0.01;
                 const total = amount + fee;
+                if (total > this.userBalance) {
+                    alert('Insufficient balance for this purchase.');
+                    return;
+                }
                 const newBalance = this.userBalance - total;
 
                 if (FirebaseDatabaseService?.updateUserBalance) {
@@ -297,7 +329,8 @@ class CryptoPurchasePortal {
                 });
                 
                 // Show success modal
-                this.showSuccess(result);
+                const cryptoAmount = Number(result?.data?.amount ?? (amount / this.selectedCrypto.price));
+                this.showSuccess({ cryptoAmount, transactionId: result.transactionId });
                 
                 // Update balance display
                 this.setBalance(newBalance);
@@ -313,8 +346,9 @@ class CryptoPurchasePortal {
         document.getElementById('confirmationModal').style.display = 'none';
     }
 
-    showSuccess(result) {
+    showSuccess(details) {
         const successDetails = document.getElementById('successDetails');
+        const cryptoAmount = Number(details?.cryptoAmount ?? 0);
         successDetails.innerHTML = `
             <div style="text-align: center;">
                 <div style="font-size: 48px; color: #00ff88; margin-bottom: 20px;">
@@ -324,12 +358,12 @@ class CryptoPurchasePortal {
                 <div style="margin: 20px 0; padding: 20px; background: rgba(0, 255, 136, 0.1); border-radius: 8px;">
                     <div>You have successfully purchased:</div>
                     <div style="font-size: 20px; font-weight: bold; margin: 10px 0;">
-                        ${result.cryptoAmount.toFixed(8)} ${this.selectedCrypto.symbol}
+                        ${(Number.isFinite(cryptoAmount) ? cryptoAmount : 0).toFixed(8)} ${this.selectedCrypto.symbol}
                     </div>
                     <div style="color: #888;">Added to your portfolio</div>
                 </div>
                 <div style="font-size: 14px; color: #888;">
-                    Transaction ID: ${result.transactionId || 'N/A'}
+                    Transaction ID: ${details?.transactionId || 'N/A'}
                 </div>
             </div>
         `;

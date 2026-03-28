@@ -126,8 +126,13 @@ class FirebaseAuthService {
       try {
         const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
         const baseUrl = origin && origin !== 'null' ? origin : '';
-        const url = baseUrl ? `${baseUrl}/dashboard.html` : undefined;
-        const actionCodeSettings = url ? { url, handleCodeInApp: true } : undefined;
+        const isProdDomain =
+          baseUrl.startsWith('https://www.centraltradekeplr.com') ||
+          baseUrl.startsWith('https://centraltradekeplr.com') ||
+          baseUrl.startsWith('https://www.titantrades.com') ||
+          baseUrl.startsWith('https://titantrades.com');
+        const continueBase = isProdDomain ? baseUrl : 'https://www.centraltradekeplr.com';
+        const actionCodeSettings = { url: `${continueBase}/dashboard.html`, handleCodeInApp: false };
         await sendEmailVerification(user, actionCodeSettings);
         console.log('Email verification sent successfully');
       } catch (emailError) {
@@ -163,8 +168,14 @@ class FirebaseAuthService {
     try {
       const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
       const baseUrl = origin && origin !== 'null' ? origin : '';
-      const url = baseUrl ? `${baseUrl}/dashboard.html` : undefined;
-      const actionCodeSettings = url ? { url, handleCodeInApp: true } : undefined;
+      const isProdDomain =
+        baseUrl.startsWith('https://www.centraltradekeplr.com') ||
+        baseUrl.startsWith('https://centraltradekeplr.com') ||
+        baseUrl.startsWith('https://www.titantrades.com') ||
+        baseUrl.startsWith('https://titantrades.com');
+      const continueBase = isProdDomain ? baseUrl : 'https://www.centraltradekeplr.com';
+      const url = `${continueBase}/dashboard.html`;
+      const actionCodeSettings = { url, handleCodeInApp: false };
       await sendEmailVerification(user, actionCodeSettings);
       return { success: true, message: 'Verification email sent' };
     } catch (error) {

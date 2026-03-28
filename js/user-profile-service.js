@@ -1,6 +1,7 @@
 // User Profile Management Service
 import { auth, db } from './firebase-config.js';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { collection, query, where, orderBy, getDocs, limit, doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 class UserProfileService {
     constructor() {
@@ -11,7 +12,7 @@ class UserProfileService {
 
     // Initialize authentication listener
     initializeAuthListener() {
-        auth.onAuthStateChanged(async (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 this.currentUser = user;
                 await this.loadUserProfile(user.uid);
@@ -134,7 +135,7 @@ class UserProfileService {
                 updatedAt: serverTimestamp()
             };
             
-            await updateDoc(userRef, updateData);
+            await setDoc(userRef, updateData, { merge: true });
             this.userProfile = { ...this.userProfile, ...updateData };
             this.updatePlatformUI();
             
@@ -146,13 +147,14 @@ class UserProfileService {
     }
 
     // Get user transaction history
-    async getTransactionHistory(uid, limit = 50) {
+    async getTransactionHistory(uid, limitCount = 50) {
         try {
             const transactionsRef = collection(db, 'transactions');
             const q = query(
                 transactionsRef,
                 where('userId', '==', uid),
-                orderBy('timestamp', 'desc') // Use 'timestamp' instead of 'createdAt'
+                orderBy('timestamp', 'desc'),
+                limit(limitCount)
             );
     
             const querySnapshot = await getDocs(q);
@@ -171,7 +173,8 @@ class UserProfileService {
             const fallbackQuery = query(
                 collection(db, 'transactions'),
                 where('userId', '==', uid),
-                orderBy('createdAt', 'desc')
+                orderBy('createdAt', 'desc'),
+                limit(limitCount)
             );
             const fallbackSnapshot = await getDocs(fallbackQuery);
             const fallbackTransactions = [];
@@ -187,14 +190,14 @@ class UserProfileService {
     }
 
     // Get user trading history
-    async getTradingHistory(uid, limit = 50) {
+    async getTradingHistory(uid, limitCount = 50) {
         try {
             const tradesRef = collection(db, 'trades');
             const q = query(
                 tradesRef,
                 where('uid', '==', uid),
                 orderBy('createdAt', 'desc'),
-                limit(limit)
+                limit(limitCount)
             );
             
             const querySnapshot = await getDocs(q);
@@ -214,35 +217,19 @@ class UserProfileService {
         }
     }
 
-    // Update platform UI with user data
-    updatePlatformUI() {
-        if (!this.userProfile) return;
-
-        // Update user name in header
-        const userNameEl = document.getElementById('current-user-name');
-        if (userNameEl) {
-            userNameEl.textContent = this.userProfile.displayName || 
-                `${this.userProfile.firstName} ${this.userProfile.lastName}`.trim() || 
-                'User';
-        }
-
-        // Update account balance information
-        this.updateAccountSummary();
-        
-        // Update user avatar if available
-        const userAvatarEl = document.querySelector('.user-avatar');
-        if (userAvatarEl && this.userProfile.photoURL) {
-            userAvatarEl.src = this.userProfile.photoURL;
-        }
-    }
-
     // Update account summary display
     updateAccountSummary() {
+        const balance = Number(this.userProfile.accountBalance ?? this.userProfile.walletBalance ?? this.userProfile.balance ?? 0);
+        const equity = Number(this.userProfile.equity ?? 0);
+        const margin = Number(this.userProfile.margin ?? 0);
+        const freeMargin = Number(this.userProfile.freeMargin ?? this.userProfile.free_margin ?? 0);
+
         const elements = {
-            'account-balance': this.formatCurrency(this.userProfile.balance || 0),
-            'account-equity': this.formatCurrency(this.userProfile.equity || 0),
-            'account-margin': this.formatCurrency(this.userProfile.margin || 0),
-            'account-free-margin': this.formatCurrency(this.userProfile.freeMargin || 0)
+            'account-balance': this.formatCurrency(balance),
+            'account-equity': this.formatCurrency(equity),
+            'account-margin': this.formatCurrency(margin),
+            'account-free-margin': this.formatCurrency(freeMargin),
+            'free-margin': this.formatCurrency(freeMargin)
         };
 
         Object.entries(elements).forEach(([id, value]) => {

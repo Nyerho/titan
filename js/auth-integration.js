@@ -376,8 +376,17 @@ class AuthManager {
       resend.textContent = 'Resend Email';
       resend.style.cssText = 'border:0;background:#2563eb;color:#fff;padding:8px 10px;border-radius:6px;cursor:pointer';
       resend.onclick = async () => {
-        const result = await FirebaseAuthService.resendEmailVerification();
-        this.showMessage(result.success ? 'Verification email sent' : (result.message || 'Failed to send verification email'), result.success ? 'success' : 'error');
+        try {
+          resend.disabled = true;
+          resend.style.opacity = '.75';
+          resend.textContent = 'Sending...';
+          const result = await FirebaseAuthService.resendEmailVerification();
+          this.showMessage(result.success ? 'Verification email sent. Open it and click the link to verify, then you will be redirected to the dashboard.' : (result.message || 'Failed to send verification email'), result.success ? 'success' : 'error');
+        } finally {
+          resend.disabled = false;
+          resend.style.opacity = '1';
+          resend.textContent = 'Resend Email';
+        }
       };
 
       const refresh = document.createElement('button');

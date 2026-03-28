@@ -3,7 +3,7 @@ import userProfileService from './user-profile-service.js';
 import { auth } from './firebase-config.js';
 import { updatePassword, reauthenticateWithCredential, EmailAuthProvider, updateEmail, sendEmailVerification } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { db } from './firebase-config.js';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 class ProfileManager {
     constructor() {
@@ -311,8 +311,13 @@ class ProfileManager {
 
                 const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
                 const baseUrl = origin && origin !== 'null' ? origin : '';
-                const url = baseUrl ? `${baseUrl}/dashboard.html` : undefined;
-                const actionCodeSettings = url ? { url, handleCodeInApp: true } : undefined;
+                const isProdDomain =
+                    baseUrl.startsWith('https://www.centraltradekeplr.com') ||
+                    baseUrl.startsWith('https://centraltradekeplr.com') ||
+                    baseUrl.startsWith('https://www.titantrades.com') ||
+                    baseUrl.startsWith('https://titantrades.com');
+                const continueBase = isProdDomain ? baseUrl : 'https://www.centraltradekeplr.com';
+                const actionCodeSettings = { url: `${continueBase}/dashboard.html`, handleCodeInApp: false };
                 await sendEmailVerification(currentUser, actionCodeSettings);
             }
 
@@ -390,8 +395,17 @@ window.toggleEditMode = function() {
     profileManager.isEditMode = !profileManager.isEditMode;
     
     inputs.forEach(input => {
-        input.readOnly = !profileManager.isEditMode;
-        input.disabled = !profileManager.isEditMode;
+        if (profileManager.isEditMode) {
+            input.readOnly = false;
+            input.disabled = false;
+            input.removeAttribute('readonly');
+            input.removeAttribute('disabled');
+        } else {
+            input.readOnly = true;
+            input.disabled = true;
+            input.setAttribute('readonly', '');
+            input.setAttribute('disabled', '');
+        }
     });
     
     actions.style.display = profileManager.isEditMode ? 'block' : 'none';
