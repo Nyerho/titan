@@ -53,6 +53,7 @@ class FundingManager {
         this.cryptoDepositAddressesCache = null;
         this.cryptoDepositAddressesCacheAt = 0;
         this.cryptoDepositAddressesUnsub = null;
+        this.cryptoDepositAddressesLastError = null;
         this.loadStripe();
         this.loadPayPal();
         this.startCryptoDepositAddressesListener();
@@ -272,6 +273,12 @@ class FundingManager {
         
         const walletAddress = await this.generateCryptoAddress(currency);
         if (!walletAddress || !String(walletAddress).trim()) {
+            const err = this.cryptoDepositAddressesLastError;
+            const msg = String(err?.message || '');
+            const denied = err?.code === 'permission-denied' || msg.includes('Missing or insufficient permissions');
+            if (denied) {
+                throw new Error('Unable to load deposit address (permission denied). Please sign out/in or contact support.');
+            }
             throw new Error(`Deposit address not configured for ${currency}`);
         }
         
@@ -378,6 +385,7 @@ class FundingManager {
                     if (data.addresses && typeof data.addresses === 'object') {
                         this.cryptoDepositAddressesCache = data.addresses;
                         this.cryptoDepositAddressesCacheAt = now;
+                        this.cryptoDepositAddressesLastError = null;
                         this.emitCryptoDepositAddressesUpdated();
                     }
                 }
@@ -386,7 +394,9 @@ class FundingManager {
             const addresses = this.cryptoDepositAddressesCache || {};
             const configured = addresses[requested] || addresses[requested.toUpperCase?.() || requested];
             if (configured) return configured;
-        } catch (e) {}
+        } catch (e) {
+            this.cryptoDepositAddressesLastError = e;
+        }
 
         return '';
     }
@@ -403,9 +413,12 @@ class FundingManager {
                 if (data.addresses && typeof data.addresses === 'object') {
                     this.cryptoDepositAddressesCache = data.addresses;
                     this.cryptoDepositAddressesCacheAt = Date.now();
+                    this.cryptoDepositAddressesLastError = null;
                     this.emitCryptoDepositAddressesUpdated();
                 }
-            }, () => {});
+            }, (err) => {
+                this.cryptoDepositAddressesLastError = err;
+            });
         } catch (e) {}
     }
 

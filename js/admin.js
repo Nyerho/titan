@@ -336,11 +336,7 @@ class EnhancedAdminDashboard {
     }
 
     getDefaultDepositAddresses() {
-        return {
-            BTC: 'bc1qvke2527gzazwpgfaxu0lnq8c2mx98jfgwqdn8x',
-            ETH: '0x0248172c922BEdAb4EE8DD01523Ef072615b06De',
-            USDT: '0x0248172c922BEdAb4EE8DD01523Ef072615b06De'
-        };
+        return {};
     }
 
     getDepositAddressFieldBindings() {
@@ -372,7 +368,11 @@ class EnhancedAdminDashboard {
             }
         } catch (error) {
             console.error('Failed to load crypto deposit addresses:', error);
-            if (statusEl) statusEl.textContent = 'Could not load saved addresses. Showing defaults.';
+            const msg = String(error?.message || '');
+            const denied = error?.code === 'permission-denied' || msg.includes('Missing or insufficient permissions');
+            if (statusEl) statusEl.textContent = denied
+                ? 'Could not load addresses (permission denied). Publish your Firestore rules and re-login as an admin.'
+                : 'Could not load saved addresses.';
         }
 
         bindings.forEach(({ key, elementId }) => {
@@ -408,6 +408,12 @@ class EnhancedAdminDashboard {
         }
 
         try {
+            try {
+                if (this.currentUser && typeof this.currentUser.getIdToken === 'function') {
+                    await this.currentUser.getIdToken(true);
+                }
+            } catch (e) {}
+
             await setDoc(doc(this.db, 'admin', 'crypto-addresses'), {
                 addresses,
                 updatedAt: serverTimestamp(),
@@ -418,8 +424,15 @@ class EnhancedAdminDashboard {
             this.showNotification('Deposit addresses saved', 'success');
         } catch (error) {
             console.error('Failed to save crypto deposit addresses:', error);
-            if (statusEl) statusEl.textContent = 'Save failed.';
-            this.showNotification('Failed to save deposit addresses', 'error');
+            const msg = String(error?.message || '');
+            const denied = error?.code === 'permission-denied' || msg.includes('Missing or insufficient permissions');
+            if (statusEl) statusEl.textContent = denied ? 'Save failed (permission denied).' : 'Save failed.';
+            this.showNotification(
+                denied
+                    ? 'Save failed: permission denied. Ensure your Firestore rules are published and your user has role "admin".'
+                    : 'Failed to save deposit addresses',
+                'error'
+            );
         } finally {
             this.depositAddressSaveInFlight = false;
         }

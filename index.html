@@ -98,7 +98,7 @@
             <div class="nav-logo navbar-brand">
                 <a href="index.html" class="d-flex align-items-center text-decoration-none">
                     <img
-                        src="assets/images/IMG_9877.PNG"
+                        src="assets/images/titantradeslogo.jpg"
                         alt="TitanTrades"
                         style="height: 40px; width: auto;"
                     >
@@ -865,7 +865,7 @@
                 <div class="footer-section">
                     <div class="footer-logo">
                         <a href="index.html">
-                            <img src="assets/images/IMG_9877.PNG" alt="TitanTrades" class="logo">
+                            <img src="assets/images/titantradeslogo.jpg" alt="TitanTrades" class="logo">
                             <span>TitanTrades</span>
                         </a>
                     </div>
@@ -1208,6 +1208,112 @@
           if (!el) return;
           setInterval(tick, 3500);
         }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
+      })();
+    </script>
+    <script>
+      (function () {
+        function prefersReduced() {
+          try {
+            return !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          } catch (e) {
+            return false;
+          }
+        }
+
+        function parseStat(text) {
+          var raw = String(text || '').trim();
+          var prefixMatch = raw.match(/^[^\d.-]+/);
+          var prefix = prefixMatch ? prefixMatch[0] : '';
+          var numberMatch = raw.match(/-?\d+(?:\.\d+)?/);
+          var numberStr = numberMatch ? numberMatch[0] : '0';
+          var suffix = raw.slice(prefix.length + numberStr.length);
+          var decimals = (numberStr.split('.')[1] || '').length;
+          var value = Number(numberStr);
+          if (!Number.isFinite(value)) value = 0;
+          return { prefix: prefix, suffix: suffix, value: value, decimals: decimals, raw: raw };
+        }
+
+        function easeOutCubic(t) {
+          return 1 - Math.pow(1 - t, 3);
+        }
+
+        function animateNumber(el, finalText) {
+          var parsed = parseStat(finalText);
+          var start = 0;
+          var duration = 900;
+          var startedAt = 0;
+
+          function frame(ts) {
+            if (!startedAt) startedAt = ts;
+            var p = Math.min(1, (ts - startedAt) / duration);
+            var eased = easeOutCubic(p);
+            var current = start + (parsed.value - start) * eased;
+            var formatted = parsed.decimals ? current.toFixed(parsed.decimals) : String(Math.round(current));
+            el.textContent = parsed.prefix + formatted + parsed.suffix;
+            if (p < 1) requestAnimationFrame(frame);
+          }
+
+          requestAnimationFrame(frame);
+        }
+
+        function init() {
+          var cards = Array.prototype.slice.call(document.querySelectorAll('.about-stats .stat-card'));
+          if (!cards.length) return;
+
+          var reduce = prefersReduced();
+          var numbers = cards
+            .map(function (card) {
+              return card.querySelector('.stat-number');
+            })
+            .filter(Boolean);
+
+          numbers.forEach(function (el) {
+            if (!el.dataset.final) el.dataset.final = String(el.textContent || '').trim();
+            if (reduce) el.textContent = el.dataset.final;
+          });
+
+          function reveal(card) {
+            if (!card || card.dataset.revealed === '1') return;
+            card.dataset.revealed = '1';
+            card.classList.add('is-visible');
+
+            var num = card.querySelector('.stat-number');
+            if (!num || num.dataset.animated === '1') return;
+            num.dataset.animated = '1';
+            if (reduce) {
+              num.textContent = num.dataset.final || num.textContent;
+              return;
+            }
+            animateNumber(num, num.dataset.final || num.textContent);
+          }
+
+          if (!('IntersectionObserver' in window)) {
+            cards.forEach(reveal);
+            return;
+          }
+
+          var obs = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                  reveal(entry.target);
+                  obs.unobserve(entry.target);
+                }
+              });
+            },
+            { threshold: 0.22, rootMargin: '0px 0px -10% 0px' }
+          );
+
+          cards.forEach(function (card) {
+            obs.observe(card);
+          });
+        }
+
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', init);
         } else {
