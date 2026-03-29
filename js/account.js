@@ -57,31 +57,39 @@ function findField(field) {
 const BOT_CATALOG = [
   {
     id: 'bot_scalper',
-    name: 'Scalper Bot',
-    price: 99,
-    style: 'High frequency entries',
-    risk: 'Medium'
+    name: 'Basic Bot',
+    price: 500,
+    roiPctPerCycle: 5,
+    cycleHours: 2,
+    style: 'Steady compounding strategy',
+    risk: 'Lower'
   },
   {
     id: 'bot_swing',
-    name: 'Swing Bot',
-    price: 249,
-    style: 'Multi-day trend following',
-    risk: 'Low'
+    name: 'Intermediate Bot',
+    price: 1000,
+    roiPctPerCycle: 10,
+    cycleHours: 2,
+    style: 'Faster compounding strategy',
+    risk: 'Moderate'
   },
   {
     id: 'bot_ai_pro',
-    name: 'AI Pro Bot',
-    price: 499,
-    style: 'Adaptive signals + risk guard',
-    risk: 'Medium'
+    name: 'Advanced Bot',
+    price: 1500,
+    roiPctPerCycle: 15,
+    cycleHours: 2,
+    style: 'Aggressive compounding strategy',
+    risk: 'High'
   },
   {
     id: 'bot_quant_elite',
-    name: 'Quant Elite Bot',
-    price: 999,
-    style: 'Multi-asset portfolio logic',
-    risk: 'High'
+    name: 'Premium Bot',
+    price: 2000,
+    roiPctPerCycle: 20,
+    cycleHours: 2,
+    style: 'Maximum growth potential strategy',
+    risk: 'Very High'
   }
 ];
 
@@ -90,37 +98,36 @@ const PROP_PLANS = [
     planId: 'prop_10k',
     firmName: 'TitanTrades Prop',
     accountSize: 10000,
-    dailyDrawdownPct: 0.05,
-    maxDrawdownPct: 0.1,
-    profitTargetPct: 0.1,
+    feeUsd: 155,
     label: '$10,000 Evaluation'
   },
   {
     planId: 'prop_25k',
     firmName: 'TitanTrades Prop',
     accountSize: 25000,
-    dailyDrawdownPct: 0.05,
-    maxDrawdownPct: 0.1,
-    profitTargetPct: 0.1,
+    feeUsd: 250,
     label: '$25,000 Evaluation'
   },
   {
     planId: 'prop_50k',
     firmName: 'TitanTrades Prop',
     accountSize: 50000,
-    dailyDrawdownPct: 0.05,
-    maxDrawdownPct: 0.1,
-    profitTargetPct: 0.1,
+    feeUsd: 345,
     label: '$50,000 Evaluation'
   },
   {
     planId: 'prop_100k',
     firmName: 'TitanTrades Prop',
     accountSize: 100000,
-    dailyDrawdownPct: 0.05,
-    maxDrawdownPct: 0.1,
-    profitTargetPct: 0.1,
+    feeUsd: 540,
     label: '$100,000 Evaluation'
+  },
+  {
+    planId: 'prop_200k',
+    firmName: 'TitanTrades Prop',
+    accountSize: 200000,
+    feeUsd: 1080,
+    label: '$200,000 Evaluation'
   }
 ];
 
@@ -247,6 +254,7 @@ function renderMarketplace(botsOwnedMap, balance) {
             <div>
               <div class="fw-semibold">${bot.name}</div>
               <div class="small text-secondary">${bot.style}</div>
+              ${bot.roiPctPerCycle ? `<div class="small text-secondary">ROI: ${bot.roiPctPerCycle}% every ${bot.cycleHours || 2} hours</div>` : ''}
               <div class="small text-secondary">Risk: ${bot.risk}</div>
             </div>
             <div class="text-end">
@@ -304,15 +312,34 @@ function renderPropCurrent(propAccount) {
   }
 
   const status = propAccount.status || 'evaluation';
-  const dailyLimit = Number(propAccount.accountSize || 0) * Number(propAccount.dailyDrawdownPct || 0);
-  const maxLimit = Number(propAccount.accountSize || 0) * Number(propAccount.maxDrawdownPct || 0);
+  const phase = Number(propAccount.phase || 1);
+  const stageLabel =
+    status === 'breached'
+      ? 'Breached'
+      : status === 'funded' || phase === 3
+        ? 'FTMO Account (Funded stage)'
+        : phase === 2
+          ? 'Verification (Phase 2)'
+          : 'Challenge (Phase 1)';
+
+  const accountSize = Number(propAccount.accountSize || 0);
+  const dailyLimit = accountSize * Number(propAccount.dailyDrawdownPct || 0);
+  const maxLimit = accountSize * Number(propAccount.maxDrawdownPct || 0);
+  const profitTargetPct = Number(propAccount.profitTargetPct || 0);
+  const profitTargetUsd = profitTargetPct > 0 ? accountSize * profitTargetPct : 0;
+  const minTradingDays = Number(propAccount.minTradingDays || 0);
+  const timeLimitDays = Number(propAccount.timeLimitDays || 0);
+  const phaseStartedAt = Number(propAccount.phaseStartedAt || propAccount.createdAt || 0);
+  const elapsedDays = phaseStartedAt ? Math.floor((Date.now() - phaseStartedAt) / 86400000) : 0;
+  const daysRemaining = timeLimitDays > 0 ? Math.max(0, timeLimitDays - elapsedDays) : 0;
+  const tradingDaysCount = Array.isArray(propAccount.tradingDays) ? propAccount.tradingDays.length : Number(propAccount.tradingDaysCount || 0);
 
   container.innerHTML = `
     <div class="border rounded p-3" style="border-color:#e2e8f0!important; background:#ffffff;">
       <div class="d-flex justify-content-between align-items-start">
         <div>
           <div class="fw-semibold">${propAccount.firmName || 'Prop Account'} • ${formatCurrency(propAccount.accountSize)}</div>
-          <div class="small text-secondary">Status: ${status}</div>
+          <div class="small text-secondary">Stage: ${stageLabel}</div>
         </div>
         <div class="text-end">
           <div class="small text-secondary">Equity</div>
@@ -330,7 +357,19 @@ function renderPropCurrent(propAccount) {
         </div>
         <div class="col-md-4">
           <div class="small text-secondary">Profit Target</div>
-          <div class="fw-semibold">${formatCurrency(Number(propAccount.accountSize || 0) * Number(propAccount.profitTargetPct || 0))}</div>
+          <div class="fw-semibold">${profitTargetUsd ? formatCurrency(profitTargetUsd) : '—'}</div>
+        </div>
+        <div class="col-md-4">
+          <div class="small text-secondary">Trading Days</div>
+          <div class="fw-semibold">${tradingDaysCount || 0} / ${minTradingDays || '—'}</div>
+        </div>
+        <div class="col-md-4">
+          <div class="small text-secondary">Time Limit</div>
+          <div class="fw-semibold">${timeLimitDays ? `${daysRemaining} days left` : '—'}</div>
+        </div>
+        <div class="col-md-4">
+          <div class="small text-secondary">Fee (Refundable)</div>
+          <div class="fw-semibold">${propAccount.feeUsd ? formatCurrency(propAccount.feeUsd) : '—'}</div>
         </div>
       </div>
     </div>
@@ -347,9 +386,10 @@ function renderPropOptions(propAccount) {
       <div class="col-md-6">
         <div class="border rounded p-3 h-100" style="border-color:#e2e8f0!important; background:#ffffff;">
           <div class="fw-semibold">${plan.label}</div>
-          <div class="small text-secondary">Daily Drawdown: ${(plan.dailyDrawdownPct * 100).toFixed(0)}%</div>
-          <div class="small text-secondary">Max Drawdown: ${(plan.maxDrawdownPct * 100).toFixed(0)}%</div>
-          <div class="small text-secondary">Profit Target: ${(plan.profitTargetPct * 100).toFixed(0)}%</div>
+          <div class="small text-secondary">Fee (Refundable): ${formatCurrency(plan.feeUsd)}</div>
+          <div class="small text-secondary">Phase 1 target: 10% • Phase 2 target: 5%</div>
+          <div class="small text-secondary">Daily drawdown: 5% • Max drawdown: 10%</div>
+          <div class="small text-secondary">Minimum trading days: 4</div>
           <div class="mt-3 d-grid">
             <button class="btn btn-${isCurrent ? 'secondary' : 'primary'}" data-action="select-prop" data-plan-id="${plan.planId}">
               ${isCurrent ? 'Selected' : 'Select'}

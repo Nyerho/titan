@@ -146,6 +146,63 @@
                 </div>
 
                 <div class="row g-3" id="plansGrid"></div>
+
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5 class="mb-2">Program Stages</h5>
+                        <div class="text-secondary small mb-3">You must pass each stage without breaking any rules.</div>
+                        <div class="row g-3">
+                            <div class="col-12 col-lg-4">
+                                <div class="p-3 rounded border" style="border-color: rgba(148,163,184,0.35) !important; background: rgba(15,23,42,0.35);">
+                                    <div class="fw-semibold">Phase 1 — TitanTrades Challenge</div>
+                                    <div class="small text-secondary mt-1">Profit target: 10% • Daily drawdown: 5% • Max drawdown: 10%</div>
+                                    <div class="small text-secondary mt-1">Minimum trading days: 4 • Time limit: 30 days</div>
+                                    <div class="small text-secondary mt-1">Pricing is refundable after your first payout.</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <div class="p-3 rounded border" style="border-color: rgba(148,163,184,0.35) !important; background: rgba(15,23,42,0.35);">
+                                    <div class="fw-semibold">Phase 2 — Verification</div>
+                                    <div class="small text-secondary mt-1">Profit target: 5% • Daily drawdown: 5% • Max drawdown: 10%</div>
+                                    <div class="small text-secondary mt-1">Minimum trading days: 4 • Time limit: 60 days</div>
+                                    <div class="small text-secondary mt-1">Focus: consistency and controlled risk.</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <div class="p-3 rounded border" style="border-color: rgba(148,163,184,0.35) !important; background: rgba(15,23,42,0.35);">
+                                    <div class="fw-semibold">Phase 3 — FTMO Account (Funded stage)</div>
+                                    <div class="small text-secondary mt-1">Profit split starts at 80% (up to 90%).</div>
+                                    <div class="small text-secondary mt-1">First payout: after ~14 days • Then: bi-weekly or monthly.</div>
+                                    <div class="small text-secondary mt-1">Scaling: +25% every 4 months (profit ≥10%, no violations).</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="mb-2 mt-4">Core Rule Details</h5>
+                        <div class="row g-3">
+                            <div class="col-12 col-lg-6">
+                                <div class="p-3 rounded border" style="border-color: rgba(148,163,184,0.35) !important; background: rgba(15,23,42,0.35);">
+                                    <div class="fw-semibold">Equity-Based Rules</div>
+                                    <div class="small text-secondary mt-1">Limits use equity (balance + floating P/L). Open losses count immediately.</div>
+                                    <div class="fw-semibold mt-3">Daily Loss Reset</div>
+                                    <div class="small text-secondary mt-1">Resets at midnight CE(S)T (not your local time).</div>
+                                    <div class="fw-semibold mt-3">Max Loss Is Static</div>
+                                    <div class="small text-secondary mt-1">Based on the initial balance and does not increase if you profit.</div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6">
+                                <div class="p-3 rounded border" style="border-color: rgba(148,163,184,0.35) !important; background: rgba(15,23,42,0.35);">
+                                    <div class="fw-semibold">Allowed Trading</div>
+                                    <div class="small text-secondary mt-1">Forex • Indices • Commodities • Crypto</div>
+                                    <div class="fw-semibold mt-3">Restrictions</div>
+                                    <div class="small text-secondary mt-1">No account sharing • No copy trading between accounts • No exploiting system errors</div>
+                                    <div class="fw-semibold mt-3">News & Weekend Holding</div>
+                                    <div class="small text-secondary mt-1">News trading allowed (higher risk). Weekend holding allowed on swing accounts and restricted on normal accounts.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -158,28 +215,37 @@
 
         const PLANS = [
             {
-                planId: 'ftmo-10k',
-                firmName: 'Titan Prop',
+                planId: 'prop_10k',
+                aliases: ['ftmo-10k'],
+                firmName: 'TitanTrades Prop',
                 accountSize: 10000,
-                dailyDrawdownPct: 0.05,
-                maxDrawdownPct: 0.1,
-                profitTargetPct: 0.1
+                feeUsd: 155
             },
             {
-                planId: 'ftmo-50k',
-                firmName: 'Titan Prop',
+                planId: 'prop_25k',
+                firmName: 'TitanTrades Prop',
+                accountSize: 25000,
+                feeUsd: 250
+            },
+            {
+                planId: 'prop_50k',
+                aliases: ['ftmo-50k'],
+                firmName: 'TitanTrades Prop',
                 accountSize: 50000,
-                dailyDrawdownPct: 0.05,
-                maxDrawdownPct: 0.1,
-                profitTargetPct: 0.1
+                feeUsd: 345
             },
             {
-                planId: 'ftmo-100k',
-                firmName: 'Titan Prop',
+                planId: 'prop_100k',
+                aliases: ['ftmo-100k'],
+                firmName: 'TitanTrades Prop',
                 accountSize: 100000,
-                dailyDrawdownPct: 0.05,
-                maxDrawdownPct: 0.1,
-                profitTargetPct: 0.1
+                feeUsd: 540
+            },
+            {
+                planId: 'prop_200k',
+                firmName: 'TitanTrades Prop',
+                accountSize: 200000,
+                feeUsd: 1080
             }
         ];
 
@@ -203,8 +269,9 @@
         function statusLabel(propAccount) {
             if (!propAccount) return 'No plan selected';
             if (propAccount.status === 'breached') return 'Breached';
-            if (propAccount.status === 'funded') return 'Funded';
-            return 'Evaluation';
+            if (propAccount.status === 'funded' || Number(propAccount.phase) === 3) return 'FTMO Account (Funded stage)';
+            if (Number(propAccount.phase) === 2) return 'Verification (Phase 2)';
+            return 'Challenge (Phase 1)';
         }
 
         function renderCurrent(propAccount) {
@@ -222,15 +289,44 @@
             }
 
             els.badge.textContent = `${formatUsd(propAccount.accountSize)} ${propAccount.firmName}`;
-            els.subtitle.textContent = 'Rules are applied to evaluation trades on your prop account.';
+            els.subtitle.textContent = 'You must pass each stage without breaking any rules.';
+
+            const accountSize = Number(propAccount.accountSize || 0);
+            const profitTargetPct = Number(propAccount.profitTargetPct || 0);
+            const minTradingDays = Number(propAccount.minTradingDays || 0);
+            const timeLimitDays = Number(propAccount.timeLimitDays || 0);
+            const tradingDaysCount = Array.isArray(propAccount.tradingDays) ? propAccount.tradingDays.length : Number(propAccount.tradingDaysCount || 0);
+            const phaseStartedAt = Number(propAccount.phaseStartedAt || propAccount.createdAt || 0);
+            const elapsedDays = phaseStartedAt ? Math.floor((Date.now() - phaseStartedAt) / 86400000) : 0;
+            const daysRemaining = timeLimitDays > 0 ? Math.max(0, timeLimitDays - elapsedDays) : 0;
+            const profitTargetUsd = profitTargetPct > 0 ? accountSize * profitTargetPct : 0;
+            const feeUsd = Number(propAccount.feeUsd || 0);
+            const profitSplitPct = Number(propAccount.profitSplitPct || 0);
+            const profitSplitMaxPct = Number(propAccount.profitSplitMaxPct || 0);
+            const firstPayoutAfterDays = Number(propAccount.firstPayoutAfterDays || 0);
+            const scalingIncreasePct = Number(propAccount.scalingIncreasePct || 0);
+            const scalingEveryMonths = Number(propAccount.scalingEveryMonths || 0);
+            const scalingRequiresProfitPct = Number(propAccount.scalingRequiresProfitPct || 0);
 
             const items = [
+                { label: 'Stage', value: statusLabel(propAccount) },
                 { label: 'Account Size', value: formatUsd(propAccount.accountSize) },
+                { label: 'Fee (Refundable)', value: feeUsd ? formatUsd(feeUsd) : '—' },
                 { label: 'Daily Drawdown', value: formatPct(propAccount.dailyDrawdownPct) },
                 { label: 'Max Drawdown', value: formatPct(propAccount.maxDrawdownPct) },
-                { label: 'Profit Target', value: formatPct(propAccount.profitTargetPct) },
+                { label: 'Profit Target', value: profitTargetPct ? `${formatPct(profitTargetPct)} (${formatUsd(profitTargetUsd)})` : '—' },
+                { label: 'Minimum Trading Days', value: minTradingDays ? `${minTradingDays} days` : '—' },
+                { label: 'Time Limit', value: timeLimitDays ? `${timeLimitDays} days (${daysRemaining} left)` : '—' },
+                { label: 'Trading Days (So Far)', value: tradingDaysCount ? `${tradingDaysCount} days` : '0 days' },
                 { label: 'Current Equity', value: formatUsd(propAccount.currentEquity) },
-                { label: 'Today PnL', value: formatUsd(propAccount.todayPnl) }
+                { label: 'Today PnL', value: formatUsd(propAccount.todayPnl) },
+                ...(propAccount.status === 'funded' || Number(propAccount.phase) === 3
+                    ? [
+                        { label: 'Profit Split', value: profitSplitPct ? `${Math.round(profitSplitPct * 100)}% (up to ${Math.round((profitSplitMaxPct || profitSplitPct) * 100)}%)` : '—' },
+                        { label: 'First Payout', value: firstPayoutAfterDays ? `After ~${firstPayoutAfterDays} days` : '—' },
+                        { label: 'Scaling Plan', value: scalingIncreasePct && scalingEveryMonths ? `+${Math.round(scalingIncreasePct * 100)}% every ${scalingEveryMonths} months (profit ≥${Math.round(scalingRequiresProfitPct * 100)}%)` : '—' }
+                    ]
+                    : [])
             ];
 
             els.details.innerHTML = items.map((i) => `
@@ -247,7 +343,8 @@
             els.plansGrid.innerHTML = '';
 
             for (const plan of PLANS) {
-                const selected = propAccount?.planId === plan.planId;
+                const currentPlanId = propAccount?.planId || '';
+                const selected = currentPlanId === plan.planId || (Array.isArray(plan.aliases) && plan.aliases.includes(currentPlanId));
                 const card = document.createElement('div');
                 card.className = 'col-12 col-md-6 col-xl-4';
                 card.innerHTML = `
@@ -260,19 +357,31 @@
                                 </div>
                                 ${selected ? '<span class="badge badge-soft">Selected</span>' : ''}
                             </div>
-                            <div class="text-secondary small mb-3">Evaluation rules</div>
+                            <div class="text-secondary small mb-3">3-stage evaluation (refundable pricing)</div>
                             <div class="d-flex flex-column gap-2 mb-3">
                                 <div class="d-flex justify-content-between">
+                                    <span class="text-secondary">Fee</span>
+                                    <span>${formatUsd(plan.feeUsd)}</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-secondary">Phase 1 target</span>
+                                    <span>10%</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-secondary">Phase 2 target</span>
+                                    <span>5%</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
                                     <span class="text-secondary">Daily drawdown</span>
-                                    <span>${formatPct(plan.dailyDrawdownPct)}</span>
+                                    <span>5%</span>
                                 </div>
                                 <div class="d-flex justify-content-between">
                                     <span class="text-secondary">Max drawdown</span>
-                                    <span>${formatPct(plan.maxDrawdownPct)}</span>
+                                    <span>10%</span>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <span class="text-secondary">Profit target</span>
-                                    <span>${formatPct(plan.profitTargetPct)}</span>
+                                    <span class="text-secondary">Minimum days</span>
+                                    <span>4</span>
                                 </div>
                             </div>
                             <div class="mt-auto d-grid">

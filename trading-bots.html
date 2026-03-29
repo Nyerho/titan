@@ -168,31 +168,39 @@
         const AVAILABLE_BOTS = [
             {
                 id: 'bot_scalper',
-                name: 'Scalper Bot',
-                price: 99,
-                tags: ['Fast Entries', 'Medium Risk'],
-                description: 'High-frequency entries with tight risk control and quick exits.'
+                name: 'Basic Bot',
+                price: 500,
+                roiPctPerCycle: 5,
+                cycleHours: 2,
+                tags: ['5% ROI / 2h', 'Lower Risk', 'Basic Level'],
+                description: 'Steady compounding strategy designed for lower risk and consistent gains.'
             },
             {
                 id: 'bot_swing',
-                name: 'Swing Bot',
-                price: 249,
-                tags: ['Trend Following', 'Low Risk'],
-                description: 'Multi-day trend approach designed to avoid overtrading.'
+                name: 'Intermediate Bot',
+                price: 1000,
+                roiPctPerCycle: 10,
+                cycleHours: 2,
+                tags: ['10% ROI / 2h', 'Moderate Risk', 'Intermediate Level'],
+                description: 'Faster compounding strategy with moderate risk and higher return potential.'
             },
             {
                 id: 'bot_ai_pro',
-                name: 'AI Pro Bot',
-                price: 499,
-                tags: ['Adaptive Signals', 'Risk Guard'],
-                description: 'Adaptive signals with dynamic position sizing and loss limits.'
+                name: 'Advanced Bot',
+                price: 1500,
+                roiPctPerCycle: 15,
+                cycleHours: 2,
+                tags: ['15% ROI / 2h', 'High Risk', 'Advanced Level'],
+                description: 'Aggressive compounding strategy for higher returns with increased risk.'
             },
             {
                 id: 'bot_quant_elite',
-                name: 'Quant Elite Bot',
-                price: 999,
-                tags: ['Multi-Asset', 'High Performance'],
-                description: 'Multi-asset engine with higher frequency execution for advanced users.'
+                name: 'Premium Bot',
+                price: 2000,
+                roiPctPerCycle: 20,
+                cycleHours: 2,
+                tags: ['20% ROI / 2h', 'Very High Risk', 'Premium Level'],
+                description: 'Maximum growth potential strategy with very high risk. Use carefully.'
             }
         ];
 
@@ -217,6 +225,26 @@
             }
         }
 
+        function compoundAmount(start, roiPct, cycles) {
+            const principal = Number(start || 0);
+            const rate = Number(roiPct || 0) / 100;
+            const n = Number(cycles || 0);
+            if (!Number.isFinite(principal) || principal <= 0) return 0;
+            if (!Number.isFinite(rate) || rate < 0) return 0;
+            if (!Number.isFinite(n) || n < 0) return 0;
+            return principal * Math.pow(1 + rate, n);
+        }
+
+        function formatApproxUsd(value) {
+            const num = Number(value || 0);
+            if (!Number.isFinite(num)) return '—';
+            return `≈ ${formatUsd(Math.round(num))}`;
+        }
+
+        function getBotMeta(botId) {
+            return AVAILABLE_BOTS.find((b) => b.id === botId) || null;
+        }
+
         function renderMarketplace(userData) {
             const botsOwned = userData?.botsOwned || {};
             const balance = Number(userData?.accountBalance || 0);
@@ -225,6 +253,11 @@
             els.grid.innerHTML = '';
             for (const bot of AVAILABLE_BOTS) {
                 const owned = !!botsOwned[bot.id];
+                const exampleStart = 500;
+                const cycles24 = 12;
+                const cycles48 = 24;
+                const projected24 = formatApproxUsd(compoundAmount(exampleStart, bot.roiPctPerCycle, cycles24));
+                const projected48 = formatApproxUsd(compoundAmount(exampleStart, bot.roiPctPerCycle, cycles48));
                 const card = document.createElement('div');
                 card.className = 'col-12 col-md-6 col-xl-4';
                 card.innerHTML = `
@@ -245,6 +278,18 @@
                             </div>
                             <div class="d-flex flex-wrap gap-2 mb-3">
                                 ${bot.tags.map(t => `<span class="badge badge-soft">${t}</span>`).join('')}
+                            </div>
+                            <div class="border rounded p-2 mb-3" style="border-color:#e2e8f0!important;background:#ffffff;">
+                                <div class="small text-secondary">From ${formatUsd(500)} with compounding</div>
+                                <div class="d-flex justify-content-between small mt-1">
+                                    <span class="text-secondary">After 24 hours (12 cycles)</span>
+                                    <span class="fw-semibold">${projected24}</span>
+                                </div>
+                                <div class="d-flex justify-content-between small mt-1">
+                                    <span class="text-secondary">After 48 hours (24 cycles)</span>
+                                    <span class="fw-semibold">${projected48}</span>
+                                </div>
+                                <div class="small text-secondary mt-2">Higher ROI grows faster but increases risk.</div>
                             </div>
                             <div class="mt-auto d-grid">
                                 <button class="btn ${owned ? 'btn-outline-secondary' : 'btn-primary'}" data-action="buy" data-bot-id="${bot.id}" ${owned ? 'disabled' : ''}>
@@ -273,11 +318,19 @@
                 .sort((a, b) => Number(b.purchasedAt || 0) - Number(a.purchasedAt || 0))
                 .map((bot) => {
                     const active = !!bot.active;
+                    const meta = getBotMeta(bot.id);
+                    const displayName = meta?.name || bot.name || bot.id;
+                    const roi = Number(meta?.roiPctPerCycle ?? bot.roiPctPerCycle);
+                    const cycleHours = Number(meta?.cycleHours ?? bot.cycleHours);
+                    const roiLabel = Number.isFinite(roi) && roi > 0 && Number.isFinite(cycleHours) && cycleHours > 0
+                        ? `${roi}% ROI / ${cycleHours}h`
+                        : '';
                     return `
                         <tr>
                             <td>
-                                <div class="fw-semibold">${bot.name || bot.id}</div>
+                                <div class="fw-semibold">${displayName}</div>
                                 <div class="text-secondary small">${bot.id}</div>
+                                ${roiLabel ? `<div class="text-secondary small">${roiLabel}</div>` : ''}
                             </td>
                             <td class="text-secondary">${formatDateMs(bot.purchasedAt)}</td>
                             <td>
@@ -350,6 +403,8 @@
                             id: bot.id,
                             name: bot.name,
                             price: bot.price,
+                            roiPctPerCycle: bot.roiPctPerCycle,
+                            cycleHours: bot.cycleHours,
                             purchasedAt: Date.now(),
                             active: false
                         }

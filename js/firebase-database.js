@@ -19,6 +19,50 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { db } from './firebase-config.js';
 
+const PROP_PHASE_DEFS = {
+  1: {
+    phase: 1,
+    label: 'Challenge (Phase 1)',
+    profitTargetPct: 0.1,
+    dailyDrawdownPct: 0.05,
+    maxDrawdownPct: 0.1,
+    minTradingDays: 4,
+    timeLimitDays: 30
+  },
+  2: {
+    phase: 2,
+    label: 'Verification (Phase 2)',
+    profitTargetPct: 0.05,
+    dailyDrawdownPct: 0.05,
+    maxDrawdownPct: 0.1,
+    minTradingDays: 4,
+    timeLimitDays: 60
+  },
+  3: {
+    phase: 3,
+    label: 'FTMO Account (Funded stage)',
+    profitTargetPct: 0,
+    dailyDrawdownPct: 0.05,
+    maxDrawdownPct: 0.1,
+    minTradingDays: 0,
+    timeLimitDays: 0,
+    profitSplitStartPct: 0.8,
+    profitSplitMaxPct: 0.9,
+    firstPayoutAfterDays: 14,
+    scalingIncreasePct: 0.25,
+    scalingEveryMonths: 4,
+    scalingRequiresProfitPct: 0.1
+  }
+};
+
+function getPropPhaseDef(phase) {
+  return PROP_PHASE_DEFS[Number(phase) || 1] || PROP_PHASE_DEFS[1];
+}
+
+function dateKeyIsoUtc() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 class FirebaseDatabaseService {
   constructor() {
     this.listeners = new Map();
@@ -116,24 +160,43 @@ class FirebaseDatabaseService {
       const userRef = doc(db, 'users', uid);
       const result = await runTransaction(db, async (tx) => {
         const snap = await tx.get(userRef);
-        const data = snap.exists() ? snap.data() : {};
+        const phaseDef = getPropPhaseDef(1);
+        const planId = plan.planId;
+        const firmName = plan.firmName || 'TitanTrades Prop';
+        const accountSize = Number(plan.accountSize || 0);
+        const feeUsd = Number(plan.feeUsd || 0);
+        const now = Date.now();
+        const today = dateKeyIsoUtc();
 
         const propAccount = {
-          planId: plan.planId,
-          firmName: plan.firmName,
-          accountSize: plan.accountSize,
-          dailyDrawdownPct: plan.dailyDrawdownPct,
-          maxDrawdownPct: plan.maxDrawdownPct,
-          profitTargetPct: plan.profitTargetPct,
+          planId,
+          firmName,
+          accountSize,
+          feeUsd,
+          feeRefundable: true,
+          phase: 1,
+          phaseLabel: phaseDef.label,
+          phaseStartedAt: now,
+          minTradingDays: phaseDef.minTradingDays,
+          timeLimitDays: phaseDef.timeLimitDays,
+          dailyDrawdownPct: phaseDef.dailyDrawdownPct,
+          maxDrawdownPct: phaseDef.maxDrawdownPct,
+          profitTargetPct: phaseDef.profitTargetPct,
           status: 'evaluation',
-          startingEquity: plan.accountSize,
-          currentEquity: data.propAccount?.currentEquity && data.propAccount?.planId === plan.planId
-            ? data.propAccount.currentEquity
-            : plan.accountSize,
-          todayDate: new Date().toISOString().slice(0, 10),
+          startingEquity: accountSize,
+          currentEquity: accountSize,
+          todayDate: today,
           todayPnl: 0,
-          createdAt: data.propAccount?.createdAt || Date.now(),
-          updatedAt: Date.now()
+          tradingDays: [],
+          profitSplitPct: phaseDef.profitSplitStartPct ?? 0,
+          profitSplitMaxPct: phaseDef.profitSplitMaxPct ?? 0,
+          firstPayoutAfterDays: phaseDef.firstPayoutAfterDays ?? 0,
+          scalingIncreasePct: phaseDef.scalingIncreasePct ?? 0,
+          scalingEveryMonths: phaseDef.scalingEveryMonths ?? 0,
+          scalingRequiresProfitPct: phaseDef.scalingRequiresProfitPct ?? 0,
+          phaseDefs: PROP_PHASE_DEFS,
+          createdAt: now,
+          updatedAt: now
         };
 
         tx.set(
@@ -186,7 +249,7 @@ class FirebaseDatabaseService {
   async applyPropTradeResult(uid, profit) {
     try {
       const userRef = doc(db, 'users', uid);
-      const today = new Date().toISOString().slice(0, 10);
+      const today = dateKeyIsoUtc();
 
       const result = await runTransaction(db, async (tx) => {
         const snap = await tx.get(userRef);
@@ -197,10 +260,18 @@ class FirebaseDatabaseService {
           return { success: false, error: 'no_prop_account' };
         }
 
-        const startingEquity = Number(propAccount.startingEquity || propAccount.accountSize || 0);
+        const phase = Number(propAccount.phase || 1);
+        const phaseDef = getPropPhaseDef(phase);
+
+        const accountSize = Number(propAccount.accountSize || 0);
+        const startingEquity = Number(propAccount.startingEquity || accountSize || 0);
         const currentEquity = Number(propAccount.currentEquity || startingEquity);
-        const dailyDrawdownPct = Number(propAccount.dailyDrawdownPct || 0);
-        const maxDrawdownPct = Number(propAccount.maxDrawdownPct || 0);
+        const dailyDrawdownPct = Number(propAccount.dailyDrawdownPct ?? phaseDef.dailyDrawdownPct ?? 0);
+        const maxDrawdownPct = Number(propAccount.maxDrawdownPct ?? phaseDef.maxDrawdownPct ?? 0);
+        const minTradingDays = Number(propAccount.minTradingDays ?? phaseDef.minTradingDays ?? 0);
+        const timeLimitDays = Number(propAccount.timeLimitDays ?? phaseDef.timeLimitDays ?? 0);
+        const phaseStartedAt = Number(propAccount.phaseStartedAt || propAccount.createdAt || Date.now());
+        const profitTargetPct = Number(propAccount.profitTargetPct ?? phaseDef.profitTargetPct ?? 0);
 
         const dailyLimit = startingEquity * dailyDrawdownPct;
         const maxLimit = startingEquity * maxDrawdownPct;
@@ -210,18 +281,94 @@ class FirebaseDatabaseService {
         const nextEquity = currentEquity + Number(profit || 0);
 
         let nextStatus = propAccount.status || 'evaluation';
-        if (nextTodayPnl <= -dailyLimit || nextEquity <= startingEquity - maxLimit) {
+        let breachReason = propAccount.breachReason || '';
+        if (nextTodayPnl <= -dailyLimit) {
           nextStatus = 'breached';
+          breachReason = 'daily_drawdown';
+        }
+        if (nextEquity <= startingEquity - maxLimit) {
+          nextStatus = 'breached';
+          breachReason = 'max_drawdown';
         }
 
-        const updatedPropAccount = {
+        const tradingDays = Array.isArray(propAccount.tradingDays) ? propAccount.tradingDays.slice() : [];
+        if (!tradingDays.includes(today)) tradingDays.push(today);
+
+        const elapsedDays = Math.floor((Date.now() - phaseStartedAt) / 86400000);
+        if (timeLimitDays > 0 && elapsedDays > timeLimitDays) {
+          nextStatus = 'breached';
+          breachReason = 'time_limit';
+        }
+
+        let updatedPropAccount = {
           ...propAccount,
           todayDate: today,
           todayPnl: nextTodayPnl,
           currentEquity: nextEquity,
           status: nextStatus,
+          breachReason,
+          tradingDays,
           updatedAt: Date.now()
         };
+
+        const isEvaluation = updatedPropAccount.status !== 'breached' && updatedPropAccount.status !== 'funded';
+        const targetEquity = startingEquity * (1 + profitTargetPct);
+        const meetsProfitTarget = profitTargetPct > 0 && updatedPropAccount.currentEquity >= targetEquity;
+        const meetsTradingDays = minTradingDays <= 0 || tradingDays.length >= minTradingDays;
+
+        if (isEvaluation && meetsProfitTarget && meetsTradingDays) {
+          if (phase === 1) {
+            const nextPhaseDef = getPropPhaseDef(2);
+            updatedPropAccount = {
+              ...updatedPropAccount,
+              phase: 2,
+              phaseLabel: nextPhaseDef.label,
+              phaseStartedAt: Date.now(),
+              minTradingDays: nextPhaseDef.minTradingDays,
+              timeLimitDays: nextPhaseDef.timeLimitDays,
+              dailyDrawdownPct: nextPhaseDef.dailyDrawdownPct,
+              maxDrawdownPct: nextPhaseDef.maxDrawdownPct,
+              profitTargetPct: nextPhaseDef.profitTargetPct,
+              startingEquity: accountSize,
+              currentEquity: accountSize,
+              todayDate: today,
+              todayPnl: 0,
+              tradingDays: [],
+              phase1PassedAt: Date.now(),
+              phase1ResultEquity: updatedPropAccount.currentEquity
+            };
+          }
+
+          if (phase === 2) {
+            const nextPhaseDef = getPropPhaseDef(3);
+            updatedPropAccount = {
+              ...updatedPropAccount,
+              phase: 3,
+              phaseLabel: nextPhaseDef.label,
+              phaseStartedAt: Date.now(),
+              minTradingDays: nextPhaseDef.minTradingDays,
+              timeLimitDays: nextPhaseDef.timeLimitDays,
+              dailyDrawdownPct: nextPhaseDef.dailyDrawdownPct,
+              maxDrawdownPct: nextPhaseDef.maxDrawdownPct,
+              profitTargetPct: nextPhaseDef.profitTargetPct,
+              status: 'funded',
+              startingEquity: accountSize,
+              currentEquity: accountSize,
+              todayDate: today,
+              todayPnl: 0,
+              tradingDays: [],
+              profitSplitPct: nextPhaseDef.profitSplitStartPct ?? updatedPropAccount.profitSplitPct ?? 0,
+              profitSplitMaxPct: nextPhaseDef.profitSplitMaxPct ?? updatedPropAccount.profitSplitMaxPct ?? 0,
+              firstPayoutAfterDays: nextPhaseDef.firstPayoutAfterDays ?? updatedPropAccount.firstPayoutAfterDays ?? 0,
+              scalingIncreasePct: nextPhaseDef.scalingIncreasePct ?? updatedPropAccount.scalingIncreasePct ?? 0,
+              scalingEveryMonths: nextPhaseDef.scalingEveryMonths ?? updatedPropAccount.scalingEveryMonths ?? 0,
+              scalingRequiresProfitPct: nextPhaseDef.scalingRequiresProfitPct ?? updatedPropAccount.scalingRequiresProfitPct ?? 0,
+              phase2PassedAt: Date.now(),
+              phase2ResultEquity: updatedPropAccount.currentEquity,
+              fundedAt: Date.now()
+            };
+          }
+        }
 
         const updatePayload = {
           propAccount: updatedPropAccount,

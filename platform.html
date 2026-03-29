@@ -495,12 +495,27 @@
             toggleBtn: document.getElementById('botEngineToggleBtn')
         };
 
+        const BOT_META = {
+            bot_scalper: { name: 'Basic Bot', roiPctPerCycle: 5, cycleHours: 2 },
+            bot_swing: { name: 'Intermediate Bot', roiPctPerCycle: 10, cycleHours: 2 },
+            bot_ai_pro: { name: 'Advanced Bot', roiPctPerCycle: 15, cycleHours: 2 },
+            bot_quant_elite: { name: 'Premium Bot', roiPctPerCycle: 20, cycleHours: 2 }
+        };
+
         const BOT_CONFIG = {
             bot_scalper: { volume: 0.02, riskFactor: 0.00035, tradesPerTick: 2, symbols: ['EUR/USD', 'GBP/USD', 'USD/JPY'] },
             bot_swing: { volume: 0.02, riskFactor: 0.00025, tradesPerTick: 1, symbols: ['EUR/USD', 'GBP/USD', 'USD/JPY'] },
             bot_ai_pro: { volume: 0.03, riskFactor: 0.0004, tradesPerTick: 1, symbols: ['EUR/USD', 'GBP/USD', 'USD/JPY', 'BTC/USD', 'ETH/USD'] },
             bot_quant_elite: { volume: 0.05, riskFactor: 0.00055, tradesPerTick: 2, symbols: ['EUR/USD', 'GBP/USD', 'USD/JPY', 'BTC/USD', 'ETH/USD'] }
         };
+
+        function getBotMeta(botId) {
+            return BOT_META[botId] || null;
+        }
+
+        function getBotDisplayName(botId, fallbackName) {
+            return getBotMeta(botId)?.name || fallbackName || botId;
+        }
 
         function stopBotEngine() {
             if (!botIntervalId) return;
@@ -526,13 +541,16 @@
             if (botUi.list) {
                 botUi.list.innerHTML = '';
                 if (owned.length) {
-                    for (const bot of owned.sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id))) {
+                    for (const bot of owned.sort((a, b) => getBotDisplayName(a.id, a.name).localeCompare(getBotDisplayName(b.id, b.name)))) {
+                        const meta = getBotMeta(bot.id);
+                        const roiLabel = meta ? `${meta.roiPctPerCycle}% ROI / ${meta.cycleHours}h` : '';
                         const row = document.createElement('div');
                         row.className = 'bot-item';
                         row.innerHTML = `
                             <div class="bot-meta">
-                                <div class="bot-name">${bot.name || bot.id}</div>
+                                <div class="bot-name">${getBotDisplayName(bot.id, bot.name)}</div>
                                 <div class="bot-id">${bot.id}</div>
+                                ${roiLabel ? `<div class="bot-id">${roiLabel}</div>` : ''}
                             </div>
                             <div class="bot-pill ${bot.active ? 'on' : 'off'}">${bot.active ? 'Active' : 'Inactive'}</div>
                         `;
@@ -591,7 +609,7 @@
                     await FirebaseDatabaseService.createTrade(user.uid, {
                         source: 'bot',
                         botId: bot.id,
-                        botName: bot.name || bot.id,
+                        botName: getBotDisplayName(bot.id, bot.name),
                         symbol,
                         side,
                         volume: cfg.volume,
