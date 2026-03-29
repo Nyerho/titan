@@ -1,6 +1,5 @@
 // Forgot Password Functionality
 import { auth } from './firebase-config.js';
-import { sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 class ForgotPasswordManager {
     constructor() {
@@ -46,9 +45,34 @@ class ForgotPasswordManager {
             window.location.port === '3000' ||
             window.location.protocol === 'file:' ||
             window.location.href.includes('localhost');
-        const storedBaseUrl = localStorage.getItem('admin_api_baseUrl');
+        const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
         if (storedBaseUrl) return storedBaseUrl;
         return isLocal ? 'http://localhost:3001' : window.location.origin;
+    }
+
+    async sendResetEmailViaBackend({ email, continueUrl }) {
+        const baseUrl = this.computeApiBaseUrl();
+        const response = await fetch(`${baseUrl}/api/auth/password-reset`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, continueUrl })
+        });
+
+        let payload = null;
+        try {
+            payload = await response.json();
+        } catch (e) {}
+
+        if (!response.ok) {
+            const msg = String(payload?.error || '').trim();
+            throw new Error(msg || 'Password reset service is not available. Please try again later.');
+        }
+
+        if (payload?.throttled) {
+            throw new Error('Please wait a moment and try again.');
+        }
+
+        return payload;
     }
 
     async handleForgotPassword(e) {
@@ -79,31 +103,7 @@ class ForgotPasswordManager {
         
         try {
             const continueUrl = this.computeResetUrl();
-            let sent = false;
-            try {
-                const baseUrl = this.computeApiBaseUrl();
-                const response = await fetch(`${baseUrl}/api/auth/password-reset`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, continueUrl })
-                });
-                if (response.ok) sent = true;
-            } catch (e) {}
-
-            if (!sent) {
-                try {
-                    await sendPasswordResetEmail(auth, email, {
-                        url: continueUrl,
-                        handleCodeInApp: false
-                    });
-                } catch (innerError) {
-                    if (innerError?.code === 'auth/unauthorized-continue-uri') {
-                        await sendPasswordResetEmail(auth, email);
-                    } else {
-                        throw innerError;
-                    }
-                }
-            }
+            await this.sendResetEmailViaBackend({ email, continueUrl });
             
             // Store email for resend functionality
             sessionStorage.setItem('resetEmail', email);
@@ -157,31 +157,7 @@ class ForgotPasswordManager {
         
         try {
             const continueUrl = this.computeResetUrl();
-            let sent = false;
-            try {
-                const baseUrl = this.computeApiBaseUrl();
-                const response = await fetch(`${baseUrl}/api/auth/password-reset`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, continueUrl })
-                });
-                if (response.ok) sent = true;
-            } catch (e) {}
-
-            if (!sent) {
-                try {
-                    await sendPasswordResetEmail(auth, email, {
-                        url: continueUrl,
-                        handleCodeInApp: false
-                    });
-                } catch (innerError) {
-                    if (innerError?.code === 'auth/unauthorized-continue-uri') {
-                        await sendPasswordResetEmail(auth, email);
-                    } else {
-                        throw innerError;
-                    }
-                }
-            }
+            await this.sendResetEmailViaBackend({ email, continueUrl });
             
             resendLink.textContent = 'Sent!';
             setTimeout(() => {
