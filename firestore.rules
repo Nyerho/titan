@@ -7,7 +7,7 @@ service cloud.firestore {
     }
 
     match /admin/crypto-addresses {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow write: if isAdmin();
     }
 

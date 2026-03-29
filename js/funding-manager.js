@@ -1,5 +1,5 @@
 import { doc, getDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { db } from './firebase-config.js';
+import { auth, db } from './firebase-config.js';
 
 class FundingManager {
     constructor() {
@@ -377,6 +377,12 @@ class FundingManager {
 
         try {
             const now = Date.now();
+
+            const user = window.authManager?.getCurrentUser?.() || auth?.currentUser;
+            if (!user) {
+                this.cryptoDepositAddressesLastError = { code: 'not-authenticated', message: 'User not authenticated' };
+                return '';
+            }
 
             if (!this.cryptoDepositAddressesCache && db) {
                 const snap = await getDoc(doc(db, 'admin', 'crypto-addresses'));
