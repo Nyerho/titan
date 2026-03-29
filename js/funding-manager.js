@@ -271,6 +271,9 @@ class FundingManager {
         const { amount, currency } = transaction;
         
         const walletAddress = await this.generateCryptoAddress(currency);
+        if (!walletAddress || !String(walletAddress).trim()) {
+            throw new Error(`Deposit address not configured for ${currency}`);
+        }
         
         // Use specific QR code images for each cryptocurrency
         const qrCodeImages = {
@@ -363,17 +366,6 @@ class FundingManager {
     }
 
     async generateCryptoAddress(currency) {
-        const fallbackAddresses = {
-            BTC: 'bc1qvke2527gzazwpgfaxu0lnq8c2mx98jfgwqdn8x',
-            ETH: '0x0248172c922BEdAb4EE8DD01523Ef072615b06De',
-            LTC: 'LgQsH8WPTRZCZNYi2nrFPafx8xDhYDoWhR',
-            XRP: 'rJs4fv6FDxukHYMWpnBFvNKsAtwGUaSiCo',
-            SOL: 'EU4Xrb7fLsqmxoWZhuXFLGMrq3Q1ivZcuJe8yoAivf17',
-            USDC: '0x0248172c922BEdAb4EE8DD01523Ef072615b06De',
-            'USDC-SOL': 'EU4Xrb7fLsqmxoWZhuXFLGMrq3Q1ivZcuJe8yoAivf17',
-            USDT: '0x0248172c922BEdAb4EE8DD01523Ef072615b06De'
-        };
-
         const requested = (currency || 'BTC').toString();
 
         try {
@@ -396,7 +388,7 @@ class FundingManager {
             if (configured) return configured;
         } catch (e) {}
 
-        return fallbackAddresses[requested] || fallbackAddresses.BTC;
+        return '';
     }
 
     startCryptoDepositAddressesListener() {

@@ -726,11 +726,11 @@
             }
             
             const currency = document.getElementById('crypto-currency').value;
+            const btn = document.getElementById('crypto-generate');
+            const originalText = btn ? btn.innerHTML : '';
             
             try {
                 // Show loading state
-                const btn = document.getElementById('crypto-generate');
-                const originalText = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
                 btn.disabled = true;
                 
@@ -754,12 +754,13 @@
                 
             } catch (error) {
                 console.error('Error generating crypto payment:', error);
-                showAlert('Error generating payment address. Please try again.', 'danger');
+                showAlert(error?.message || 'Error generating payment address. Please try again.', 'danger');
                 
                 // Reset button
-                const btn = document.getElementById('crypto-generate');
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
             }
         }
         
