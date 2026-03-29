@@ -1072,58 +1072,112 @@ class DashboardManager {
     }
 
     generateInitialTransactions() {
-        const usernames = [
-            'TradeMaster', 'CryptoKing', 'ForexPro', 'BullRunner', 'MarketWolf',
-            'TradingAce', 'PipHunter', 'ChartWiz', 'GoldTrader', 'SwingKing',
-            'DayTrader99', 'FXExpert', 'CoinFlip', 'TrendFollower', 'ScalpMaster',
-            'OptionsPro', 'FuturesKing', 'RiskTaker', 'ProfitSeeker', 'MarketMover'
-        ];
-
         const transactionTypes = ['deposit', 'withdrawal', 'swap'];
         this.leaderboardTransactions = [];
 
         for (let i = 0; i < 20; i++) {
-            this.leaderboardTransactions.push(this.generateRandomTransaction(usernames, transactionTypes));
+            this.leaderboardTransactions.push(this.generateRandomTransaction(transactionTypes));
         }
 
         this.updateLeaderboardDisplay();
     }
 
-    generateRandomTransaction(usernames, transactionTypes) {
-        const username = usernames[Math.floor(Math.random() * usernames.length)];
+    generateRandomTransaction(transactionTypes) {
+        const username = this.generateRealisticName();
+        const location = this.generateRandomLocation();
         const type = transactionTypes[Math.floor(Math.random() * transactionTypes.length)];
-        const amount = this.generateRandomAmount(type);
+        const asset = this.generateRandomAsset(type);
+        const amount = this.generateRandomAmount(type, asset);
 
         return {
             username,
             type,
             amount,
+            asset,
+            location,
             timestamp: Date.now()
         };
     }
 
-    generateRandomAmount(type) {
+    generateRandomAmount(type, asset) {
         let min, max;
 
         switch (type) {
             case 'deposit':
-                min = 100;
-                max = 10000;
+                min = 200;
+                max = 25000;
                 break;
             case 'withdrawal':
-                min = 50;
-                max = 5000;
+                min = 100;
+                max = 15000;
                 break;
             case 'swap':
-                min = 25;
-                max = 2500;
+                min = 50;
+                max = 7500;
                 break;
             default:
-                min = 10;
-                max = 1000;
+                min = 25;
+                max = 5000;
         }
 
-        return (Math.random() * (max - min) + min).toFixed(2);
+        if (asset === 'BTC' || asset === 'ETH') {
+            min = Math.max(min, 300);
+        }
+
+        return Math.round((Math.random() * (max - min) + min) * 100) / 100;
+    }
+
+    generateRandomAsset(type) {
+        const depositAssets = ['USD', 'USDT', 'BTC', 'ETH'];
+        const withdrawAssets = ['USD', 'USDT', 'BTC', 'ETH'];
+        const swapAssets = ['BTC', 'ETH', 'USDT', 'XAU', 'EUR'];
+
+        const pool = type === 'deposit' ? depositAssets : type === 'withdrawal' ? withdrawAssets : swapAssets;
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    generateRealisticName() {
+        const firstNames = [
+            'James', 'Olivia', 'Noah', 'Emma', 'Liam', 'Ava', 'Benjamin', 'Sophia', 'Lucas', 'Mia',
+            'Ethan', 'Isabella', 'Daniel', 'Charlotte', 'Henry', 'Amelia', 'Jackson', 'Harper', 'Logan', 'Evelyn',
+            'Mateo', 'Camila', 'Santiago', 'Valentina', 'Diego', 'Lucia', 'Rafael', 'Elena',
+            'Arjun', 'Aanya', 'Rohan', 'Priya', 'Karan', 'Anika', 'Aarav', 'Isha',
+            'Yusuf', 'Amina', 'Omar', 'Layla', 'Hassan', 'Nadia',
+            'Kenji', 'Aiko', 'Hiroshi', 'Yuna', 'Minjun', 'Soojin',
+            'Chukwu', 'Amara', 'Tunde', 'Zainab', 'Kofi', 'Adwoa'
+        ];
+
+        const lastNames = [
+            'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez',
+            'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee',
+            'Patel', 'Shah', 'Singh', 'Khan', 'Ali', 'Hassan', 'Ibrahim', 'Ahmed',
+            'Kim', 'Park', 'Choi', 'Tanaka', 'Sato', 'Suzuki', 'Nakamura',
+            'Okafor', 'Mensah', 'Diallo', 'Adeyemi', 'Ndlovu', 'Abebe',
+            'Novak', 'Kowalski', 'Nowak', 'Ionescu', 'Popescu', 'Horvat'
+        ];
+
+        const first = firstNames[Math.floor(Math.random() * firstNames.length)];
+        const last = lastNames[Math.floor(Math.random() * lastNames.length)];
+        return `${first} ${last}`;
+    }
+
+    generateRandomLocation() {
+        const locations = [
+            'London, GB', 'Manchester, GB', 'Dublin, IE',
+            'New York, US', 'Chicago, US', 'Austin, US', 'Miami, US',
+            'Toronto, CA', 'Vancouver, CA',
+            'Sydney, AU', 'Melbourne, AU',
+            'Berlin, DE', 'Frankfurt, DE', 'Paris, FR', 'Madrid, ES',
+            'Zurich, CH', 'Vienna, AT',
+            'Dubai, AE', 'Abu Dhabi, AE',
+            'Singapore, SG', 'Hong Kong, HK',
+            'Tokyo, JP', 'Seoul, KR',
+            'São Paulo, BR', 'Mexico City, MX',
+            'Johannesburg, ZA', 'Nairobi, KE',
+            'Lagos, NG', 'Accra, GH',
+            'Mumbai, IN', 'Bengaluru, IN'
+        ];
+        return locations[Math.floor(Math.random() * locations.length)];
     }
 
     updateLeaderboardDisplay() {
@@ -1136,12 +1190,30 @@ class DashboardManager {
         const transactionElements = this.leaderboardTransactions.map(transaction => {
             const typeClass = transaction.type === 'deposit' ? 'positive' : 
                             transaction.type === 'withdrawal' ? 'negative' : 'neutral';
-            
+
+            const initials = String(transaction.username || '')
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((p) => p[0].toUpperCase())
+                .join('');
+
+            const typeLabel = transaction.type === 'swap' ? 'Swap' : transaction.type === 'deposit' ? 'Deposit' : 'Withdrawal';
+            const amountText = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(transaction.amount || 0);
+
             return `
                 <div class="transaction-item ${typeClass}">
-                    <span class="username">${transaction.username}</span>
-                    <span class="transaction-type">${transaction.type}</span>
-                    <span class="amount">$${transaction.amount}</span>
+                    <div class="tx-left">
+                        <div class="tx-avatar">${initials || 'TT'}</div>
+                        <div class="tx-meta">
+                            <div class="tx-name">${transaction.username}</div>
+                            <div class="tx-sub">${transaction.location} • ${transaction.asset}</div>
+                        </div>
+                    </div>
+                    <div class="tx-right">
+                        <span class="tx-badge ${transaction.type}">${typeLabel}</span>
+                        <span class="amount">${amountText}</span>
+                    </div>
                 </div>
             `;
         }).join('');
@@ -1161,15 +1233,9 @@ class DashboardManager {
 
         this.leaderboardInterval = setInterval(() => {
             // Add new transaction
-            const usernames = [
-                'TradeMaster', 'CryptoKing', 'ForexPro', 'BullRunner', 'MarketWolf',
-                'TradingAce', 'PipHunter', 'ChartWiz', 'GoldTrader', 'SwingKing',
-                'DayTrader99', 'FXExpert', 'CoinFlip', 'TrendFollower', 'ScalpMaster',
-                'OptionsPro', 'FuturesKing', 'RiskTaker', 'ProfitSeeker', 'MarketMover'
-            ];
             const transactionTypes = ['deposit', 'withdrawal', 'swap'];
             
-            const newTransaction = this.generateRandomTransaction(usernames, transactionTypes);
+            const newTransaction = this.generateRandomTransaction(transactionTypes);
             this.leaderboardTransactions.unshift(newTransaction);
             
             // Keep only the latest 20 transactions
@@ -1178,7 +1244,7 @@ class DashboardManager {
             }
             
             this.updateLeaderboardDisplay();
-        }, Math.random() * 2000 + 3000); // Random interval between 3-5 seconds
+        }, Math.random() * 2500 + 2500); // Random interval between 2.5-5 seconds
     }
 }
 

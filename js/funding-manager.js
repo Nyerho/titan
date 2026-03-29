@@ -1,4 +1,4 @@
-import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { doc, getDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { db } from './firebase-config.js';
 
 class FundingManager {
@@ -52,8 +52,10 @@ class FundingManager {
         this.transactions = [];
         this.cryptoDepositAddressesCache = null;
         this.cryptoDepositAddressesCacheAt = 0;
+        this.cryptoDepositAddressesUnsub = null;
         this.loadStripe();
         this.loadPayPal();
+        this.startCryptoDepositAddressesListener();
     }
 
     getApiKey(keyName) {
@@ -376,15 +378,15 @@ class FundingManager {
 
         try {
             const now = Date.now();
-            const cacheFresh = this.cryptoDepositAddressesCache && (now - this.cryptoDepositAddressesCacheAt) < 5 * 60 * 1000;
 
-            if (!cacheFresh && db) {
+            if (!this.cryptoDepositAddressesCache && db) {
                 const snap = await getDoc(doc(db, 'admin', 'crypto-addresses'));
                 if (snap.exists()) {
                     const data = snap.data() || {};
                     if (data.addresses && typeof data.addresses === 'object') {
                         this.cryptoDepositAddressesCache = data.addresses;
                         this.cryptoDepositAddressesCacheAt = now;
+                        this.emitCryptoDepositAddressesUpdated();
                     }
                 }
             }
@@ -395,6 +397,34 @@ class FundingManager {
         } catch (e) {}
 
         return fallbackAddresses[requested] || fallbackAddresses.BTC;
+    }
+
+    startCryptoDepositAddressesListener() {
+        try {
+            if (!db || typeof onSnapshot !== 'function') return;
+            if (this.cryptoDepositAddressesUnsub) return;
+
+            const ref = doc(db, 'admin', 'crypto-addresses');
+            this.cryptoDepositAddressesUnsub = onSnapshot(ref, (snap) => {
+                if (!snap.exists()) return;
+                const data = snap.data() || {};
+                if (data.addresses && typeof data.addresses === 'object') {
+                    this.cryptoDepositAddressesCache = data.addresses;
+                    this.cryptoDepositAddressesCacheAt = Date.now();
+                    this.emitCryptoDepositAddressesUpdated();
+                }
+            }, () => {});
+        } catch (e) {}
+    }
+
+    emitCryptoDepositAddressesUpdated() {
+        try {
+            if (typeof window === 'undefined') return;
+            if (!this.cryptoDepositAddressesCache) return;
+            window.dispatchEvent(new CustomEvent('tt:cryptoAddressesUpdated', {
+                detail: { addresses: this.cryptoDepositAddressesCache }
+            }));
+        } catch (e) {}
     }
 
     async estimateNetworkFee(currency) {

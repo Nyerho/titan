@@ -428,7 +428,7 @@
                                     <select class="form-select" id="crypto-currency">
                                         <option value="BTC">Bitcoin (BTC)</option>
                                         <option value="ETH">Ethereum (ETH)</option>
-                                        <option value="USDT">Tether (USDT) - ETH Network</option>
+                                        <option value="USDT">Tether (USDT) - BSC (BEP20)</option>
                                     </select>
                                 </div>
                                 <button id="crypto-generate" class="btn btn-primary btn-lg w-100 mb-3">
@@ -591,11 +591,48 @@
             
             // Setup event listeners
             setupEventListeners();
+            setupCryptoDepositLiveUpdates();
             
             // Load transaction history
             setTimeout(() => {
                 loadTransactionHistory();
             }, 1000);
+        }
+
+        let cryptoDepositLiveUpdatesBound = false;
+        let lastLiveCryptoAddress = null;
+
+        function setupCryptoDepositLiveUpdates() {
+            if (cryptoDepositLiveUpdatesBound) return;
+            cryptoDepositLiveUpdatesBound = true;
+
+            window.addEventListener('tt:cryptoAddressesUpdated', async () => {
+                try {
+                    if (selectedMethod !== 'crypto') return;
+                    if (!window.fundingManager || typeof window.fundingManager.generateCryptoAddress !== 'function') return;
+
+                    const instructionsEl = document.getElementById('crypto-instructions');
+                    const confirmationEl = document.getElementById('crypto-confirmation');
+                    const addressEl = document.getElementById('crypto-address');
+                    if (!instructionsEl || !addressEl) return;
+                    if (instructionsEl.style.display === 'none') return;
+                    if (confirmationEl && confirmationEl.style.display !== 'none') return;
+
+                    const currency = document.getElementById('crypto-currency')?.value || 'BTC';
+                    const newAddress = await window.fundingManager.generateCryptoAddress(currency);
+                    const normalized = (newAddress || '').toString().trim();
+                    if (!normalized) return;
+
+                    const current = (addressEl.textContent || '').toString().trim();
+                    if (!current) return;
+                    if (current === normalized) return;
+                    if (lastLiveCryptoAddress === normalized) return;
+
+                    addressEl.textContent = normalized;
+                    lastLiveCryptoAddress = normalized;
+                    showAlert('Deposit address was updated by admin. Please send only to the new address shown.', 'info');
+                } catch (e) {}
+            });
         }
         
         function setupEventListeners() {

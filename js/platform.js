@@ -7,6 +7,9 @@ class TradingPlatform {
         this.positions = [];
         this.orders = [];
         this.marketData = new Map();
+        this.demoPriceCache = new Map();
+        this.symbolUpdateHandler = (data) => this.handleRealTimeUpdate(data);
+        this.lastSubscribedSymbol = null;
         this.portfolio = {
             balance: 50000,
             equity: 52350,
@@ -40,6 +43,7 @@ class TradingPlatform {
         this.initWatchlist();
         this.initOrderForm();
         this.initChart();
+        this.initSymbolControls();
         this.initTradingPanels();
         this.initPortfolioSummary();
         this.initMarketDepth();
@@ -145,9 +149,16 @@ class TradingPlatform {
 
     // Subscribe to real-time updates for a symbol
     subscribeToSymbol(symbol) {
-        this.marketDataService.subscribeToSymbol(symbol, (data) => {
-            this.handleRealTimeUpdate(data);
-        });
+        if (!symbol) return;
+
+        if (this.lastSubscribedSymbol && this.lastSubscribedSymbol !== symbol) {
+            try {
+                this.marketDataService.unsubscribeFromSymbol(this.lastSubscribedSymbol, this.symbolUpdateHandler);
+            } catch (e) {}
+        }
+
+        this.marketDataService.subscribeToSymbol(symbol, this.symbolUpdateHandler);
+        this.lastSubscribedSymbol = symbol;
     }
 
     // Handle real-time market data updates
@@ -242,12 +253,18 @@ class TradingPlatform {
         });
 
         // Add symbol functionality
-        const addSymbolBtn = document.querySelector('.add-symbol');
+        const addSymbolBtn = document.querySelector('.add-symbol-btn');
         if (addSymbolBtn) {
             addSymbolBtn.addEventListener('click', () => {
                 this.showAddSymbolDialog();
             });
         }
+    }
+
+    showAddSymbolDialog() {
+        const value = window.prompt('Enter a symbol (e.g. EURUSD, BTCUSDT, AAPL, NASDAQ:AAPL)');
+        if (!value) return;
+        this.applySymbol(value);
     }
 
     initOrderForm() {
@@ -836,13 +853,32 @@ class TradingPlatform {
     }
 
     getCurrentPrice(symbol) {
-        const prices = {
-            'EUR/USD': 1.0856,
-            'GBP/USD': 1.2634,
-            'USD/JPY': 149.85,
-            'AUD/USD': 0.6542
-        };
-        return prices[symbol] || 1.0000;
+        const key = String(symbol || '').trim().toUpperCase();
+        if (!key) return 1.0;
+
+        const real = this.realTimeData?.get?.(key) || this.realTimeData?.get?.(symbol);
+        if (real && typeof real.price === 'number' && Number.isFinite(real.price)) {
+            return real.price;
+        }
+
+        if (this.demoPriceCache.has(key)) return this.demoPriceCache.get(key);
+
+        const hash = Array.from(key).reduce((acc, ch) => ((acc << 5) - acc) + ch.charCodeAt(0), 0);
+        const n = Math.abs(hash);
+
+        let base = 100;
+        if (key.includes('/') && key.length === 7) base = 1.0 + (n % 10000) / 10000;
+        if (key.includes('JPY') && key.includes('/')) base = 100 + (n % 8000) / 100;
+        if (key.includes('XAU')) base = 1800 + (n % 8000) / 10;
+        if (key.includes('BTC')) base = 20000 + (n % 500000) / 10;
+        if (key.includes('ETH')) base = 1000 + (n % 200000) / 100;
+        if (key === 'US100' || key === 'NAS100') base = 14000 + (n % 800000) / 100;
+        if (key === 'GER40') base = 14000 + (n % 400000) / 100;
+        if (key === 'UK100') base = 7000 + (n % 200000) / 100;
+
+        const price = Number(base.toFixed(key.includes('/') && key.length === 7 ? 5 : 2));
+        this.demoPriceCache.set(key, price);
+        return price;
     }
 
     updatePositionsTable() {
@@ -1154,29 +1190,18 @@ class TradingPlatform {
     }
 
     switchSymbol(symbol) {
-        this.currentSymbol = symbol;
-        document.querySelector('.chart-header h2').textContent = symbol;
-        this.updateOrderButton();
-        this.updateChartSymbol(symbol);
+        this.applySymbol(symbol);
     }
     
     // Function to update chart symbol
-    updateChartSymbol(symbol) {
-        // For TradingView widget, we need to reload with new symbol
+    updateChartSymbol(tvSymbolOrInternal) {
         const chartContainer = document.getElementById('trading-chart');
-        const symbolMap = {
-            'EURUSD': 'FX:EURUSD',
-            'GBPUSD': 'FX:GBPUSD',
-            'USDJPY': 'FX:USDJPY',
-            'USDCHF': 'FX:USDCHF',
-            'AUDUSD': 'FX:AUDUSD',
-            'USDCAD': 'FX:USDCAD',
-            'NZDUSD': 'FX:NZDUSD'
-        };
-        
-        const tvSymbol = symbolMap[symbol] || 'FX:EURUSD';
-        
-        // Recreate TradingView widget with new symbol
+        if (!chartContainer) return;
+
+        const tvSymbol = String(tvSymbolOrInternal || '').includes(':')
+            ? String(tvSymbolOrInternal)
+            : this.getTradingViewSymbol(tvSymbolOrInternal);
+
         chartContainer.innerHTML = `
             <div class="tradingview-widget-container" style="height:100%;width:100%">
               <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%"></div>
@@ -1273,6 +1298,126 @@ class TradingPlatform {
             this.portfolio.freeMargin = freeMargin;
             this.updatePortfolioDisplay();
         });
+    }
+
+    initSymbolControls() {
+        const symbolSelect = document.getElementById('symbol-select');
+        if (symbolSelect) {
+            symbolSelect.addEventListener('change', (e) => {
+                const value = e.target.value;
+                this.applySymbol(value);
+            });
+        }
+
+        const symbolInput = document.getElementById('symbol-input');
+        if (symbolInput) {
+            symbolInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.applySymbol(symbolInput.value);
+                }
+            });
+        }
+
+        const applyBtn = document.getElementById('symbol-apply-btn');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', () => {
+                this.applySymbol(symbolInput ? symbolInput.value : '');
+            });
+        }
+    }
+
+    applySymbol(rawInput) {
+        const normalized = this.normalizeSymbolInput(rawInput);
+        if (!normalized) return;
+
+        const { internalSymbol, tvSymbol, displaySymbol } = normalized;
+        this.currentSymbol = internalSymbol;
+
+        const symbolInput = document.getElementById('symbol-input');
+        if (symbolInput) symbolInput.value = '';
+
+        const symbolSelect = document.getElementById('symbol-select');
+        if (symbolSelect) {
+            const existing = Array.from(symbolSelect.options).some((o) => o.value === displaySymbol);
+            if (!existing) {
+                const opt = document.createElement('option');
+                opt.value = displaySymbol;
+                opt.textContent = displaySymbol;
+                symbolSelect.insertBefore(opt, symbolSelect.firstChild);
+            }
+            symbolSelect.value = displaySymbol;
+        }
+
+        this.updateOrderButton();
+        this.updateChartSymbol(tvSymbol);
+        this.subscribeToSymbol(internalSymbol);
+        this.loadSymbolData(internalSymbol);
+    }
+
+    normalizeSymbolInput(rawInput) {
+        const input = String(rawInput || '').trim();
+        if (!input) return null;
+
+        if (input.includes(':')) {
+            const parts = input.split(':');
+            const symbolPart = (parts[1] || '').trim();
+            const internalSymbol = symbolPart ? symbolPart.toUpperCase() : input.toUpperCase();
+            return { internalSymbol, tvSymbol: input.toUpperCase(), displaySymbol: input.toUpperCase() };
+        }
+
+        const upper = input.toUpperCase();
+
+        if (/^[A-Z]{6}$/.test(upper)) {
+            const internalSymbol = `${upper.slice(0, 3)}/${upper.slice(3)}`;
+            return { internalSymbol, tvSymbol: this.getTradingViewSymbol(internalSymbol), displaySymbol: internalSymbol };
+        }
+
+        if (/^[A-Z0-9]{2,10}\/[A-Z0-9]{2,10}$/.test(upper)) {
+            return { internalSymbol: upper, tvSymbol: this.getTradingViewSymbol(upper), displaySymbol: upper };
+        }
+
+        if (/^[A-Z0-9]{2,12}USDT$/.test(upper)) {
+            const base = upper.replace(/USDT$/, '');
+            const internalSymbol = `${base}/USD`;
+            return { internalSymbol, tvSymbol: `BINANCE:${upper}`, displaySymbol: upper };
+        }
+
+        if (upper === 'BTCUSD' || upper === 'BTC/USD') {
+            return { internalSymbol: 'BTC/USD', tvSymbol: 'BINANCE:BTCUSDT', displaySymbol: 'BTC/USD' };
+        }
+
+        if (upper === 'ETHUSD' || upper === 'ETH/USD') {
+            return { internalSymbol: 'ETH/USD', tvSymbol: 'BINANCE:ETHUSDT', displaySymbol: 'ETH/USD' };
+        }
+
+        if (upper === 'XAUUSD' || upper === 'XAU/USD') {
+            return { internalSymbol: 'XAU/USD', tvSymbol: 'OANDA:XAUUSD', displaySymbol: 'XAU/USD' };
+        }
+
+        return { internalSymbol: upper, tvSymbol: this.getTradingViewSymbol(upper), displaySymbol: upper };
+    }
+
+    getTradingViewSymbol(internalSymbol) {
+        const symbol = String(internalSymbol || '').trim().toUpperCase();
+        if (!symbol) return 'FX:EURUSD';
+
+        if (symbol.includes(':')) return symbol;
+
+        if (symbol.includes('/') && symbol.length === 7) {
+            return `FX:${symbol.replace('/', '')}`;
+        }
+
+        if (symbol === 'BTC/USD') return 'BINANCE:BTCUSDT';
+        if (symbol === 'ETH/USD') return 'BINANCE:ETHUSDT';
+        if (symbol === 'XAU/USD') return 'OANDA:XAUUSD';
+
+        if (symbol === 'US100') return 'OANDA:NAS100USD';
+        if (symbol === 'NAS100') return 'OANDA:NAS100USD';
+        if (symbol === 'GER40') return 'OANDA:DE40EUR';
+        if (symbol === 'UK100') return 'OANDA:UK100GBP';
+
+        return symbol;
     }
 
     updatePriceDisplay() {
@@ -2062,10 +2207,7 @@ class TradingPlatform {
     }
 
     switchSymbol(symbol) {
-        this.currentSymbol = symbol;
-        document.querySelector('.chart-header h2').textContent = symbol;
-        this.updateOrderButton();
-        this.renderChart();
+        this.applySymbol(symbol);
     }
 
     updateOrderButton() {
@@ -2105,16 +2247,21 @@ class TradingPlatform {
         this.updateAccountInfo();
     }
 
-    updatePriceDisplay() {
+    updatePriceDisplay(data) {
         const priceDisplay = document.querySelector('.current-price');
         const changeDisplay = document.querySelector('.price-change');
         
         if (priceDisplay && changeDisplay) {
-            const newPrice = this.getCurrentPrice(this.currentSymbol) + (Math.random() - 0.5) * 0.01;
-            const change = newPrice - this.getCurrentPrice(this.currentSymbol);
-            
-            priceDisplay.textContent = newPrice.toFixed(4);
-            changeDisplay.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(4)} (${((change / newPrice) * 100).toFixed(2)}%)`;
+            const base = (data && data.symbol === this.currentSymbol && typeof data.price === 'number')
+                ? data.price
+                : this.getCurrentPrice(this.currentSymbol);
+
+            const newPrice = base + (Math.random() - 0.5) * (String(this.currentSymbol).includes('/') ? 0.002 : Math.max(0.5, base * 0.001));
+            const change = newPrice - base;
+
+            const decimals = String(this.currentSymbol).includes('/') ? 4 : 2;
+            priceDisplay.textContent = newPrice.toFixed(decimals);
+            changeDisplay.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(decimals)} (${((change / newPrice) * 100).toFixed(2)}%)`;
             changeDisplay.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
         }
     }

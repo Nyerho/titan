@@ -1046,8 +1046,8 @@
                             <input type="text" class="form-control bg-secondary text-white" id="depositAddressETH" placeholder="ETH address">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-light">Tether (USDT) - ETH Network</label>
-                            <input type="text" class="form-control bg-secondary text-white" id="depositAddressUSDT" placeholder="USDT address">
+                            <label class="form-label text-light">Tether (USDT) - BSC (BEP20)</label>
+                            <input type="text" class="form-control bg-secondary text-white" id="depositAddressUSDT" placeholder="USDT (BEP20) address">
                         </div>
                     </div>
                     <div class="small text-muted mt-3" id="depositAddressSaveStatus"></div>
@@ -2477,18 +2477,35 @@
                 });
         }
 
-        function approveWithdrawal(requestId) {
-            if (confirm('Are you sure you want to approve this withdrawal?')) {
-                firebase.firestore().collection('withdrawal-requests').doc(requestId)
-                    .update({ status: 'approved' })
-                    .then(() => {
-                        alert('Withdrawal approved successfully!');
-                        loadWithdrawalRequests();
-                    })
-                    .catch((error) => {
-                        console.error('Error approving withdrawal:', error);
-                        alert('Error approving withdrawal.');
-                    });
+        async function approveWithdrawal(requestId) {
+            if (!confirm('Are you sure you want to approve this withdrawal?')) return;
+            try {
+                await firebase.firestore().collection('withdrawal-requests').doc(requestId).update({ status: 'approved' });
+                
+                const adminUser = firebase.auth().currentUser;
+                const token = await adminUser.getIdToken(true);
+                const isLocal = window.location.hostname === 'localhost' ||
+                               window.location.hostname === '127.0.0.1' ||
+                               window.location.protocol === 'file:' ||
+                               window.location.href.includes('localhost');
+                const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
+                const baseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : window.location.origin);
+                
+                const emailRes = await fetch(`${baseUrl}/api/withdrawal-requests/${requestId}/send-approved-email`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).catch(() => null);
+
+                if (emailRes && !emailRes.ok) {
+                    const data = await emailRes.json().catch(() => ({}));
+                    alert(`Withdrawal approved, but confirmation email failed: ${data.error || emailRes.statusText}`);
+                }
+
+                alert('Withdrawal approved successfully!');
+                loadWithdrawalRequests();
+            } catch (error) {
+                console.error('Error approving withdrawal:', error);
+                alert('Error approving withdrawal.');
             }
         }
 
@@ -2943,6 +2960,25 @@
                 
                 // Commit all operations atomically
                 await batch.commit();
+
+                try {
+                    const adminUser = firebase.auth().currentUser;
+                    const token = await adminUser.getIdToken(true);
+                    const isLocal = window.location.hostname === 'localhost' ||
+                                   window.location.hostname === '127.0.0.1' ||
+                                   window.location.protocol === 'file:' ||
+                                   window.location.href.includes('localhost');
+                    const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
+                    const baseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : window.location.origin);
+                    const emailRes = await fetch(`${baseUrl}/api/withdrawal-requests/${docId}/send-approved-email`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).catch(() => null);
+                    if (emailRes && !emailRes.ok) {
+                        const data = await emailRes.json().catch(() => ({}));
+                        alert(`Withdrawal approved, but confirmation email failed: ${data.error || emailRes.statusText}`);
+                    }
+                } catch (e) {}
                 
                 alert(`Withdrawal request approved successfully!\n\nAmount: $${amount.toFixed(2)}\nUser: ${userEmail}\nMethod: ${method}\nNew Balance: $${newAccountBalance.toFixed(2)}`);
                 loadWithdrawalControlRequests(); // Refresh the list

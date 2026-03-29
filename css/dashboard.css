@@ -1469,7 +1469,7 @@ body {
 
 /* Leaderboard Styles */
 .leaderboard-section {
-    background: var(--bg-secondary);
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.10), rgba(59, 130, 246, 0.06));
     border-radius: 12px;
     padding: 20px;
     margin-top: 20px;
@@ -1514,7 +1514,7 @@ body {
     height: 300px;
     overflow: hidden;
     border-radius: 8px;
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.80);
     border: 1px solid var(--border-color);
 }
 
@@ -1532,7 +1532,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
+    gap: 12px;
+    padding: 12px 14px;
     border-bottom: 1px solid rgba(226, 232, 240, 0.8);
     transition: background-color 0.3s ease;
 }
@@ -1553,18 +1554,85 @@ body {
     border-left: 3px solid var(--primary-color);
 }
 
-.username {
-    color: var(--text-primary);
-    font-weight: 500;
+.tx-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
     flex: 1;
 }
 
-.transaction-type {
+.tx-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 1), rgba(59, 130, 246, 1));
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.04em;
+    flex: 0 0 auto;
+}
+
+.tx-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.tx-name {
+    color: var(--text-primary);
+    font-weight: 650;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tx-sub {
     color: var(--text-secondary);
-    font-size: 0.9rem;
-    text-transform: capitalize;
-    flex: 1;
-    text-align: center;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tx-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+.tx-badge {
+    font-size: 0.75rem;
+    font-weight: 650;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 23, 42, 0.10);
+    background: rgba(15, 23, 42, 0.04);
+    color: rgba(15, 23, 42, 0.80);
+}
+
+.tx-badge.deposit {
+    background: rgba(16, 185, 129, 0.10);
+    border-color: rgba(16, 185, 129, 0.20);
+    color: #059669;
+}
+
+.tx-badge.withdrawal {
+    background: rgba(239, 68, 68, 0.10);
+    border-color: rgba(239, 68, 68, 0.20);
+    color: #dc2626;
+}
+
+.tx-badge.swap {
+    background: rgba(139, 92, 246, 0.10);
+    border-color: rgba(139, 92, 246, 0.20);
+    color: #7c3aed;
 }
 
 .amount {

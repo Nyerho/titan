@@ -715,40 +715,39 @@
                     };
                 }
                 
-                // Create withdrawal request
-                const withdrawalRequest = {
-                    userId: currentUser.uid,
-                    userEmail: currentUser.email,
-                    amount: amount,
-                    details: withdrawalDetails,
-                    status: 'pending',
-                    requestDate: firebase.firestore.FieldValue.serverTimestamp(),
-                    requestId: generateRequestId()
-                };
+                const requestId = generateRequestId();
+                const token = await currentUser.getIdToken(true);
                 
-                const db = firebase.firestore();
+                const isLocal = window.location.hostname === 'localhost' ||
+                               window.location.hostname === '127.0.0.1' ||
+                               window.location.protocol === 'file:' ||
+                               window.location.href.includes('localhost');
+                const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
+                const baseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : window.location.origin);
                 
-                console.log('Submitting withdrawal request:', withdrawalRequest);
-                
-                // Save to withdrawal requests collection
-                await db.collection('withdrawal-requests').add(withdrawalRequest);
-                
-                // Add to user's transaction history
-                await db.collection('users').doc(currentUser.uid).collection('transactions').add({
-                    type: 'withdrawal_request',
-                    amount: amount,
-                    status: 'pending',
-                    method: method,
-                    details: withdrawalDetails,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    requestId: withdrawalRequest.requestId
+                const response = await fetch(`${baseUrl}/api/withdrawal-requests`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        amount,
+                        details: withdrawalDetails,
+                        requestId
+                    })
                 });
+                
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to submit withdrawal request');
+                }
                 
                 // Hide processing overlay
                 document.getElementById('processingOverlay').style.display = 'none';
                 
                 // Show success message
-                showAlert('Withdrawal request submitted successfully! Your request is now pending admin approval.', 'success');
+                showAlert(`Withdrawal request submitted successfully! Your request is now pending admin approval. Request ID: ${result.requestId || requestId}`, 'success');
                 
                 // Reset form
                 document.getElementById('withdrawalForm').reset();
