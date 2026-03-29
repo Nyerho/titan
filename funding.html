@@ -663,6 +663,25 @@
             
             // Crypto generate button
             document.getElementById('crypto-generate').addEventListener('click', generateCryptoPayment);
+
+            const cryptoCurrencyEl = document.getElementById('crypto-currency');
+            if (cryptoCurrencyEl) {
+                cryptoCurrencyEl.addEventListener('change', async function() {
+                    try {
+                        lastLiveCryptoAddress = null;
+
+                        const instructionsEl = document.getElementById('crypto-instructions');
+                        const confirmationEl = document.getElementById('crypto-confirmation');
+                        if (confirmationEl && confirmationEl.style.display !== 'none') return;
+
+                        if (!instructionsEl) return;
+                        if (instructionsEl.style.display === 'none') return;
+
+                        const currency = cryptoCurrencyEl.value || 'BTC';
+                        await updateCryptoPaymentDisplay(currency);
+                    } catch (e) {}
+                });
+            }
             
             // Crypto confirmation button
             document.getElementById('crypto-confirm-sent').addEventListener('click', confirmCryptoPayment);
@@ -734,23 +753,10 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
                 btn.disabled = true;
                 
-                // Generate payment details
-                const paymentDetails = await window.fundingManager.processCryptoPayment({
-                    amount: currentAmount,
-                    currency: currency
-                });
-                
-                // Display payment instructions
-                document.getElementById('crypto-amount').textContent = `${currentAmount} ${currentCurrency} (≈ ${paymentDetails.amount} ${currency})`;
-                document.getElementById('crypto-address').textContent = paymentDetails.address;
-                document.getElementById('crypto-fee').textContent = paymentDetails.network_fee;
-                document.getElementById('crypto-qr').src = paymentDetails.qr_code;
-                
-                // Show instructions
-                document.getElementById('crypto-instructions').style.display = 'block';
-                
-                // Hide generate button
-                btn.style.display = 'none';
+                await updateCryptoPaymentDisplay(currency);
+
+                btn.innerHTML = '<i class="fas fa-qrcode"></i> Regenerate Payment Address';
+                btn.disabled = false;
                 
             } catch (error) {
                 console.error('Error generating crypto payment:', error);
@@ -762,6 +768,29 @@
                     btn.disabled = false;
                 }
             }
+        }
+
+        async function updateCryptoPaymentDisplay(currency) {
+            if (!window.fundingManager || typeof window.fundingManager.processCryptoPayment !== 'function') {
+                throw new Error('Payment service not ready. Please refresh and try again.');
+            }
+
+            const paymentDetails = await window.fundingManager.processCryptoPayment({
+                amount: currentAmount,
+                currency: currency
+            });
+
+            const amountEl = document.getElementById('crypto-amount');
+            const addressEl = document.getElementById('crypto-address');
+            const feeEl = document.getElementById('crypto-fee');
+            const qrEl = document.getElementById('crypto-qr');
+            const instructionsEl = document.getElementById('crypto-instructions');
+
+            if (amountEl) amountEl.textContent = `${currentAmount} ${currentCurrency} (≈ ${paymentDetails.amount} ${currency})`;
+            if (addressEl) addressEl.textContent = paymentDetails.address;
+            if (feeEl) feeEl.textContent = paymentDetails.network_fee;
+            if (qrEl) qrEl.src = paymentDetails.qr_code;
+            if (instructionsEl) instructionsEl.style.display = 'block';
         }
         
         async function confirmCryptoPayment() {

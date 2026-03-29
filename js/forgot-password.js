@@ -39,6 +39,18 @@ class ForgotPasswordManager {
         return `${continueBase}/reset-password.html`;
     }
 
+    computeApiBaseUrl() {
+        const isLocal = window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.port === '5500' ||
+            window.location.port === '3000' ||
+            window.location.protocol === 'file:' ||
+            window.location.href.includes('localhost');
+        const storedBaseUrl = localStorage.getItem('admin_api_baseUrl');
+        if (storedBaseUrl) return storedBaseUrl;
+        return isLocal ? 'http://localhost:3001' : window.location.origin;
+    }
+
     async handleForgotPassword(e) {
         e.preventDefault();
         
@@ -66,16 +78,30 @@ class ForgotPasswordManager {
         resetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
         
         try {
+            const continueUrl = this.computeResetUrl();
+            let sent = false;
             try {
-                await sendPasswordResetEmail(auth, email, {
-                    url: this.computeResetUrl(),
-                    handleCodeInApp: false
+                const baseUrl = this.computeApiBaseUrl();
+                const response = await fetch(`${baseUrl}/api/auth/password-reset`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, continueUrl })
                 });
-            } catch (innerError) {
-                if (innerError?.code === 'auth/unauthorized-continue-uri') {
-                    await sendPasswordResetEmail(auth, email);
-                } else {
-                    throw innerError;
+                if (response.ok) sent = true;
+            } catch (e) {}
+
+            if (!sent) {
+                try {
+                    await sendPasswordResetEmail(auth, email, {
+                        url: continueUrl,
+                        handleCodeInApp: false
+                    });
+                } catch (innerError) {
+                    if (innerError?.code === 'auth/unauthorized-continue-uri') {
+                        await sendPasswordResetEmail(auth, email);
+                    } else {
+                        throw innerError;
+                    }
                 }
             }
             
@@ -130,16 +156,30 @@ class ForgotPasswordManager {
         resendLink.textContent = 'Sending...';
         
         try {
+            const continueUrl = this.computeResetUrl();
+            let sent = false;
             try {
-                await sendPasswordResetEmail(auth, email, {
-                    url: this.computeResetUrl(),
-                    handleCodeInApp: false
+                const baseUrl = this.computeApiBaseUrl();
+                const response = await fetch(`${baseUrl}/api/auth/password-reset`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, continueUrl })
                 });
-            } catch (innerError) {
-                if (innerError?.code === 'auth/unauthorized-continue-uri') {
-                    await sendPasswordResetEmail(auth, email);
-                } else {
-                    throw innerError;
+                if (response.ok) sent = true;
+            } catch (e) {}
+
+            if (!sent) {
+                try {
+                    await sendPasswordResetEmail(auth, email, {
+                        url: continueUrl,
+                        handleCodeInApp: false
+                    });
+                } catch (innerError) {
+                    if (innerError?.code === 'auth/unauthorized-continue-uri') {
+                        await sendPasswordResetEmail(auth, email);
+                    } else {
+                        throw innerError;
+                    }
                 }
             }
             

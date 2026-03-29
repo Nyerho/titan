@@ -59,6 +59,41 @@ class FundingManager {
         this.startCryptoDepositAddressesListener();
     }
 
+    computeApiBaseUrl() {
+        const isLocal = window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.port === '5500' ||
+            window.location.port === '3000' ||
+            window.location.protocol === 'file:' ||
+            window.location.href.includes('localhost');
+        const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
+        if (storedBaseUrl) return storedBaseUrl;
+        return isLocal ? 'http://localhost:3001' : window.location.origin;
+    }
+
+    async notifyDepositReceived({ amount, currency, address, depositId }) {
+        try {
+            const user = auth?.currentUser;
+            if (!user) return;
+
+            const token = await user.getIdToken();
+            const baseUrl = this.computeApiBaseUrl();
+            await fetch(`${baseUrl}/api/deposits/notify`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    amount,
+                    currency,
+                    address,
+                    depositId
+                })
+            });
+        } catch (e) {}
+    }
+
     getApiKey(keyName) {
         try {
             if (typeof window !== 'undefined' && window.API_CONFIG && typeof window.API_CONFIG.getApiKey === 'function') {
@@ -340,6 +375,12 @@ class FundingManager {
             const docRef = await addDoc(collection(db, 'pending_deposits'), pendingDeposit);
             
             console.log('Pending deposit created:', docRef.id);
+            this.notifyDepositReceived({
+                amount: transactionData.amount,
+                currency: transactionData.currency,
+                address: transactionData.address,
+                depositId: docRef.id
+            });
             return {
                 success: true,
                 depositId: docRef.id,

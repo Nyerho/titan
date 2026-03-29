@@ -98,7 +98,7 @@ function getPublicBaseUrl(req) {
 }
 
 function getBrandLogoUrl(req) {
-  return process.env.BRAND_LOGO_URL || `${getPublicBaseUrl(req)}/assets/images/IMG_9877.PNG`;
+  return process.env.BRAND_LOGO_URL || `${getPublicBaseUrl(req)}/assets/images/titantradeslogo.jpg`;
 }
 
 function buildEmailHtml({ req, title, intro, rows, outro }) {
@@ -217,6 +217,128 @@ async function verifyUserToken(req, res, next) {
 }
 
 // API Routes
+
+const passwordResetThrottle = new Map();
+function canSendPasswordReset(key) {
+  const now = Date.now();
+  const last = passwordResetThrottle.get(key) || 0;
+  const windowMs = 60 * 1000;
+  if (now - last < windowMs) return false;
+  passwordResetThrottle.set(key, now);
+  return true;
+}
+
+app.post('/api/auth/password-reset', async (req, res) => {
+  try {
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Invalid email' });
+    }
+
+    const continueUrlRaw = String(req.body?.continueUrl || '').trim();
+    const continueUrl = continueUrlRaw || `${getPublicBaseUrl(req)}/reset-password.html`;
+
+    const throttleKey = `${String(req.ip || '').trim()}|${email}`;
+    if (!canSendPasswordReset(throttleKey)) {
+      return res.json({ success: true, emailSent: false, throttled: true });
+    }
+
+    let link = '';
+    try {
+      link = await auth.generatePasswordResetLink(email, {
+        url: continueUrl,
+        handleCodeInApp: false
+      });
+    } catch (e) {
+      if (e?.code === 'auth/user-not-found') {
+        return res.json({ success: true, emailSent: false });
+      }
+      throw e;
+    }
+
+    const html = buildEmailHtml({
+      req,
+      title: 'Reset your password',
+      intro: `We received a request to reset the password for your TitanTrades account.`,
+      rows: [
+        {
+          label: 'Reset link',
+          value: `<a href="${link}" style="color:#2563eb;font-weight:700;text-decoration:none;">Reset password</a>`
+        }
+      ],
+      outro: `If you did not request this, ignore this email and your password will remain unchanged. For your security, never share your password with anyone.`
+    });
+
+    await sendBrandEmail({
+      to: email,
+      subject: 'TitanTrades — Password reset request',
+      html
+    });
+
+    return res.json({ success: true, emailSent: true });
+  } catch (error) {
+    console.error('Password reset email error:', error);
+    return res.status(500).json({ error: error?.message || 'Failed to send password reset email' });
+  }
+});
+
+app.post('/api/deposits/notify', verifyUserToken, async (req, res) => {
+  try {
+    const amount = Number(req.body?.amount);
+    const currency = String(req.body?.currency || '').trim().toUpperCase();
+    const address = String(req.body?.address || '').trim();
+    const depositId = String(req.body?.depositId || '').trim();
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid amount' });
+    }
+    if (!currency) {
+      return res.status(400).json({ error: 'Invalid currency' });
+    }
+
+    const userRecord = await auth.getUser(req.user.uid);
+    const email = userRecord.email;
+    if (!email) {
+      return res.status(400).json({ error: 'User email not found' });
+    }
+
+    const html = buildEmailHtml({
+      req,
+      title: 'Deposit confirmation received',
+      intro: `We received your deposit confirmation and it is now pending verification.`,
+      rows: [
+        ...(depositId ? [{ label: 'Deposit ID', value: depositId }] : []),
+        { label: 'Amount', value: `${amount} ${currency}` },
+        ...(address ? [{ label: 'Address', value: address }] : []),
+        { label: 'Status', value: 'PENDING VERIFICATION' }
+      ],
+      outro: `We will notify you once your deposit has been verified and credited. If you did not make this request, please contact support.`
+    });
+
+    await sendBrandEmail({
+      to: email,
+      subject: depositId ? `TitanTrades — Deposit confirmation received (${depositId})` : 'TitanTrades — Deposit confirmation received',
+      html
+    });
+
+    if (depositId) {
+      try {
+        await db.collection('pending_deposits').doc(depositId).set(
+          {
+            emailUserSent: true,
+            emailUserSentAt: admin.firestore.FieldValue.serverTimestamp()
+          },
+          { merge: true }
+        );
+      } catch (e) {}
+    }
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Deposit notification email error:', error);
+    return res.status(500).json({ error: error?.message || 'Failed to send deposit email' });
+  }
+});
 
 // Get all users
 app.get('/api/users', verifyAdminToken, async (req, res) => {
@@ -350,13 +472,13 @@ app.post('/api/withdrawal-requests', verifyUserToken, async (req, res) => {
     const html = buildEmailHtml({
       req,
       title: 'Withdrawal request received',
-      intro: `We received your withdrawal request and it is now being processed. You will receive another email once it has been confirmed.`,
+      intro: `We received your TitanTrades withdrawal request. Our team is reviewing it now.`,
       rows: [
         { label: 'Request ID', value: finalRequestId },
         { label: 'Amount', value: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(parsedAmount) },
         { label: 'Method', value: String(details?.method || '—').toUpperCase() }
       ],
-      outro: `If you have questions, reply to this email or contact support.`
+      outro: `You will receive another email once it has been confirmed. If you have questions, contact support from your TitanTrades dashboard.`
     });
 
     let emailSent = false;
@@ -408,14 +530,14 @@ app.post('/api/withdrawal-requests/:id/send-approved-email', verifyAdminToken, a
     const html = buildEmailHtml({
       req,
       title: 'Withdrawal confirmed',
-      intro: `Your withdrawal has been confirmed. If additional processing is required by your payment method, you will be updated accordingly.`,
+      intro: `Your TitanTrades withdrawal has been confirmed.`,
       rows: [
         { label: 'Request ID', value: requestId },
         { label: 'Amount', value: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount) },
         { label: 'Method', value: String(method).toUpperCase() },
         { label: 'Status', value: 'CONFIRMED' }
       ],
-      outro: `Thank you for trading with TitanTrades.`
+      outro: `If you did not request this withdrawal, contact support immediately.`
     });
 
     await sendBrandEmail({
