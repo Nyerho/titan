@@ -256,6 +256,21 @@ app.post('/api/auth/password-reset', async (req, res) => {
       throw e;
     }
 
+    let appLink = link;
+    try {
+      const generated = new URL(link);
+      const oobCode = generated.searchParams.get('oobCode');
+      const mode = generated.searchParams.get('mode') || 'resetPassword';
+      if (oobCode) {
+        const direct = new URL(continueUrl);
+        direct.searchParams.set('mode', mode);
+        direct.searchParams.set('oobCode', oobCode);
+        const lang = generated.searchParams.get('lang');
+        if (lang) direct.searchParams.set('lang', lang);
+        appLink = direct.toString();
+      }
+    } catch (e) {}
+
     const html = buildEmailHtml({
       req,
       title: 'Reset your password',
@@ -263,7 +278,7 @@ app.post('/api/auth/password-reset', async (req, res) => {
       rows: [
         {
           label: 'Reset link',
-          value: `<a href="${link}" style="color:#2563eb;font-weight:700;text-decoration:none;">Reset password</a>`
+          value: `<a href="${appLink}" style="color:#2563eb;font-weight:700;text-decoration:none;">Reset password</a>`
         }
       ],
       outro: `If you did not request this, ignore this email and your password will remain unchanged. For your security, never share your password with anyone.`
