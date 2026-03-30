@@ -1553,70 +1553,140 @@ class TradingPlatform {
 
     // Enhanced order form handling
     initOrderForm() {
-        // Order mode toggle
-        document.querySelectorAll('.mode-btn').forEach(btn => {
+        const buyBtn = document.getElementById('buy-btn');
+        const sellBtn = document.getElementById('sell-btn');
+        const placeOrderBtn = document.getElementById('place-order-btn');
+
+        const volumeInput = document.getElementById('volume-input') || document.getElementById('volume');
+        const priceInput = document.getElementById('price-input') || document.getElementById('price');
+        const slInput = document.getElementById('sl-input');
+        const tpInput = document.getElementById('tp-input');
+        const symbolInput = document.getElementById('symbol-select') || document.getElementById('symbol');
+        const priceGroup = document.getElementById('price-group') || (priceInput ? priceInput.closest('.form-group') : null);
+
+        const getOrderType = () => {
+            const tab = document.querySelector('.order-tab.active');
+            if (tab) return tab.getAttribute('data-type') || 'market';
+            const select = document.getElementById('orderType');
+            if (select && select.value) return String(select.value).toLowerCase();
+            const activeTabBtn = document.querySelector('.tab-btn.active');
+            if (activeTabBtn) return (activeTabBtn.textContent || '').trim().toLowerCase() || 'market';
+            return 'market';
+        };
+
+        const getSymbol = () => {
+            if (symbolInput) {
+                const v = (symbolInput.value || '').trim();
+                if (v) return v;
+            }
+            return this.currentSymbol || 'EUR/USD';
+        };
+
+        const getVolume = () => {
+            const raw = (volumeInput && volumeInput.value) ? String(volumeInput.value).trim() : '0.01';
+            const v = Number(raw || '0.01');
+            return Number.isFinite(v) ? v : 0.01;
+        };
+
+        const submitOrder = async (side) => {
+            if (!(await this.ensureUserVerifiedForTrading())) return;
+
+            const symbol = getSymbol();
+            const volume = getVolume();
+            const orderType = getOrderType();
+            const isMarket = orderType === 'market';
+            const price = isMarket ? this.getCurrentPrice(symbol) : Number((priceInput && priceInput.value) || 0);
+
+            if (!Number.isFinite(volume) || volume <= 0) {
+                this.showNotification('Please enter a valid volume', 'warning');
+                return;
+            }
+            if (!isMarket && (!Number.isFinite(price) || price <= 0)) {
+                this.showNotification('Please enter a valid price for limit/stop orders', 'warning');
+                return;
+            }
+
+            const order = {
+                id: Date.now(),
+                symbol,
+                type: String(side || 'buy').toLowerCase(),
+                orderType,
+                volume,
+                price,
+                stopLoss: slInput && slInput.value ? Number(slInput.value) : null,
+                takeProfit: tpInput && tpInput.value ? Number(tpInput.value) : null,
+                timestamp: new Date().toISOString()
+            };
+
+            if (isMarket) {
+                this.executeOrder(order);
+            } else {
+                this.orders.push(order);
+                this.updateOrdersTable();
+            }
+
+            this.showNotification(`${order.type.toUpperCase()} ${orderType} order placed for ${volume} ${symbol}`, 'success');
+        };
+
+        const bindClick = (el, handler) => {
+            if (!el) return;
+            el.addEventListener('click', (e) => {
+                e.preventDefault();
+                handler(e);
+            });
+        };
+
+        bindClick(buyBtn, () => submitOrder('buy'));
+        bindClick(sellBtn, () => submitOrder('sell'));
+        bindClick(placeOrderBtn, () => {
+            const activeSide = document.querySelector('.order-type-btn.active')?.getAttribute('data-type') || 'buy';
+            submitOrder(activeSide);
+        });
+
+        document.querySelectorAll('.order-type-btn').forEach((btn) => {
             btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                this.orderMode = e.target.dataset.mode;
-                this.toggleAdvancedOptions();
+                document.querySelectorAll('.order-type-btn').forEach((b) => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
             });
         });
 
-        // Enhanced BUY/SELL button handling
-        document.querySelectorAll('.order-btn').forEach(btn => {
+        document.querySelectorAll('.order-tab').forEach((tab) => {
+            tab.addEventListener('click', (e) => {
+                document.querySelectorAll('.order-tab').forEach((t) => t.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                const type = e.currentTarget.getAttribute('data-type') || 'market';
+                if (priceGroup) priceGroup.style.display = type === 'market' ? 'none' : 'block';
+            });
+        });
+
+        document.querySelectorAll('.order-btn').forEach((btn) => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const orderType = e.target.textContent.trim();
-                const activeTab = document.querySelector('.tab-btn.active')?.textContent || 'market';
-                
-                // Get form data
-                const volume = document.getElementById('volume')?.value || '0.01';
-                const symbol = this.currentSymbol || 'EUR/USD';
-                
-                // Create order object
-                const order = {
-                    id: Date.now(),
-                    symbol: symbol,
-                    type: orderType.toLowerCase(),
-                    orderMode: activeTab.toLowerCase(),
-                    volume: parseFloat(volume),
-                    price: this.getCurrentPrice(symbol),
-                    timestamp: new Date().toISOString()
-                };
-                
-                this.ensureUserVerifiedForTrading().then((ok) => {
-                    if (!ok) return;
-                    this.executeOrder(order);
-                    this.showNotification(`${orderType} order executed for ${volume} ${symbol}`, 'success');
-                });
+                const text = (e.currentTarget.textContent || '').trim().toLowerCase();
+                const side = text.includes('sell') ? 'sell' : 'buy';
+                submitOrder(side);
             });
         });
 
-        // Order tabs (Buy/Sell)
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
-                
-                const orderType = e.target.textContent.toLowerCase();
+                const orderType = (e.target.textContent || '').toLowerCase();
                 this.updateOrderFormFields(orderType);
                 this.updateOrderButton();
             });
         });
 
-        // Order type change
         const orderTypeSelect = document.getElementById('orderType');
         if (orderTypeSelect) {
             orderTypeSelect.addEventListener('change', (e) => {
-                const priceInput = document.getElementById('price');
                 if (priceInput) {
                     priceInput.style.display = e.target.value === 'market' ? 'none' : 'block';
                 }
             });
         }
 
-        // Form submission
         const orderForm = document.getElementById('orderForm');
         if (orderForm) {
             orderForm.addEventListener('submit', (e) => {
@@ -1625,10 +1695,8 @@ class TradingPlatform {
             });
         }
 
-        // Setup responsive handlers with enhanced mobile support
         this.setupResponsiveHandlers();
-        
-        // Stop loss and take profit toggles
+
         document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
             checkbox.addEventListener('change', (e) => {
                 const targetId = e.target.id.replace('Enable', '') + 'Input';
@@ -2183,20 +2251,56 @@ class TradingPlatform {
         this.positions.push(position);
         this.updatePositionsTable();
         this.updateAccountInfo();
+
+        try {
+            const authManager = window.authManager;
+            const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+            const dbService = window.FirebaseDatabaseService;
+            if (user?.uid && dbService?.createTrade) {
+                dbService.createTrade(user.uid, {
+                    source: 'manual',
+                    symbol: order.symbol,
+                    type: order.type,
+                    amount: order.volume,
+                    entryPrice: order.price,
+                    status: 'open',
+                    timestamp: new Date()
+                });
+            }
+        } catch (e) {}
     }
 
     getCurrentPrice(symbol) {
-        const prices = {
-            'EUR/USD': 1.0856,
-            'GBP/USD': 1.2634,
-            'USD/JPY': 149.85,
-            'AUD/USD': 0.6542
-        };
-        return prices[symbol] || 1.0000;
+        const key = String(symbol || '').trim().toUpperCase();
+        if (!key) return 1.0;
+
+        const real = this.realTimeData?.get?.(key) || this.realTimeData?.get?.(symbol);
+        if (real && typeof real.price === 'number' && Number.isFinite(real.price)) {
+            return real.price;
+        }
+
+        if (this.demoPriceCache.has(key)) return this.demoPriceCache.get(key);
+
+        const hash = Array.from(key).reduce((acc, ch) => ((acc << 5) - acc) + ch.charCodeAt(0), 0);
+        const n = Math.abs(hash);
+
+        let base = 100;
+        if (key.includes('/') && key.length === 7) base = 1.0 + (n % 10000) / 10000;
+        if (key.includes('JPY') && key.includes('/')) base = 100 + (n % 8000) / 100;
+        if (key.includes('XAU')) base = 1800 + (n % 8000) / 10;
+        if (key.includes('BTC')) base = 20000 + (n % 500000) / 10;
+        if (key.includes('ETH')) base = 1000 + (n % 200000) / 100;
+        if (key === 'US100' || key === 'NAS100') base = 14000 + (n % 800000) / 100;
+        if (key === 'GER40') base = 14000 + (n % 400000) / 100;
+        if (key === 'UK100') base = 7000 + (n % 200000) / 100;
+
+        const price = Number(base.toFixed(key.includes('/') && key.length === 7 ? 5 : 2));
+        this.demoPriceCache.set(key, price);
+        return price;
     }
 
     updatePositionsTable() {
-        const positionsContainer = document.getElementById('positions');
+        const positionsContainer = document.getElementById('positions-list') || document.getElementById('positions');
         if (positionsContainer) {
             if (this.positions.length === 0) {
                 positionsContainer.innerHTML = '<p class="no-data">No open positions</p>';
@@ -2235,7 +2339,7 @@ class TradingPlatform {
     }
 
     updateOrdersTable() {
-        const ordersContainer = document.getElementById('orders');
+        const ordersContainer = document.getElementById('history-list') || document.getElementById('orders');
         if (ordersContainer) {
             if (this.orders.length === 0) {
                 ordersContainer.innerHTML = '<p class="no-data">No pending orders</p>';

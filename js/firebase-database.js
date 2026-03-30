@@ -300,7 +300,7 @@ class FirebaseDatabaseService {
   async transferTradingToWallet(uid, amount) {
     try {
       const userRef = doc(db, 'users', uid);
-      const transferRef = doc(collection(db, 'transactions'));
+      const transferRef = doc(collection(db, 'users', uid, 'transactions'));
       const result = await runTransaction(db, async (tx) => {
         const snap = await tx.get(userRef);
         const data = snap.exists() ? snap.data() : {};
@@ -351,7 +351,7 @@ class FirebaseDatabaseService {
   async transferWalletToTrading(uid, amount) {
     try {
       const userRef = doc(db, 'users', uid);
-      const transferRef = doc(collection(db, 'transactions'));
+      const transferRef = doc(collection(db, 'users', uid, 'transactions'));
       const result = await runTransaction(db, async (tx) => {
         const snap = await tx.get(userRef);
         const data = snap.exists() ? snap.data() : {};
