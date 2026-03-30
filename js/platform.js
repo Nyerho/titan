@@ -1667,6 +1667,51 @@ class TradingPlatform {
         });
     }
 
+    setupResponsiveHandlers() {
+        const orderForm = document.getElementById('orderForm');
+        if (!orderForm) return;
+
+        const volumeInput = document.getElementById('volume');
+        const symbolInput = document.getElementById('symbol');
+        const priceInput = document.getElementById('price');
+
+        const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+        if (volumeInput) {
+            volumeInput.addEventListener('blur', () => {
+                const next = clamp(parseFloat(volumeInput.value || '0.01'), 0.01, 100);
+                volumeInput.value = String(Number.isFinite(next) ? next : 0.01);
+            });
+        }
+
+        if (symbolInput) {
+            symbolInput.addEventListener('change', () => {
+                const next = (symbolInput.value || '').trim().toUpperCase();
+                if (next) {
+                    this.currentSymbol = next.includes('/') ? next : next;
+                    this.subscribeToSymbol(this.currentSymbol);
+                }
+            });
+        }
+
+        if (priceInput) {
+            priceInput.addEventListener('focus', () => {
+                if (!priceInput.value) {
+                    const price = this.getCurrentPrice(this.currentSymbol);
+                    if (price) priceInput.value = String(price);
+                }
+            });
+        }
+
+        const onResize = () => {
+            const isMobile = window.innerWidth <= 768;
+            document.body.classList.toggle('tt-mobile', isMobile);
+        };
+
+        window.addEventListener('resize', onResize);
+        onResize();
+    }
+
     initChart() {
         // Timeframe buttons
         document.querySelectorAll('.chart-btn').forEach(btn => {

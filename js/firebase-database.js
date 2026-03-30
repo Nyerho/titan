@@ -63,6 +63,16 @@ function dateKeyIsoUtc() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function computeUnifiedBalanceFromTotals(data) {
+  const deposits = Number(data?.totalDeposits || 0);
+  const profits = Number(data?.totalProfits || 0);
+  const withdrawals = Number(data?.totalWithdrawals || 0);
+  const hasAnyTotals = Number.isFinite(deposits) || Number.isFinite(profits) || Number.isFinite(withdrawals);
+  if (!hasAnyTotals) return null;
+  if (!Number.isFinite(deposits) || !Number.isFinite(profits) || !Number.isFinite(withdrawals)) return null;
+  return Math.max(0, deposits + profits - withdrawals);
+}
+
 class FirebaseDatabaseService {
   constructor() {
     this.listeners = new Map();
@@ -254,13 +264,20 @@ class FirebaseDatabaseService {
         const currentBalance = Number(data.accountBalance ?? data.walletBalance ?? data.balance ?? 0);
         const nextBalance = Math.max(0, currentBalance + Number(delta || 0));
 
+        const profitDelta = Number(delta || 0);
+        const totalsPatch = {};
+        if (Number.isFinite(profitDelta) && profitDelta > 0) {
+          totalsPatch.totalProfits = increment(profitDelta);
+        }
+
         tx.set(
           userRef,
           {
             accountBalance: nextBalance,
             balance: nextBalance,
             walletBalance: nextBalance,
-            balanceUpdatedAt: new Date().toISOString()
+            balanceUpdatedAt: new Date().toISOString(),
+            ...totalsPatch
           },
           { merge: true }
         );
@@ -408,6 +425,10 @@ class FirebaseDatabaseService {
         updatePayload.balance = equityForBalance;
         updatePayload.walletBalance = equityForBalance;
         updatePayload.balanceUpdatedAt = new Date().toISOString();
+        const profitDelta = Number(profit || 0);
+        if (Number.isFinite(profitDelta) && profitDelta > 0) {
+          updatePayload.totalProfits = increment(profitDelta);
+        }
 
         if (nextStatus === 'breached' && data.botsOwned) {
           const botsOwned = data.botsOwned || {};
@@ -671,9 +692,23 @@ class FirebaseDatabaseService {
       
       if (userDoc.exists()) {
         const userData = userDoc.data();
+        const unified = computeUnifiedBalanceFromTotals(userData);
+        const stored = Number(userData.accountBalance ?? userData.walletBalance ?? userData.balance ?? 0);
+        if (unified !== null && Number.isFinite(unified) && Math.abs(unified - stored) > 0.01) {
+          try {
+            await updateDoc(userRef, {
+              accountBalance: unified,
+              balance: unified,
+              walletBalance: unified,
+              balanceUpdatedAt: new Date().toISOString(),
+              updatedAt: serverTimestamp()
+            });
+          } catch (e) {}
+          return { success: true, balance: unified };
+        }
         return {
           success: true,
-          balance: Number(userData.accountBalance ?? userData.walletBalance ?? userData.balance ?? 0)
+          balance: stored
         };
       } else {
         // Initialize user with default balance if profile doesn't exist
@@ -699,7 +734,9 @@ class FirebaseDatabaseService {
         return;
       }
       const data = snap.data() || {};
-      const balance = Number(data.accountBalance ?? data.walletBalance ?? data.balance ?? 0);
+      const unified = computeUnifiedBalanceFromTotals(data);
+      const stored = Number(data.accountBalance ?? data.walletBalance ?? data.balance ?? 0);
+      const balance = unified !== null && Number.isFinite(unified) ? unified : stored;
       callback(balance);
     });
 

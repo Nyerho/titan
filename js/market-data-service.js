@@ -40,6 +40,21 @@ class MarketDataService {
         };
     }
 
+    ensureConfig() {
+        if (this.config && typeof this.config.getApiConfig === 'function') return true;
+        const CfgCtor = (typeof window !== 'undefined' && window.APIConfig)
+            ? window.APIConfig
+            : (typeof APIConfig !== 'undefined' ? APIConfig : null);
+        if (!CfgCtor) return false;
+        try {
+            this.config = new CfgCtor();
+            return !!(this.config && typeof this.config.getApiConfig === 'function');
+        } catch (e) {
+            this.config = null;
+            return false;
+        }
+    }
+
     // Initialize the service with enhanced WebSocket manager
     async init() {
         console.log('Initializing Market Data Service with Enhanced WebSocket Manager...');
@@ -251,7 +266,9 @@ class MarketDataService {
 
     // Get stock quote from Alpha Vantage
     async getStockQuote(symbol) {
+        if (!this.ensureConfig()) return this.getMockQuote(symbol);
         const config = this.config.getApiConfig('alphaVantage');
+        if (!config?.apiKey) return this.getMockQuote(symbol);
         
         if (!this.config.checkRateLimit('alphaVantage')) {
             throw new Error('Alpha Vantage rate limit exceeded');
@@ -292,7 +309,9 @@ class MarketDataService {
 
     // Get forex quote from Alpha Vantage
     async getForexQuote(pair) {
+        if (!this.ensureConfig()) return this.getMockQuote(`${pair.substring(0, 3)}/${pair.substring(3, 6)}`);
         const config = this.config.getApiConfig('alphaVantage');
+        if (!config?.apiKey) return this.getMockQuote(`${pair.substring(0, 3)}/${pair.substring(3, 6)}`);
         
         if (!this.config.checkRateLimit('alphaVantage')) {
             throw new Error('Alpha Vantage rate limit exceeded');
@@ -335,7 +354,9 @@ class MarketDataService {
 
     // Get crypto quote from Alpha Vantage
     async getCryptoQuote(symbol) {
+        if (!this.ensureConfig()) return this.getMockQuote(`${symbol}/USD`);
         const config = this.config.getApiConfig('alphaVantage');
+        if (!config?.apiKey) return this.getMockQuote(`${symbol}/USD`);
         
         if (!this.config.checkRateLimit('alphaVantage')) {
             throw new Error('Alpha Vantage rate limit exceeded');
