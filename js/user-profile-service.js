@@ -219,7 +219,19 @@ class UserProfileService {
 
     // Update account summary display
     updateAccountSummary() {
-        const balance = Number(this.userProfile.accountBalance ?? this.userProfile.walletBalance ?? this.userProfile.balance ?? 0);
+        const path = (window.location && window.location.pathname || '').toLowerCase();
+        const isTradingPlatform = path.includes('platform.html');
+        
+        if (isTradingPlatform) {
+            const wallet = Number(this.userProfile.walletBalance ?? this.userProfile.balance ?? 0);
+            const walletEl = document.getElementById('wallet-balance');
+            if (walletEl) {
+                walletEl.textContent = this.formatCurrency(wallet);
+            }
+            return;
+        }
+        
+        const balance = Number(this.userProfile.walletBalance ?? this.userProfile.balance ?? this.userProfile.accountBalance ?? 0);
         const equity = Number(this.userProfile.equity ?? 0);
         const margin = Number(this.userProfile.margin ?? 0);
         const freeMargin = Number(this.userProfile.freeMargin ?? this.userProfile.free_margin ?? 0);
