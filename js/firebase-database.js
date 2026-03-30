@@ -304,7 +304,10 @@ class FirebaseDatabaseService {
       const result = await runTransaction(db, async (tx) => {
         const snap = await tx.get(userRef);
         const data = snap.exists() ? snap.data() : {};
-        const trading = Number(data.accountBalance ?? 0);
+        const hasPropAccount = !!data.propAccount;
+        const hasTradingInit = !!data.tradingBalanceInitializedAt;
+        const tradingCandidate = Number(data.accountBalance ?? 0);
+        const trading = (!hasPropAccount && !hasTradingInit) ? 0 : tradingCandidate;
         const wallet = Number(data.walletBalance ?? data.balance ?? 0);
         const transferAmount = Number(amount || 0);
         if (!Number.isFinite(transferAmount) || transferAmount <= 0) {
@@ -355,7 +358,10 @@ class FirebaseDatabaseService {
       const result = await runTransaction(db, async (tx) => {
         const snap = await tx.get(userRef);
         const data = snap.exists() ? snap.data() : {};
-        const trading = Number(data.accountBalance ?? 0);
+        const hasPropAccount = !!data.propAccount;
+        const hasTradingInit = !!data.tradingBalanceInitializedAt;
+        const tradingCandidate = Number(data.accountBalance ?? 0);
+        const trading = (!hasPropAccount && !hasTradingInit) ? 0 : tradingCandidate;
         const wallet = Number(data.walletBalance ?? data.balance ?? 0);
         const transferAmount = Number(amount || 0);
         if (!Number.isFinite(transferAmount) || transferAmount <= 0) {

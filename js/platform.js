@@ -132,7 +132,10 @@ class TradingPlatform {
             }
 
             if (dbService.applyBalanceDelta) {
-                await dbService.applyBalanceDelta(user.uid, pnl);
+                const res = await dbService.applyBalanceDelta(user.uid, pnl);
+                if (res && res.success === false && res.error === 'trading_balance_not_initialized') {
+                    this.showNotification('Transfer funds from wallet to trading before P&L can be applied.', 'warning');
+                }
             }
         } catch (e) {}
     }

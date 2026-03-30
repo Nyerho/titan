@@ -718,7 +718,10 @@
                         if (propAccount) {
                             await FirebaseDatabaseService.applyPropTradeResult(user.uid, profit);
                         } else {
-                            await FirebaseDatabaseService.applyBalanceDelta(user.uid, profit);
+                            const res = await FirebaseDatabaseService.applyBalanceDelta(user.uid, profit);
+                            if (res && res.success === false && res.error === 'trading_balance_not_initialized') {
+                                alert('Trading balance not initialized. Transfer funds from wallet to trading first.');
+                            }
                         }
                     } catch (e) {
                         // Demo fallback: update a local balance cache
