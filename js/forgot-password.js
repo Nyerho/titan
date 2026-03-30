@@ -1,5 +1,6 @@
 // Forgot Password Functionality
 import { auth } from './firebase-config.js';
+import { sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 class ForgotPasswordManager {
     constructor() {
@@ -75,6 +76,14 @@ class ForgotPasswordManager {
         return payload;
     }
 
+    async sendResetEmailViaFirebase({ email, continueUrl }) {
+        const actionCodeSettings = {
+            url: continueUrl
+        };
+        await sendPasswordResetEmail(auth, email, actionCodeSettings);
+        return { ok: true };
+    }
+
     async handleForgotPassword(e) {
         e.preventDefault();
         
@@ -103,7 +112,11 @@ class ForgotPasswordManager {
         
         try {
             const continueUrl = this.computeResetUrl();
-            await this.sendResetEmailViaBackend({ email, continueUrl });
+            try {
+                await this.sendResetEmailViaBackend({ email, continueUrl });
+            } catch (backendError) {
+                await this.sendResetEmailViaFirebase({ email, continueUrl });
+            }
             
             // Store email for resend functionality
             sessionStorage.setItem('resetEmail', email);
@@ -114,7 +127,7 @@ class ForgotPasswordManager {
         } catch (error) {
             console.error('Password reset error:', error);
             
-            let errorMessage = 'An error occurred. Please try again.';
+            let errorMessage = String(error?.message || '').trim() || 'An error occurred. Please try again.';
             
             switch (error.code) {
                 case 'auth/user-not-found':
@@ -157,7 +170,11 @@ class ForgotPasswordManager {
         
         try {
             const continueUrl = this.computeResetUrl();
-            await this.sendResetEmailViaBackend({ email, continueUrl });
+            try {
+                await this.sendResetEmailViaBackend({ email, continueUrl });
+            } catch (backendError) {
+                await this.sendResetEmailViaFirebase({ email, continueUrl });
+            }
             
             resendLink.textContent = 'Sent!';
             setTimeout(() => {
