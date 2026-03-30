@@ -10,6 +10,19 @@ const PORT = process.env.PORT || 8080;
 app.use(cors());
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.json({
+    ok: true,
+    service: 'backend',
+    endpoints: ['/health', '/api/*'],
+    ts: Date.now()
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ ok: true, service: 'backend', ts: Date.now() });
+});
+
 // Initialize Firebase Admin (production-friendly)
 if (!admin.apps.length) {
   let credential;

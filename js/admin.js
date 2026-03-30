@@ -4956,6 +4956,284 @@ EnhancedAdminDashboard.prototype.setEntitlementsSaveStatus = function(message) {
     if (el) el.textContent = message || '';
 };
 
+EnhancedAdminDashboard.prototype.parseBotsOwnedFromEditor = function() {
+    const botsText = document.getElementById('adminBotsJson')?.value ?? '';
+    try {
+        const parsed = botsText.trim() ? JSON.parse(botsText) : {};
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+            this.showNotification('botsOwned must be a JSON object', 'error');
+            return null;
+        }
+        return parsed;
+    } catch (e) {
+        this.showNotification('Bots JSON is invalid', 'error');
+        return null;
+    }
+};
+
+EnhancedAdminDashboard.prototype.writeBotsOwnedToEditor = function(botsOwned) {
+    const el = document.getElementById('adminBotsJson');
+    if (el) el.value = JSON.stringify(botsOwned || {}, null, 2);
+};
+
+EnhancedAdminDashboard.prototype.parsePropAccountFromEditor = function() {
+    const propText = document.getElementById('adminPropJson')?.value ?? '';
+    try {
+        const parsed = propText.trim() ? JSON.parse(propText) : null;
+        if (parsed !== null && (typeof parsed !== 'object' || Array.isArray(parsed))) {
+            this.showNotification('propAccount must be a JSON object or null', 'error');
+            return null;
+        }
+        return parsed;
+    } catch (e) {
+        this.showNotification('Prop account JSON is invalid', 'error');
+        return null;
+    }
+};
+
+EnhancedAdminDashboard.prototype.writePropAccountToEditor = function(propAccount) {
+    const el = document.getElementById('adminPropJson');
+    if (el) el.value = JSON.stringify(propAccount ?? null, null, 2);
+};
+
+EnhancedAdminDashboard.prototype.deactivateAllBotsInEditor = function() {
+    if (!this.selectedEntitlementsUser?.id) {
+        this.showNotification('Please search for a user first', 'warning');
+        return;
+    }
+    const botsOwned = this.parseBotsOwnedFromEditor();
+    if (!botsOwned) return;
+    const next = { ...botsOwned };
+    Object.keys(next).forEach((botId) => {
+        const bot = next[botId];
+        if (bot && typeof bot === 'object') next[botId] = { ...bot, active: false };
+    });
+    this.writeBotsOwnedToEditor(next);
+    this.setEntitlementsSaveStatus('Prepared: all bots deactivated. Click Save.');
+};
+
+EnhancedAdminDashboard.prototype.activateAllBotsInEditor = function() {
+    if (!this.selectedEntitlementsUser?.id) {
+        this.showNotification('Please search for a user first', 'warning');
+        return;
+    }
+    const botsOwned = this.parseBotsOwnedFromEditor();
+    if (!botsOwned) return;
+    const next = { ...botsOwned };
+    Object.keys(next).forEach((botId) => {
+        const bot = next[botId];
+        if (bot && typeof bot === 'object') next[botId] = { ...bot, active: true };
+    });
+    this.writeBotsOwnedToEditor(next);
+    this.setEntitlementsSaveStatus('Prepared: all bots activated. Click Save.');
+};
+
+EnhancedAdminDashboard.prototype.upsertBotFromForm = function() {
+    if (!this.selectedEntitlementsUser?.id) {
+        this.showNotification('Please search for a user first', 'warning');
+        return;
+    }
+    const botId = String(document.getElementById('adminBotId')?.value || '').trim();
+    if (!botId) {
+        this.showNotification('Bot ID is required', 'warning');
+        return;
+    }
+
+    const botsOwned = this.parseBotsOwnedFromEditor();
+    if (!botsOwned) return;
+
+    const name = String(document.getElementById('adminBotName')?.value || '').trim() || botId;
+    const roiPctPerCycle = Number(document.getElementById('adminBotRoiPct')?.value);
+    const cycleHours = Number(document.getElementById('adminBotCycleHours')?.value);
+    const volume = Number(document.getElementById('adminBotVolume')?.value);
+    const riskFactor = Number(document.getElementById('adminBotRiskFactor')?.value);
+    const tradesPerTick = Number(document.getElementById('adminBotTradesPerTick')?.value);
+    const symbolsRaw = String(document.getElementById('adminBotSymbols')?.value || '');
+    const symbols = symbolsRaw
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+    const existing = botsOwned[botId] && typeof botsOwned[botId] === 'object' ? botsOwned[botId] : {};
+    const nextBot = {
+        ...existing,
+        id: botId,
+        name,
+        purchasedAt: existing.purchasedAt || Date.now()
+    };
+    if (!Object.prototype.hasOwnProperty.call(existing, 'active')) nextBot.active = true;
+    if (Number.isFinite(roiPctPerCycle)) nextBot.roiPctPerCycle = roiPctPerCycle;
+    if (Number.isFinite(cycleHours)) nextBot.cycleHours = cycleHours;
+
+    const nextConfig = { ...(existing.botConfig && typeof existing.botConfig === 'object' ? existing.botConfig : {}) };
+    if (Number.isFinite(volume)) nextConfig.volume = volume;
+    if (Number.isFinite(riskFactor)) nextConfig.riskFactor = riskFactor;
+    if (Number.isFinite(tradesPerTick)) nextConfig.tradesPerTick = tradesPerTick;
+    if (symbols.length) nextConfig.symbols = symbols;
+    if (Object.keys(nextConfig).length) nextBot.botConfig = nextConfig;
+
+    const nextBots = { ...botsOwned, [botId]: nextBot };
+    this.writeBotsOwnedToEditor(nextBots);
+    this.setEntitlementsSaveStatus(`Prepared: bot ${botId} upserted. Click Save.`);
+};
+
+EnhancedAdminDashboard.prototype.removeBotFromEditor = function() {
+    if (!this.selectedEntitlementsUser?.id) {
+        this.showNotification('Please search for a user first', 'warning');
+        return;
+    }
+    const botId = String(document.getElementById('adminBotId')?.value || '').trim();
+    if (!botId) {
+        this.showNotification('Bot ID is required', 'warning');
+        return;
+    }
+    const botsOwned = this.parseBotsOwnedFromEditor();
+    if (!botsOwned) return;
+    if (!botsOwned[botId]) {
+        this.showNotification('Bot not found in botsOwned', 'warning');
+        return;
+    }
+    const next = { ...botsOwned };
+    delete next[botId];
+    this.writeBotsOwnedToEditor(next);
+    this.setEntitlementsSaveStatus(`Prepared: bot ${botId} removed. Click Save.`);
+};
+
+EnhancedAdminDashboard.prototype.applyBotConfigToAllBots = function() {
+    if (!this.selectedEntitlementsUser?.id) {
+        this.showNotification('Please search for a user first', 'warning');
+        return;
+    }
+    const botsOwned = this.parseBotsOwnedFromEditor();
+    if (!botsOwned) return;
+
+    const volume = Number(document.getElementById('adminAllBotsVolume')?.value);
+    const riskFactor = Number(document.getElementById('adminAllBotsRiskFactor')?.value);
+    const tradesPerTick = Number(document.getElementById('adminAllBotsTradesPerTick')?.value);
+    const symbolsRaw = String(document.getElementById('adminAllBotsSymbols')?.value || '');
+    const symbols = symbolsRaw
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+    const next = { ...botsOwned };
+    Object.keys(next).forEach((botId) => {
+        const bot = next[botId];
+        if (!bot || typeof bot !== 'object') return;
+        const cfg = { ...(bot.botConfig && typeof bot.botConfig === 'object' ? bot.botConfig : {}) };
+        if (Number.isFinite(volume)) cfg.volume = volume;
+        if (Number.isFinite(riskFactor)) cfg.riskFactor = riskFactor;
+        if (Number.isFinite(tradesPerTick)) cfg.tradesPerTick = tradesPerTick;
+        if (symbols.length) cfg.symbols = symbols;
+        next[botId] = { ...bot, botConfig: cfg };
+    });
+
+    this.writeBotsOwnedToEditor(next);
+    this.setEntitlementsSaveStatus('Prepared: applied botConfig to all bots. Click Save.');
+};
+
+EnhancedAdminDashboard.prototype.applyPropPhaseStatusFromForm = function() {
+    if (!this.selectedEntitlementsUser?.id) {
+        this.showNotification('Please search for a user first', 'warning');
+        return;
+    }
+    const prop = this.parsePropAccountFromEditor();
+    if (prop === null) {
+        this.showNotification('No prop account. Use Raw JSON or reset Phase 1 to create one.', 'warning');
+        return;
+    }
+    const phase = Number(document.getElementById('adminPropPhase')?.value);
+    const status = String(document.getElementById('adminPropStatus')?.value || '').trim();
+    const breachReason = String(document.getElementById('adminPropBreachReason')?.value || '').trim();
+    const next = { ...prop };
+    if (Number.isFinite(phase) && phase > 0) next.phase = phase;
+    if (status) next.status = status;
+    if (status === 'breached') next.breachReason = breachReason || next.breachReason || 'admin_breached';
+    if (status !== 'breached') {
+        delete next.breachReason;
+    }
+    next.updatedAt = Date.now();
+    this.writePropAccountToEditor(next);
+    this.setEntitlementsSaveStatus('Prepared: prop phase/status updated. Click Save.');
+};
+
+EnhancedAdminDashboard.prototype.applyPropRulesFromForm = function() {
+    if (!this.selectedEntitlementsUser?.id) {
+        this.showNotification('Please search for a user first', 'warning');
+        return;
+    }
+    const prop = this.parsePropAccountFromEditor();
+    if (prop === null) {
+        this.showNotification('No prop account. Use Raw JSON or reset Phase 1 to create one.', 'warning');
+        return;
+    }
+
+    const accountSize = Number(document.getElementById('adminPropAccountSize')?.value);
+    const equity = Number(document.getElementById('adminPropEquity')?.value);
+    const dailyDdPct = Number(document.getElementById('adminPropDailyDdPct')?.value);
+    const maxDdPct = Number(document.getElementById('adminPropMaxDdPct')?.value);
+    const targetPct = Number(document.getElementById('adminPropTargetPct')?.value);
+    const minDays = Number(document.getElementById('adminPropMinDays')?.value);
+    const timeLimitDays = Number(document.getElementById('adminPropTimeLimitDays')?.value);
+
+    const next = { ...prop };
+    if (Number.isFinite(accountSize) && accountSize > 0) next.accountSize = accountSize;
+    if (Number.isFinite(equity)) next.currentEquity = equity;
+    if (Number.isFinite(accountSize) && accountSize > 0 && !Number.isFinite(next.startingEquity)) next.startingEquity = accountSize;
+    if (Number.isFinite(dailyDdPct)) next.dailyDrawdownPct = dailyDdPct;
+    if (Number.isFinite(maxDdPct)) next.maxDrawdownPct = maxDdPct;
+    if (Number.isFinite(targetPct)) next.profitTargetPct = targetPct;
+    if (Number.isFinite(minDays)) next.minTradingDays = minDays;
+    if (Number.isFinite(timeLimitDays)) next.timeLimitDays = timeLimitDays;
+    next.updatedAt = Date.now();
+
+    this.writePropAccountToEditor(next);
+    this.setEntitlementsSaveStatus('Prepared: prop rules/equity updated. Click Save.');
+};
+
+EnhancedAdminDashboard.prototype.adjustPropEquityFromForm = function() {
+    if (!this.selectedEntitlementsUser?.id) {
+        this.showNotification('Please search for a user first', 'warning');
+        return;
+    }
+    const prop = this.parsePropAccountFromEditor();
+    if (prop === null) {
+        this.showNotification('No prop account. Use Raw JSON or reset Phase 1 to create one.', 'warning');
+        return;
+    }
+    const delta = Number(document.getElementById('adminPropEquityDelta')?.value);
+    if (!Number.isFinite(delta) || delta === 0) {
+        this.showNotification('Enter an equity delta amount', 'warning');
+        return;
+    }
+    const current = Number(prop.currentEquity ?? prop.accountSize ?? 0);
+    const next = { ...prop, currentEquity: current + delta, updatedAt: Date.now() };
+    this.writePropAccountToEditor(next);
+    this.setEntitlementsSaveStatus('Prepared: equity adjusted. Click Save.');
+};
+
+EnhancedAdminDashboard.prototype.resetPropDailyStatsInEditor = function() {
+    if (!this.selectedEntitlementsUser?.id) {
+        this.showNotification('Please search for a user first', 'warning');
+        return;
+    }
+    const prop = this.parsePropAccountFromEditor();
+    if (prop === null) {
+        this.showNotification('No prop account. Use Raw JSON or reset Phase 1 to create one.', 'warning');
+        return;
+    }
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const next = {
+        ...prop,
+        todayDate: todayKey,
+        todayPnl: 0,
+        tradingDays: Array.isArray(prop.tradingDays) ? prop.tradingDays : [],
+        updatedAt: Date.now()
+    };
+    this.writePropAccountToEditor(next);
+    this.setEntitlementsSaveStatus('Prepared: today stats reset. Click Save.');
+};
+
 // Add missing password management methods
 EnhancedAdminDashboard.prototype.resetUserPassword = async function() {
     if (!this.selectedPasswordUser) {

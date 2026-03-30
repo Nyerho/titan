@@ -1605,37 +1605,287 @@
                         </div>
                     </div>
 
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-6">
-                            <div class="card bg-dark h-100">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0"><i class="fas fa-robot me-2"></i>User Trading Bots (botsOwned)</h5>
-                                    <button class="btn btn-outline-light btn-sm" onclick="adminDashboard.applyBotTemplateToJson()">
-                                        <i class="fas fa-magic me-1"></i>Insert Template
-                                    </button>
+                    <ul class="nav nav-pills mb-3" id="botsPropPills" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="botsPropOverviewTab" data-bs-toggle="pill" data-bs-target="#botsPropOverviewPane" type="button" role="tab">Overview</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="botsPropBotsTab" data-bs-toggle="pill" data-bs-target="#botsPropBotsPane" type="button" role="tab">Bots Controls</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="botsPropPropTab" data-bs-toggle="pill" data-bs-target="#botsPropPropPane" type="button" role="tab">Prop Controls</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="botsPropRawTab" data-bs-toggle="pill" data-bs-target="#botsPropRawPane" type="button" role="tab">Raw JSON</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="botsPropPanes">
+                        <div class="tab-pane fade show active" id="botsPropOverviewPane" role="tabpanel">
+                            <div class="card bg-dark">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>How this works</h5>
                                 </div>
                                 <div class="card-body">
-                                    <textarea class="form-control bg-secondary text-white font-monospace" id="adminBotsJson" rows="16" placeholder='{"bot_scalper":{"id":"bot_scalper","active":true,"name":"Basic Bot","roiPctPerCycle":5,"cycleHours":2,"botConfig":{"volume":0.02,"riskFactor":0.00035,"tradesPerTick":2,"symbols":["EUR/USD"]}}}'></textarea>
-                                    <div class="small text-muted mt-2">Edit the user document field <strong>botsOwned</strong>. You can include <strong>botConfig</strong> to control how the bot trades for that user.</div>
+                                    <div class="text-muted small">
+                                        <div class="mb-2"><strong>Step 1:</strong> Search a user email. You’ll see the user’s current botsOwned and propAccount loaded.</div>
+                                        <div class="mb-2"><strong>Step 2:</strong> Use the Bots/Prop controls to prepare changes (they update the Raw JSON).</div>
+                                        <div class="mb-2"><strong>Step 3:</strong> Click <strong>Save Bots &amp; Prop Account</strong> to write changes to Firestore.</div>
+                                        <div class="mb-2"><strong>Important:</strong> The system enforces prop rules automatically. If the user breaches, bots are auto-disabled and trading is blocked.</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12 col-lg-6">
-                            <div class="card bg-dark h-100">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0"><i class="fas fa-building-columns me-2"></i>User Prop Account (propAccount)</h5>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-outline-warning btn-sm" onclick="adminDashboard.resetPropAccountToPhase1()">
-                                            <i class="fas fa-undo me-1"></i>Reset Phase 1
-                                        </button>
-                                        <button class="btn btn-outline-danger btn-sm" onclick="adminDashboard.clearPropAccount()">
-                                            <i class="fas fa-trash me-1"></i>Clear
-                                        </button>
+
+                        <div class="tab-pane fade" id="botsPropBotsPane" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-12 col-xl-6">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-outline-warning" onclick="adminDashboard.deactivateAllBotsInEditor()"><i class="fas fa-pause me-2"></i>Deactivate All Bots</button>
+                                                <button class="btn btn-outline-success" onclick="adminDashboard.activateAllBotsInEditor()"><i class="fas fa-play me-2"></i>Activate All Bots</button>
+                                            </div>
+                                            <hr class="border-secondary">
+                                            <div class="input-group mb-2">
+                                                <span class="input-group-text bg-secondary text-white">Bot ID</span>
+                                                <input type="text" class="form-control" id="adminBotId" placeholder="bot_scalper">
+                                            </div>
+                                            <div class="input-group mb-2">
+                                                <span class="input-group-text bg-secondary text-white">Name</span>
+                                                <input type="text" class="form-control" id="adminBotName" placeholder="Basic Bot">
+                                            </div>
+                                            <div class="row g-2 mb-2">
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">ROI %</span>
+                                                        <input type="number" class="form-control" id="adminBotRoiPct" placeholder="5" step="0.01">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">Cycle h</span>
+                                                        <input type="number" class="form-control" id="adminBotCycleHours" placeholder="2" step="1">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row g-2 mb-2">
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">Volume</span>
+                                                        <input type="number" class="form-control" id="adminBotVolume" placeholder="0.02" step="0.01">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">Risk</span>
+                                                        <input type="number" class="form-control" id="adminBotRiskFactor" placeholder="0.00035" step="0.00001">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="input-group mb-2">
+                                                <span class="input-group-text bg-secondary text-white">Trades/tick</span>
+                                                <input type="number" class="form-control" id="adminBotTradesPerTick" placeholder="2" step="1">
+                                            </div>
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text bg-secondary text-white">Symbols</span>
+                                                <input type="text" class="form-control" id="adminBotSymbols" placeholder="EUR/USD, GBP/USD, BTC/USD">
+                                            </div>
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-primary" onclick="adminDashboard.upsertBotFromForm()"><i class="fas fa-plus-circle me-2"></i>Add/Update Bot</button>
+                                                <button class="btn btn-outline-danger" onclick="adminDashboard.removeBotFromEditor()"><i class="fas fa-trash me-2"></i>Remove Bot</button>
+                                            </div>
+                                            <div class="small text-muted mt-2">These actions edit Raw JSON. Click Save to apply to the user.</div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="card-body">
-                                    <textarea class="form-control bg-secondary text-white font-monospace" id="adminPropJson" rows="16" placeholder='{"planId":"prop_10k","accountSize":10000,"phase":1,"profitTargetPct":0.1,"dailyDrawdownPct":0.05,"maxDrawdownPct":0.1,"minTradingDays":4,"timeLimitDays":30,"status":"evaluation","startingEquity":10000,"currentEquity":10000,"todayDate":"2026-03-29","todayPnl":0,"tradingDays":["2026-03-29"]}'></textarea>
-                                    <div class="small text-muted mt-2">Edit the user document field <strong>propAccount</strong>. Changes affect prop rule enforcement and phase progression.</div>
+
+                                <div class="col-12 col-xl-6">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0"><i class="fas fa-code me-2"></i>Config for All Bots</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-2 mb-2">
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">Volume</span>
+                                                        <input type="number" class="form-control" id="adminAllBotsVolume" placeholder="0.02" step="0.01">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">Risk</span>
+                                                        <input type="number" class="form-control" id="adminAllBotsRiskFactor" placeholder="0.00035" step="0.00001">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="input-group mb-2">
+                                                <span class="input-group-text bg-secondary text-white">Trades/tick</span>
+                                                <input type="number" class="form-control" id="adminAllBotsTradesPerTick" placeholder="2" step="1">
+                                            </div>
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text bg-secondary text-white">Symbols</span>
+                                                <input type="text" class="form-control" id="adminAllBotsSymbols" placeholder="EUR/USD, GBP/USD, BTC/USD">
+                                            </div>
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-outline-info" onclick="adminDashboard.applyBotConfigToAllBots()"><i class="fas fa-wrench me-2"></i>Apply Config to All Bots</button>
+                                            </div>
+                                            <div class="small text-muted mt-2">Applies/overwrites botConfig on each bot in botsOwned.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="botsPropPropPane" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-12 col-xl-6">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-header">
+                                            <h5 class="mb-0"><i class="fas fa-gavel me-2"></i>Status & Phase</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-2 mb-2">
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">Phase</span>
+                                                        <select class="form-select" id="adminPropPhase">
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">Status</span>
+                                                        <select class="form-select" id="adminPropStatus">
+                                                            <option value="evaluation">evaluation</option>
+                                                            <option value="funded">funded</option>
+                                                            <option value="breached">breached</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="input-group mb-2">
+                                                <span class="input-group-text bg-secondary text-white">Breach reason</span>
+                                                <input type="text" class="form-control" id="adminPropBreachReason" placeholder="daily_drawdown / max_drawdown / time_limit">
+                                            </div>
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-outline-warning" onclick="adminDashboard.resetPropAccountToPhase1()"><i class="fas fa-undo me-2"></i>Reset Phase 1 (prepare)</button>
+                                                <button class="btn btn-outline-info" onclick="adminDashboard.applyPropPhaseStatusFromForm()"><i class="fas fa-check me-2"></i>Apply Phase/Status (prepare)</button>
+                                                <button class="btn btn-outline-danger" onclick="adminDashboard.clearPropAccount()"><i class="fas fa-trash me-2"></i>Clear Prop (apply now)</button>
+                                            </div>
+                                            <div class="small text-muted mt-2">Prepare edits updates Raw JSON. Click Save to apply to the user.</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-xl-6">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-header">
+                                            <h5 class="mb-0"><i class="fas fa-coins me-2"></i>Equity & Rules</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-2 mb-2">
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">Account size</span>
+                                                        <input type="number" class="form-control" id="adminPropAccountSize" placeholder="10000" step="1">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">Equity</span>
+                                                        <input type="number" class="form-control" id="adminPropEquity" placeholder="10000" step="0.01">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row g-2 mb-2">
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">Daily DD %</span>
+                                                        <input type="number" class="form-control" id="adminPropDailyDdPct" placeholder="0.05" step="0.001">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">Max DD %</span>
+                                                        <input type="number" class="form-control" id="adminPropMaxDdPct" placeholder="0.1" step="0.001">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row g-2 mb-3">
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">Target %</span>
+                                                        <input type="number" class="form-control" id="adminPropTargetPct" placeholder="0.1" step="0.001">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-secondary text-white">Min days</span>
+                                                        <input type="number" class="form-control" id="adminPropMinDays" placeholder="4" step="1">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text bg-secondary text-white">Time limit (days)</span>
+                                                <input type="number" class="form-control" id="adminPropTimeLimitDays" placeholder="30" step="1">
+                                            </div>
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text bg-secondary text-white">Equity delta</span>
+                                                <input type="number" class="form-control" id="adminPropEquityDelta" placeholder="100" step="0.01">
+                                                <button class="btn btn-outline-info" onclick="adminDashboard.adjustPropEquityFromForm()">Apply</button>
+                                            </div>
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-outline-success" onclick="adminDashboard.applyPropRulesFromForm()"><i class="fas fa-sliders-h me-2"></i>Apply Rules/Equity (prepare)</button>
+                                                <button class="btn btn-outline-secondary" onclick="adminDashboard.resetPropDailyStatsInEditor()"><i class="fas fa-calendar-day me-2"></i>Reset Today Stats (prepare)</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="botsPropRawPane" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-12 col-lg-6">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0"><i class="fas fa-robot me-2"></i>User Trading Bots (botsOwned)</h5>
+                                            <button class="btn btn-outline-light btn-sm" onclick="adminDashboard.applyBotTemplateToJson()">
+                                                <i class="fas fa-magic me-1"></i>Insert Template
+                                            </button>
+                                        </div>
+                                        <div class="card-body">
+                                            <textarea class="form-control bg-secondary text-white font-monospace" id="adminBotsJson" rows="16" placeholder='{"bot_scalper":{"id":"bot_scalper","active":true,"name":"Basic Bot","roiPctPerCycle":5,"cycleHours":2,"botConfig":{"volume":0.02,"riskFactor":0.00035,"tradesPerTick":2,"symbols":["EUR/USD"]}}}'></textarea>
+                                            <div class="small text-muted mt-2">Edit the user document field <strong>botsOwned</strong>. You can include <strong>botConfig</strong> to control how the bot trades for that user.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-lg-6">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0"><i class="fas fa-building-columns me-2"></i>User Prop Account (propAccount)</h5>
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-outline-warning btn-sm" onclick="adminDashboard.resetPropAccountToPhase1()">
+                                                    <i class="fas fa-undo me-1"></i>Reset Phase 1
+                                                </button>
+                                                <button class="btn btn-outline-danger btn-sm" onclick="adminDashboard.clearPropAccount()">
+                                                    <i class="fas fa-trash me-1"></i>Clear
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <textarea class="form-control bg-secondary text-white font-monospace" id="adminPropJson" rows="16" placeholder='{"planId":"prop_10k","accountSize":10000,"phase":1,"profitTargetPct":0.1,"dailyDrawdownPct":0.05,"maxDrawdownPct":0.1,"minTradingDays":4,"timeLimitDays":30,"status":"evaluation","startingEquity":10000,"currentEquity":10000,"todayDate":"2026-03-29","todayPnl":0,"tradingDays":["2026-03-29"]}'></textarea>
+                                            <div class="small text-muted mt-2">Edit the user document field <strong>propAccount</strong>. Changes affect prop rule enforcement and phase progression.</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

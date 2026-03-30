@@ -88,6 +88,19 @@ app.use(express.json());
 const auth = admin.auth();
 const db = admin.firestore();
 
+app.get('/', (req, res) => {
+  res.json({
+    ok: true,
+    service: 'backend-server',
+    endpoints: ['/health', '/api/auth/password-reset'],
+    ts: Date.now()
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ ok: true, service: 'backend-server', ts: Date.now() });
+});
+
 function getPublicBaseUrl(req) {
   const configured = process.env.PUBLIC_BASE_URL;
   if (configured) return configured.replace(/\/+$/, '');
