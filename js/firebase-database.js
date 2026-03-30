@@ -261,7 +261,12 @@ class FirebaseDatabaseService {
       const result = await runTransaction(db, async (tx) => {
         const snap = await tx.get(userRef);
         const data = snap.exists() ? snap.data() : {};
+        const hasPropAccount = !!data.propAccount;
+        const hasTradingInit = !!data.tradingBalanceInitializedAt;
         const currentTradingBalance = Number(data.accountBalance ?? 0);
+        if (!hasPropAccount && !hasTradingInit) {
+          return { success: false, error: 'trading_balance_not_initialized' };
+        }
         const nextTradingBalance = Math.max(0, currentTradingBalance + Number(delta || 0));
 
         const profitDelta = Number(delta || 0);
@@ -270,13 +275,17 @@ class FirebaseDatabaseService {
           totalsPatch.totalProfits = increment(profitDelta);
         }
 
+        const patch = {
+          accountBalance: nextTradingBalance,
+          tradingBalanceUpdatedAt: new Date().toISOString(),
+          ...totalsPatch
+        };
+        if (!hasTradingInit && nextTradingBalance > 0) {
+          patch.tradingBalanceInitializedAt = serverTimestamp();
+        }
         tx.set(
           userRef,
-          {
-            accountBalance: nextTradingBalance,
-            tradingBalanceUpdatedAt: new Date().toISOString(),
-            ...totalsPatch
-          },
+          patch,
           { merge: true }
         );
 
@@ -367,6 +376,7 @@ class FirebaseDatabaseService {
             balanceUpdatedAt: new Date().toISOString(),
             accountBalance: nextTrading,
             tradingBalanceUpdatedAt: new Date().toISOString(),
+            tradingBalanceInitializedAt: data.tradingBalanceInitializedAt || serverTimestamp(),
             updatedAt: serverTimestamp()
           },
           { merge: true }
@@ -856,7 +866,20 @@ class FirebaseDatabaseService {
           return { success: true, balance: 0 };
         }
       }
-      const trading = Number(userData.accountBalance ?? 0);
+      const hasPropAccount = !!userData.propAccount;
+      const hasTradingInit = !!userData.tradingBalanceInitializedAt;
+      const tradingCandidate = Number(userData.accountBalance ?? 0);
+      if (!hasPropAccount && !hasTradingInit && Number.isFinite(tradingCandidate) && tradingCandidate > 0) {
+        try {
+          await updateDoc(userRef, {
+            accountBalance: 0,
+            tradingBalanceUpdatedAt: new Date().toISOString(),
+            updatedAt: serverTimestamp()
+          });
+        } catch (e) {}
+        return { success: true, balance: 0 };
+      }
+      const trading = tradingCandidate;
       return { success: true, balance: Number.isFinite(trading) ? trading : 0 };
     } catch (error) {
       return { success: false, error: error.message };
@@ -887,8 +910,21 @@ class FirebaseDatabaseService {
         return;
       }
       const data = snap.data() || {};
-      const trading = Number(data.accountBalance ?? 0);
-      callback(Number.isFinite(trading) ? trading : 0);
+      const hasPropAccount = !!data.propAccount;
+      const hasTradingInit = !!data.tradingBalanceInitializedAt;
+      const tradingCandidate = Number(data.accountBalance ?? 0);
+      if (!hasPropAccount && !hasTradingInit && Number.isFinite(tradingCandidate) && tradingCandidate > 0) {
+        try {
+          updateDoc(userRef, {
+            accountBalance: 0,
+            tradingBalanceUpdatedAt: new Date().toISOString(),
+            updatedAt: serverTimestamp()
+          });
+        } catch (e) {}
+        callback(0);
+        return;
+      }
+      callback(Number.isFinite(tradingCandidate) ? tradingCandidate : 0);
     });
 
     this.listeners.set(`trading_balance_${uid}`, unsubscribe);

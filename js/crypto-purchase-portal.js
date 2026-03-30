@@ -66,7 +66,7 @@ class CryptoPurchasePortal {
             const userDoc = await getDoc(doc(db, 'users', uid));
             if (userDoc.exists()) {
                 const data = userDoc.data() || {};
-                const balance = Number(data.accountBalance ?? data.walletBalance ?? data.balance ?? 0);
+                const balance = Number(data.walletBalance ?? data.balance ?? 0);
                 this.setBalance(balance);
             }
         } catch (error) {
@@ -308,7 +308,6 @@ class CryptoPurchasePortal {
                     await FirebaseDatabaseService.updateUserBalance(user.uid, newBalance);
                 } else {
                     await updateDoc(doc(db, 'users', user.uid), {
-                        accountBalance: newBalance,
                         walletBalance: newBalance,
                         balance: newBalance,
                         lastUpdated: serverTimestamp()

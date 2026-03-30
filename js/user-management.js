@@ -746,17 +746,16 @@ async function adjustUserBalance(userId, action) {
         // Get current user data first
         const userRef = db.collection('users').doc(userId);
         const userDoc = await userRef.get();
-        const currentBalance = userDoc.exists() ? (userDoc.data().accountBalance || userDoc.data().balance || 0) : 0;
+        const currentBalance = userDoc.exists() ? (userDoc.data().walletBalance || userDoc.data().balance || 0) : 0;
         
         // Calculate new balance
         const newBalance = action === 'add' ? currentBalance + amount : currentBalance - amount;
         
         const batch = db.batch();
         
-        // Update users collection with ALL balance fields
+        // Update users collection
         batch.update(userRef, {
             balance: newBalance,
-            accountBalance: newBalance,
             walletBalance: newBalance,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -770,8 +769,8 @@ async function adjustUserBalance(userId, action) {
         if (accountDoc.exists()) {
             batch.update(accountRef, {
                 balance: newBalance,
-                accountBalance: newBalance,
                 walletBalance: newBalance,
+                accountBalance: 0,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 syncedFromUsers: true
             });
@@ -1408,7 +1407,6 @@ window.addUserDeposit = async function(userId) {
         const userRef = db.collection('users').doc(userId);
         batch.update(userRef, {
             balance: firebase.firestore.FieldValue.increment(amount),
-            accountBalance: firebase.firestore.FieldValue.increment(amount),
             walletBalance: firebase.firestore.FieldValue.increment(amount),
             totalDeposits: firebase.firestore.FieldValue.increment(amount),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1420,8 +1418,8 @@ window.addUserDeposit = async function(userId) {
         const accountRef = db.collection('accounts').doc(userId);
         batch.set(accountRef, {
             balance: firebase.firestore.FieldValue.increment(amount),
-            accountBalance: firebase.firestore.FieldValue.increment(amount),
             walletBalance: firebase.firestore.FieldValue.increment(amount),
+            accountBalance: 0,
             totalDeposits: firebase.firestore.FieldValue.increment(amount),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
@@ -1471,7 +1469,6 @@ window.addUserProfit = async function(userId) {
         const userRef = db.collection('users').doc(userId);
         batch.update(userRef, {
             balance: firebase.firestore.FieldValue.increment(amount),
-            accountBalance: firebase.firestore.FieldValue.increment(amount),
             walletBalance: firebase.firestore.FieldValue.increment(amount),
             totalProfits: firebase.firestore.FieldValue.increment(amount),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1483,8 +1480,8 @@ window.addUserProfit = async function(userId) {
         const accountRef = db.collection('accounts').doc(userId);
         batch.set(accountRef, {
             balance: firebase.firestore.FieldValue.increment(amount),
-            accountBalance: firebase.firestore.FieldValue.increment(amount),
             walletBalance: firebase.firestore.FieldValue.increment(amount),
+            accountBalance: 0,
             totalProfits: firebase.firestore.FieldValue.increment(amount),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
@@ -1595,7 +1592,6 @@ window.updateUserFinancials = async function(userId) {
             totalProfits: newProfits,
             totalDeposits: newDeposits,
             balance: firebase.firestore.FieldValue.increment(totalBalanceChange),
-            accountBalance: firebase.firestore.FieldValue.increment(totalBalanceChange),
             walletBalance: firebase.firestore.FieldValue.increment(totalBalanceChange),
             balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1690,7 +1686,6 @@ window.calculateBalance = async function(userId) {
         const userRef = db.collection('users').doc(userId);
         await userRef.update({
             balance: Math.max(0, calculatedBalance), // Ensure balance doesn't go negative
-            accountBalance: Math.max(0, calculatedBalance),
             walletBalance: Math.max(0, calculatedBalance),
             totalDeposits: Math.max(0, totalDeposits),
             totalProfits: Math.max(0, totalProfits),

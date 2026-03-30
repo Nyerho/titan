@@ -3289,7 +3289,7 @@ class EnhancedAdminDashboard {
             
             const currentDeposits = userData.totalDeposits || 0;
             const currentProfits = userData.totalProfits || 0;
-            const currentBalance = userData.accountBalance || userData.balance || 0;
+            const currentBalance = userData.walletBalance || userData.balance || 0;
             
             // Calculate new values - UPDATE THE CALCULATION COMPONENTS
             let newDeposits = currentDeposits;
@@ -3322,7 +3322,6 @@ class EnhancedAdminDashboard {
                 totalProfits: newProfits,
                 // Also update these for consistency, but your dashboard will use the calculation
                 balance: newCalculatedBalance,
-                accountBalance: newCalculatedBalance,
                 walletBalance: newCalculatedBalance,
                 updatedAt: timestamp,
                 balanceUpdatedAt: timestamp,
@@ -3344,8 +3343,8 @@ class EnhancedAdminDashboard {
                     totalDeposits: newDeposits,
                     totalProfits: newProfits,
                     balance: newCalculatedBalance,
-                    accountBalance: newCalculatedBalance,
                     walletBalance: newCalculatedBalance,
+                    accountBalance: 0,
                     updatedAt: timestamp,
                     lastAdminUpdate: timestamp,
                     syncedFromUsers: true
@@ -3355,8 +3354,8 @@ class EnhancedAdminDashboard {
                     totalDeposits: newDeposits,
                     totalProfits: newProfits,
                     balance: newCalculatedBalance,
-                    accountBalance: newCalculatedBalance,
                     walletBalance: newCalculatedBalance,
+                    accountBalance: 0,
                     currency: 'USD',
                     createdAt: timestamp,
                     updatedAt: timestamp,
@@ -3422,7 +3421,6 @@ class EnhancedAdminDashboard {
             const userRef = doc(this.db, 'users', this.selectedUserId);
             batch.update(userRef, {
                 balance: exactAmount,
-                accountBalance: exactAmount,
                 walletBalance: exactAmount,
                 updatedAt: timestamp,
                 balanceUpdatedAt: timestamp,
@@ -3436,8 +3434,8 @@ class EnhancedAdminDashboard {
             if (accountDoc.exists()) {
                 batch.update(accountRef, {
                     balance: exactAmount,
-                    accountBalance: exactAmount,
                     walletBalance: exactAmount,
+                    accountBalance: 0,
                     updatedAt: timestamp,
                     lastAdminUpdate: timestamp
                 });
@@ -3447,8 +3445,8 @@ class EnhancedAdminDashboard {
                 
                 batch.set(accountRef, {
                     balance: exactAmount,
-                    accountBalance: exactAmount,
                     walletBalance: exactAmount,
+                    accountBalance: 0,
                     totalProfits: userData.totalProfits || 0,
                     totalDeposits: userData.totalDeposits || 0,
                     currency: 'USD',
@@ -4045,7 +4043,6 @@ EnhancedAdminDashboard.prototype.addUserProfit = async function() {
         const userRef = doc(this.db, 'users', this.selectedUserId);
         batch.update(userRef, {
             balance: increment(amount),
-            accountBalance: increment(amount),
             walletBalance: increment(amount),
             totalProfits: increment(amount),
             updatedAt: timestamp,
@@ -4063,8 +4060,8 @@ EnhancedAdminDashboard.prototype.addUserProfit = async function() {
         if (accountDoc.exists()) {
             batch.update(accountRef, {
                 balance: increment(amount),
-                accountBalance: increment(amount),
                 walletBalance: increment(amount),
+                accountBalance: 0,
                 totalProfits: increment(amount),
                 updatedAt: timestamp,
                 lastAdminUpdate: timestamp,
@@ -4078,8 +4075,8 @@ EnhancedAdminDashboard.prototype.addUserProfit = async function() {
             const newProfits = userData.totalProfits || 0;
             batch.set(accountRef, {
                 balance: newBalance,
-                accountBalance: newBalance,
                 walletBalance: newBalance,
+                accountBalance: 0,
                 totalProfits: newProfits,
                 totalDeposits: userData.totalDeposits || 0,
                 currency: 'USD',
@@ -4159,7 +4156,6 @@ EnhancedAdminDashboard.prototype.addUserDeposit = async function() {
         const userRef = doc(this.db, 'users', this.selectedUserId);
         batch.update(userRef, {
             balance: increment(amount),
-            accountBalance: increment(amount),
             walletBalance: increment(amount),
             totalDeposits: increment(amount),
             updatedAt: timestamp,
@@ -4174,8 +4170,8 @@ EnhancedAdminDashboard.prototype.addUserDeposit = async function() {
         if (accountDoc.exists()) {
             batch.update(accountRef, {
                 balance: increment(amount),
-                accountBalance: increment(amount),
                 walletBalance: increment(amount),
+                accountBalance: 0,
                 totalDeposits: increment(amount),
                 updatedAt: timestamp,
                 lastAdminUpdate: timestamp
@@ -4187,8 +4183,8 @@ EnhancedAdminDashboard.prototype.addUserDeposit = async function() {
             
             batch.set(accountRef, {
                 balance: amount,
-                accountBalance: amount,
                 walletBalance: amount,
+                accountBalance: 0,
                 totalProfits: userData.totalProfits || 0,
                 totalDeposits: amount,
                 currency: 'USD',
@@ -4268,7 +4264,6 @@ EnhancedAdminDashboard.prototype.setExactBalance = async function() {
         const userRef = doc(this.db, 'users', this.selectedUserId);
         batch.update(userRef, {
             balance: exactAmount,
-            accountBalance: exactAmount,
             walletBalance: exactAmount,
             updatedAt: timestamp,
             balanceUpdatedAt: timestamp,
@@ -4282,8 +4277,8 @@ EnhancedAdminDashboard.prototype.setExactBalance = async function() {
         if (accountDoc.exists()) {
             batch.update(accountRef, {
                 balance: exactAmount,
-                accountBalance: exactAmount,
                 walletBalance: exactAmount,
+                accountBalance: 0,
                 updatedAt: timestamp,
                 lastAdminUpdate: timestamp
             });
@@ -4293,8 +4288,8 @@ EnhancedAdminDashboard.prototype.setExactBalance = async function() {
             
             batch.set(accountRef, {
                 balance: exactAmount,
-                accountBalance: exactAmount,
                 walletBalance: exactAmount,
+                accountBalance: 0,
                 totalProfits: userData.totalProfits || 0,
                 totalDeposits: userData.totalDeposits || 0,
                 currency: 'USD',
@@ -4420,9 +4415,7 @@ EnhancedAdminDashboard.prototype.approveDeposit = async function(depositId, user
         console.log('🔄 Updating user document with amount:', amount);
         await updateDoc(userRef, {
             balance: increment(amount), // Top-level balance
-            accountBalance: increment(amount), // Account balance  
             walletBalance: increment(amount), // Wallet balance
-            'trading.balance': increment(amount), // Trading balance
             totalDeposits: increment(amount),
             lastUpdated: serverTimestamp()
         });
