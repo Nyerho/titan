@@ -461,8 +461,8 @@
     <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/firebase-auth.js"></script>
     <script type="module" src="js/auth-integration.js"></script>
-    <script src="js/api-config.js"></script>
     <script src="js/error-handler.js"></script>
+    <script src="js/websocket-manager.js"></script>
     <script src="js/market-data-service.js"></script>
     <script src="js/trading-service.js"></script>
     <script src="js/api-testing.js"></script>
@@ -884,91 +884,7 @@
         }
     });
 
-    // Fixed Trading Button Functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        // Order tab functionality
-        const orderTabs = document.querySelectorAll('.order-tab');
-        const priceGroup = document.getElementById('price-group');
-        
-        orderTabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                // Remove active class from all tabs
-                orderTabs.forEach(t => t.classList.remove('active'));
-                // Add active class to clicked tab
-                this.classList.add('active');
-                
-                // Show/hide price input based on order type
-                const orderType = this.getAttribute('data-type');
-                if (orderType === 'market') {
-                    priceGroup.style.display = 'none';
-                } else {
-                    priceGroup.style.display = 'block';
-                }
-            });
-        });
-        
-        // Buy/Sell button functionality
-        const orderTypeButtons = document.querySelectorAll('.order-type-btn');
-        orderTypeButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Remove active class from all buttons
-                orderTypeButtons.forEach(b => b.classList.remove('active'));
-                // Add active class to clicked button
-                this.classList.add('active');
-                
-                // Update place order button text
-                const placeOrderBtn = document.getElementById('place-order-btn');
-                const orderType = this.getAttribute('data-type').toUpperCase();
-                placeOrderBtn.innerHTML = `<i class="fas fa-plus"></i> Place ${orderType} Order`;
-            });
-        });
-        
-        // Place order button functionality
-        const placeOrderBtn = document.getElementById('place-order-btn');
-        placeOrderBtn.addEventListener('click', function() {
-            const volume = document.getElementById('volume-input').value;
-            const price = document.getElementById('price-input').value;
-            const stopLoss = document.getElementById('sl-input').value;
-            const takeProfit = document.getElementById('tp-input').value;
-            
-            const activeOrderType = document.querySelector('.order-type-btn.active').getAttribute('data-type');
-            const activeOrderTab = document.querySelector('.order-tab.active').getAttribute('data-type');
-            
-            // Basic validation
-            if (!volume || volume <= 0) {
-                alert('Please enter a valid volume');
-                return;
-            }
-            
-            if (activeOrderTab !== 'market' && (!price || price <= 0)) {
-                alert('Please enter a valid price for limit/stop orders');
-                return;
-            }
-            
-            // Create order object
-            const order = {
-                type: activeOrderType,
-                orderType: activeOrderTab,
-                volume: parseFloat(volume),
-                price: activeOrderTab === 'market' ? null : parseFloat(price),
-                stopLoss: stopLoss ? parseFloat(stopLoss) : null,
-                takeProfit: takeProfit ? parseFloat(takeProfit) : null,
-                symbol: document.getElementById('symbol-select').value,
-                timestamp: new Date().toISOString()
-            };
-            
-            console.log('Placing order:', order);
-            
-            // Show success message
-            alert(`${activeOrderType.toUpperCase()} ${activeOrderTab} order placed successfully!`);
-            
-            // Reset form
-            document.getElementById('volume-input').value = '0.01';
-            document.getElementById('price-input').value = '';
-            document.getElementById('sl-input').value = '';
-            document.getElementById('tp-input').value = '';
-        });
-    });
+    
     </script>
 
     <style>

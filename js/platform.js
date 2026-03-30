@@ -36,9 +36,6 @@ class TradingPlatform {
     }
 
     async init() {
-        // Initialize market data service first
-        await this.marketDataService.init();
-        
         this.initMarketOverview();
         this.initWatchlist();
         this.initOrderForm();
@@ -49,6 +46,12 @@ class TradingPlatform {
         this.initMarketDepth();
         this.initQuickActions();
         this.startRealTimeUpdates();
+
+        try {
+            await this.marketDataService.init();
+        } catch (e) {
+            this.showNotification('Market data service unavailable - using demo prices', 'warning');
+        }
         await this.refreshAccountInfo();
         await this.loadInitialData();
         
