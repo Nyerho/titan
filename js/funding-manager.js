@@ -214,6 +214,15 @@ class FundingManager {
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
                     balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
+                
+                try {
+                    await this.notifyDepositReceived({
+                        amount,
+                        currency,
+                        address: '',
+                        depositId: ''
+                    });
+                } catch (e) {}
             }
             
             return simulatedResult;
@@ -266,6 +275,15 @@ class FundingManager {
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
                     balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
+                
+                try {
+                    await this.notifyDepositReceived({
+                        amount,
+                        currency,
+                        address: '',
+                        depositId: ''
+                    });
+                } catch (e) {}
             }
             
             return simulatedResult;

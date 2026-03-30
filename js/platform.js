@@ -1248,31 +1248,46 @@ class TradingPlatform {
             ? String(tvSymbolOrInternal)
             : this.getTradingViewSymbol(tvSymbolOrInternal);
 
-        chartContainer.innerHTML = `
-            <div class="tradingview-widget-container" style="height:100%;width:100%">
-              <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%"></div>
-              <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-              {
-              "autosize": true,
-              "symbol": "${tvSymbol}",
-              "interval": "15",
-              "timezone": "Etc/UTC",
-              "theme": "light",
-              "style": "1",
-              "locale": "en",
-              "enable_publishing": false,
-              "backgroundColor": "rgba(255, 255, 255, 1)",
-              "gridColor": "rgba(15, 23, 42, 0.12)",
-              "hide_top_toolbar": false,
-              "hide_legend": false,
-              "save_image": false,
-              "calendar": false,
-              "hide_volume": false,
-              "support_host": "https://www.tradingview.com"
-              }
-              </script>
-            </div>
-        `;
+        chartContainer.innerHTML = '';
+
+        const widgetContainer = document.createElement('div');
+        widgetContainer.className = 'tradingview-widget-container';
+        widgetContainer.style.height = '100%';
+        widgetContainer.style.width = '100%';
+
+        const widget = document.createElement('div');
+        widget.className = 'tradingview-widget-container__widget';
+        widget.style.height = 'calc(100% - 32px)';
+        widget.style.width = '100%';
+
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+        script.async = true;
+
+        const config = {
+            autosize: true,
+            symbol: tvSymbol,
+            interval: '15',
+            timezone: 'Etc/UTC',
+            theme: 'light',
+            style: '1',
+            locale: 'en',
+            enable_publishing: false,
+            backgroundColor: 'rgba(255, 255, 255, 1)',
+            gridColor: 'rgba(15, 23, 42, 0.12)',
+            hide_top_toolbar: false,
+            hide_legend: false,
+            save_image: false,
+            calendar: false,
+            hide_volume: false,
+            support_host: 'https://www.tradingview.com'
+        };
+        script.text = JSON.stringify(config);
+
+        widgetContainer.appendChild(widget);
+        widgetContainer.appendChild(script);
+        chartContainer.appendChild(widgetContainer);
     }
     
     // Update symbol selector event listener

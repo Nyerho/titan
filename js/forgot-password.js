@@ -48,7 +48,7 @@ class ForgotPasswordManager {
             window.location.href.includes('localhost');
         const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
         if (storedBaseUrl) return storedBaseUrl;
-        return isLocal ? 'http://localhost:3001' : window.location.origin;
+        return isLocal ? 'http://localhost:3001' : 'https://titantrades.onrender.com';
     }
 
     async sendResetEmailViaBackend({ email, continueUrl }) {
@@ -78,7 +78,8 @@ class ForgotPasswordManager {
 
     async sendResetEmailViaFirebase({ email, continueUrl }) {
         const actionCodeSettings = {
-            url: continueUrl
+            url: continueUrl,
+            handleCodeInApp: true
         };
         await sendPasswordResetEmail(auth, email, actionCodeSettings);
         return { ok: true };

@@ -368,6 +368,53 @@ app.post('/api/deposits/notify', verifyUserToken, async (req, res) => {
   }
 });
 
+app.post('/api/deposits/:id/send-approved-email', verifyAdminToken, async (req, res) => {
+  try {
+    const id = String(req.params?.id || '').trim();
+    if (!id) return res.status(400).json({ error: 'Missing deposit id' });
+    const snap = await db.collection('pending_deposits').doc(id).get();
+    if (!snap.exists) return res.status(404).json({ error: 'Deposit not found' });
+    const data = snap.data() || {};
+    if (data.emailApprovedSent) {
+      return res.json({ success: true, alreadySent: true });
+    }
+    const amount = Number(data.amount || 0);
+    const currency = String(data.currency || 'USD').toUpperCase();
+    const email = String(data.userEmail || '').trim();
+    if (!email) return res.status(400).json({ error: 'User email not found' });
+
+    const html = buildEmailHtml({
+      req,
+      title: 'Deposit verified & credited',
+      intro: `Your TitanTrades deposit has been verified and credited to your account.`,
+      rows: [
+        { label: 'Deposit ID', value: id },
+        { label: 'Amount', value: `${amount || 0} ${currency}` },
+        { label: 'Status', value: 'CREDITED' }
+      ],
+      outro: `You can view the updated balance in your dashboard. If you did not make this deposit, contact support immediately.`
+    });
+
+    await sendBrandEmail({
+      to: email,
+      subject: `TitanTrades — Deposit verified (${id})`,
+      html
+    });
+
+    await db.collection('pending_deposits').doc(id).set(
+      {
+        emailApprovedSent: true,
+        emailApprovedSentAt: admin.firestore.FieldValue.serverTimestamp()
+      },
+      { merge: true }
+    );
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Send deposit approved email error:', error);
+    return res.status(500).json({ error: error?.message || 'Failed to send email' });
+  }
+});
 // Get all users
 app.get('/api/users', verifyAdminToken, async (req, res) => {
   try {
