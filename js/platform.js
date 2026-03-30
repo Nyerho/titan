@@ -1281,9 +1281,7 @@ class TradingPlatform {
         if (symbolSelector) {
             symbolSelector.addEventListener('change', (e) => {
                 const selectedSymbol = e.target.value;
-                this.currentSymbol = selectedSymbol;
-                this.updateChartSymbol(selectedSymbol);
-                this.loadMarketData(selectedSymbol);
+                this.applySymbol(selectedSymbol);
             });
         }
     }
@@ -1441,6 +1439,11 @@ class TradingPlatform {
             return { internalSymbol: 'XAU/USD', tvSymbol: 'OANDA:XAUUSD', displaySymbol: 'XAU/USD' };
         }
 
+        // If it's a likely stock ticker (1-5 letters), default to NASDAQ
+        if (/^[A-Z]{1,5}$/.test(upper)) {
+            return { internalSymbol: upper, tvSymbol: `NASDAQ:${upper}`, displaySymbol: upper };
+        }
+
         return { internalSymbol: upper, tvSymbol: this.getTradingViewSymbol(upper), displaySymbol: upper };
     }
 
@@ -1451,6 +1454,15 @@ class TradingPlatform {
         if (symbol.includes(':')) return symbol;
 
         if (symbol.includes('/') && symbol.length === 7) {
+            const [base, quote] = symbol.split('/');
+            const forexCodes = new Set(['USD','EUR','GBP','JPY','AUD','NZD','CAD','CHF','CNH','NOK','SEK','TRY','ZAR','MXN']);
+            const cryptoCodes = new Set(['BTC','ETH','SOL','ADA','XRP','BNB','DOGE','DOT','LINK','LTC','AVAX','MATIC']);
+            if (forexCodes.has(base) && forexCodes.has(quote)) {
+                return `FX:${symbol.replace('/', '')}`;
+            }
+            if (cryptoCodes.has(base) && (quote === 'USD' || quote === 'USDT')) {
+                return `BINANCE:${base}USDT`;
+            }
             return `FX:${symbol.replace('/', '')}`;
         }
 
@@ -1463,7 +1475,16 @@ class TradingPlatform {
         if (symbol === 'GER40') return 'OANDA:DE40EUR';
         if (symbol === 'UK100') return 'OANDA:UK100GBP';
 
+        if (/^[A-Z]{1,5}$/.test(symbol)) {
+            return `NASDAQ:${symbol}`;
+        }
+
         return symbol;
+    }
+
+    // Backwards-compat shim for older calls
+    async loadMarketData(symbol) {
+        return this.loadSymbolData(symbol);
     }
 
     updatePriceDisplay() {
