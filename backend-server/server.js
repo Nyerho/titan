@@ -516,6 +516,15 @@ app.post('/api/withdrawal-requests', verifyUserToken, async (req, res) => {
       return res.status(400).json({ error: 'User email not found' });
     }
 
+    try {
+      const userSnap = await db.collection('users').doc(req.user.uid).get();
+      const userData = userSnap.exists ? (userSnap.data() || {}) : {};
+      const walletBalance = Number(userData.walletBalance ?? userData.balance ?? 0);
+      if (!Number.isFinite(walletBalance) || walletBalance < parsedAmount) {
+        return res.status(400).json({ error: 'Insufficient wallet balance. Transfer from Trading before withdrawing.' });
+      }
+    } catch (e) {}
+
     const finalRequestId = requestId || `WD${Date.now()}${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
 
     const payload = {

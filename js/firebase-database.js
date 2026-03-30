@@ -261,8 +261,8 @@ class FirebaseDatabaseService {
       const result = await runTransaction(db, async (tx) => {
         const snap = await tx.get(userRef);
         const data = snap.exists() ? snap.data() : {};
-        const currentBalance = Number(data.accountBalance ?? data.walletBalance ?? data.balance ?? 0);
-        const nextBalance = Math.max(0, currentBalance + Number(delta || 0));
+        const currentTradingBalance = Number(data.accountBalance ?? 0);
+        const nextTradingBalance = Math.max(0, currentTradingBalance + Number(delta || 0));
 
         const profitDelta = Number(delta || 0);
         const totalsPatch = {};
@@ -273,16 +273,116 @@ class FirebaseDatabaseService {
         tx.set(
           userRef,
           {
-            accountBalance: nextBalance,
-            balance: nextBalance,
-            walletBalance: nextBalance,
-            balanceUpdatedAt: new Date().toISOString(),
+            accountBalance: nextTradingBalance,
+            tradingBalanceUpdatedAt: new Date().toISOString(),
             ...totalsPatch
           },
           { merge: true }
         );
 
-        return { success: true, balance: nextBalance };
+        return { success: true, balance: nextTradingBalance };
+      });
+
+      return result;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  async transferTradingToWallet(uid, amount) {
+    try {
+      const userRef = doc(db, 'users', uid);
+      const transferRef = doc(collection(db, 'transactions'));
+      const result = await runTransaction(db, async (tx) => {
+        const snap = await tx.get(userRef);
+        const data = snap.exists() ? snap.data() : {};
+        const trading = Number(data.accountBalance ?? 0);
+        const wallet = Number(data.walletBalance ?? data.balance ?? 0);
+        const transferAmount = Number(amount || 0);
+        if (!Number.isFinite(transferAmount) || transferAmount <= 0) {
+          return { success: false, error: 'invalid_amount' };
+        }
+        if (!Number.isFinite(trading) || trading < transferAmount) {
+          return { success: false, error: 'insufficient_trading_balance' };
+        }
+        const nextTrading = Math.max(0, trading - transferAmount);
+        const nextWallet = Math.max(0, wallet + transferAmount);
+
+        tx.set(
+          userRef,
+          {
+            accountBalance: nextTrading,
+            tradingBalanceUpdatedAt: new Date().toISOString(),
+            walletBalance: nextWallet,
+            balance: nextWallet,
+            balanceUpdatedAt: new Date().toISOString(),
+            updatedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+
+        tx.set(transferRef, {
+          userId: uid,
+          type: 'internal_transfer',
+          direction: 'trading_to_wallet',
+          amount: transferAmount,
+          status: 'completed',
+          description: 'Transfer from trading balance to wallet balance',
+          timestamp: serverTimestamp()
+        });
+
+        return { success: true, tradingBalance: nextTrading, walletBalance: nextWallet };
+      });
+
+      return result;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  async transferWalletToTrading(uid, amount) {
+    try {
+      const userRef = doc(db, 'users', uid);
+      const transferRef = doc(collection(db, 'transactions'));
+      const result = await runTransaction(db, async (tx) => {
+        const snap = await tx.get(userRef);
+        const data = snap.exists() ? snap.data() : {};
+        const trading = Number(data.accountBalance ?? 0);
+        const wallet = Number(data.walletBalance ?? data.balance ?? 0);
+        const transferAmount = Number(amount || 0);
+        if (!Number.isFinite(transferAmount) || transferAmount <= 0) {
+          return { success: false, error: 'invalid_amount' };
+        }
+        if (!Number.isFinite(wallet) || wallet < transferAmount) {
+          return { success: false, error: 'insufficient_wallet_balance' };
+        }
+        const nextWallet = Math.max(0, wallet - transferAmount);
+        const nextTrading = Math.max(0, trading + transferAmount);
+
+        tx.set(
+          userRef,
+          {
+            walletBalance: nextWallet,
+            balance: nextWallet,
+            balanceUpdatedAt: new Date().toISOString(),
+            accountBalance: nextTrading,
+            tradingBalanceUpdatedAt: new Date().toISOString(),
+            updatedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+
+        tx.set(transferRef, {
+          userId: uid,
+          type: 'internal_transfer',
+          direction: 'wallet_to_trading',
+          amount: transferAmount,
+          status: 'completed',
+          description: 'Transfer from wallet balance to trading balance',
+          timestamp: serverTimestamp()
+        });
+
+        return { success: true, tradingBalance: nextTrading, walletBalance: nextWallet };
       });
 
       return result;
@@ -422,9 +522,7 @@ class FirebaseDatabaseService {
 
         const equityForBalance = Math.max(0, Number(updatedPropAccount.currentEquity || 0));
         updatePayload.accountBalance = equityForBalance;
-        updatePayload.balance = equityForBalance;
-        updatePayload.walletBalance = equityForBalance;
-        updatePayload.balanceUpdatedAt = new Date().toISOString();
+        updatePayload.tradingBalanceUpdatedAt = new Date().toISOString();
         const profitDelta = Number(profit || 0);
         if (Number.isFinite(profitDelta) && profitDelta > 0) {
           updatePayload.totalProfits = increment(profitDelta);
@@ -501,9 +599,14 @@ class FirebaseDatabaseService {
   async createTrade(uid, tradeData) {
     try {
       const tradesRef = collection(db, 'trades');
+      const normalizedProfit =
+        tradeData && tradeData.pnl === undefined && tradeData.profit !== undefined
+          ? { pnl: tradeData.profit }
+          : {};
       const trade = {
         uid: uid,
         ...tradeData,
+        ...normalizedProfit,
         createdAt: serverTimestamp(),
         status: tradeData?.status || 'open'
       };
@@ -692,24 +795,27 @@ class FirebaseDatabaseService {
       
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        const unified = computeUnifiedBalanceFromTotals(userData);
-        const stored = Number(userData.accountBalance ?? userData.walletBalance ?? userData.balance ?? 0);
-        if (unified !== null && Number.isFinite(unified) && Math.abs(unified - stored) > 0.01) {
-          try {
-            await updateDoc(userRef, {
-              accountBalance: unified,
-              balance: unified,
-              walletBalance: unified,
-              balanceUpdatedAt: new Date().toISOString(),
-              updatedAt: serverTimestamp()
-            });
-          } catch (e) {}
-          return { success: true, balance: unified };
+        const hasSplit = !!userData.balancesSeparatedAt;
+        if (!hasSplit) {
+          const walletCandidate = Number(userData.walletBalance ?? userData.balance ?? userData.accountBalance ?? 0);
+          if (Number.isFinite(walletCandidate) && walletCandidate >= 0) {
+            try {
+              await updateDoc(userRef, {
+                walletBalance: walletCandidate,
+                balance: walletCandidate,
+                balanceUpdatedAt: new Date().toISOString(),
+                accountBalance: 0,
+                tradingBalanceUpdatedAt: new Date().toISOString(),
+                balancesSeparatedAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+              });
+            } catch (e) {}
+            return { success: true, balance: walletCandidate };
+          }
         }
-        return {
-          success: true,
-          balance: stored
-        };
+
+        const stored = Number(userData.walletBalance ?? userData.balance ?? 0);
+        return { success: true, balance: Number.isFinite(stored) ? stored : 0 };
       } else {
         // Initialize user with default balance if profile doesn't exist
         await this.initializeUserAccount(uid);
@@ -726,6 +832,37 @@ class FirebaseDatabaseService {
     }
   }
 
+  async getUserTradingBalance(uid) {
+    try {
+      const userRef = doc(db, 'users', uid);
+      const userDoc = await getDoc(userRef);
+      if (!userDoc.exists()) return { success: true, balance: 0 };
+      const userData = userDoc.data();
+      const hasSplit = !!userData.balancesSeparatedAt;
+      if (!hasSplit) {
+        const walletCandidate = Number(userData.walletBalance ?? userData.balance ?? userData.accountBalance ?? 0);
+        if (Number.isFinite(walletCandidate) && walletCandidate >= 0) {
+          try {
+            await updateDoc(userRef, {
+              walletBalance: walletCandidate,
+              balance: walletCandidate,
+              balanceUpdatedAt: new Date().toISOString(),
+              accountBalance: 0,
+              tradingBalanceUpdatedAt: new Date().toISOString(),
+              balancesSeparatedAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
+            });
+          } catch (e) {}
+          return { success: true, balance: 0 };
+        }
+      }
+      const trading = Number(userData.accountBalance ?? 0);
+      return { success: true, balance: Number.isFinite(trading) ? trading : 0 };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
   subscribeToUserBalance(uid, callback) {
     const userRef = doc(db, 'users', uid);
     const unsubscribe = onSnapshot(userRef, (snap) => {
@@ -734,13 +871,27 @@ class FirebaseDatabaseService {
         return;
       }
       const data = snap.data() || {};
-      const unified = computeUnifiedBalanceFromTotals(data);
-      const stored = Number(data.accountBalance ?? data.walletBalance ?? data.balance ?? 0);
-      const balance = unified !== null && Number.isFinite(unified) ? unified : stored;
-      callback(balance);
+      const stored = Number(data.walletBalance ?? data.balance ?? 0);
+      callback(Number.isFinite(stored) ? stored : 0);
     });
 
     this.listeners.set(`balance_${uid}`, unsubscribe);
+    return unsubscribe;
+  }
+
+  subscribeToUserTradingBalance(uid, callback) {
+    const userRef = doc(db, 'users', uid);
+    const unsubscribe = onSnapshot(userRef, (snap) => {
+      if (!snap.exists()) {
+        callback(0);
+        return;
+      }
+      const data = snap.data() || {};
+      const trading = Number(data.accountBalance ?? 0);
+      callback(Number.isFinite(trading) ? trading : 0);
+    });
+
+    this.listeners.set(`trading_balance_${uid}`, unsubscribe);
     return unsubscribe;
   }
 
@@ -748,7 +899,6 @@ class FirebaseDatabaseService {
     try {
       const userRef = doc(db, 'users', uid);
       await updateDoc(userRef, {
-        accountBalance: newBalance,
         balance: newBalance,
         walletBalance: newBalance,
         balanceUpdatedAt: new Date().toISOString()
@@ -770,11 +920,13 @@ class FirebaseDatabaseService {
     try {
       const userRef = doc(db, 'users', uid);
       await setDoc(userRef, {
-        accountBalance: initialBalance,
         balance: initialBalance,
         walletBalance: initialBalance,
+        accountBalance: 0,
         createdAt: new Date().toISOString(),
-        balanceUpdatedAt: new Date().toISOString()
+        balanceUpdatedAt: new Date().toISOString(),
+        tradingBalanceUpdatedAt: new Date().toISOString(),
+        balancesSeparatedAt: serverTimestamp()
       }, { merge: true });
       
       return {

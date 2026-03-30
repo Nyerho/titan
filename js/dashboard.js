@@ -1,7 +1,7 @@
 // Dashboard functionality with real user data
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { doc, getDoc, setDoc, onSnapshot, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 class DashboardManager {
     constructor() {
@@ -404,18 +404,47 @@ class DashboardManager {
                     console.log('Real-time user data update:', userData);
                     this.updateUserInterface(userData, user);
 
-                    const hasAccountBalance = userData.accountBalance !== undefined && userData.accountBalance !== null;
+                    const hasSplit = !!userData.balancesSeparatedAt;
+                    if (!hasSplit && !this.balanceFieldSyncInFlight) {
+                        const walletCandidate = Number(userData.walletBalance ?? userData.balance ?? userData.accountBalance ?? 0);
+                        if (Number.isFinite(walletCandidate) && walletCandidate >= 0) {
+                            this.balanceFieldSyncInFlight = true;
+                            try {
+                                await updateDoc(userRef, {
+                                    walletBalance: walletCandidate,
+                                    balance: walletCandidate,
+                                    accountBalance: 0,
+                                    balanceUpdatedAt: new Date().toISOString(),
+                                    tradingBalanceUpdatedAt: new Date().toISOString(),
+                                    balancesSeparatedAt: serverTimestamp(),
+                                    updatedAt: serverTimestamp()
+                                });
+                            } catch (syncError) {
+                                console.error('Failed to split legacy balances:', syncError);
+                            } finally {
+                                this.balanceFieldSyncInFlight = false;
+                            }
+                            return;
+                        }
+                    }
+
                     const hasWalletBalance = userData.walletBalance !== undefined && userData.walletBalance !== null;
-                    const walletNeedsSync = hasAccountBalance && (!hasWalletBalance || userData.walletBalance !== userData.accountBalance);
-                    const balanceNeedsSync = hasAccountBalance && (userData.balance === undefined || userData.balance === null || userData.balance !== userData.accountBalance);
+                    const hasBalance = userData.balance !== undefined && userData.balance !== null;
+                    const walletNumber = Number(userData.walletBalance ?? 0);
+                    const balanceNumber = Number(userData.balance ?? 0);
+                    const walletNeedsSync = hasWalletBalance && (!hasBalance || (Number.isFinite(walletNumber) && Number.isFinite(balanceNumber) && walletNumber !== balanceNumber));
+                    const balanceNeedsSync = hasBalance && !hasWalletBalance;
 
                     if (!this.balanceFieldSyncInFlight && (walletNeedsSync || balanceNeedsSync)) {
                         this.balanceFieldSyncInFlight = true;
                         try {
-                            await updateDoc(userRef, {
-                                walletBalance: userData.accountBalance,
-                                balance: userData.accountBalance
-                            });
+                            const candidate = Number(userData.walletBalance ?? userData.balance ?? 0);
+                            if (Number.isFinite(candidate)) {
+                                await updateDoc(userRef, {
+                                    walletBalance: candidate,
+                                    balance: candidate
+                                });
+                            }
                         } catch (syncError) {
                             console.error('Failed to sync balance fields:', syncError);
                         } finally {
@@ -471,7 +500,7 @@ class DashboardManager {
             const userData = userDoc.data();
             
             // Use users collection as the authoritative source (admin updates)
-            const authoritativeBalance = userData.accountBalance ?? userData.walletBalance ?? userData.balance ?? 0;
+            const authoritativeBalance = userData.walletBalance ?? userData.balance ?? userData.accountBalance ?? 0;
             const authoritativeProfits = userData.totalProfits || 0;
             const authoritativeDeposits = userData.totalDeposits || 0;
             const authoritativeWithdrawals = userData.totalWithdrawals || 0;

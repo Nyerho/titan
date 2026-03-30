@@ -1127,9 +1127,9 @@ class TradingPlatform {
         const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
         const dbService = window.FirebaseDatabaseService;
 
-        if (user && dbService?.getUserBalance) {
+        if (user && dbService?.getUserTradingBalance) {
             try {
-                const balanceResult = await dbService.getUserBalance(user.uid);
+                const balanceResult = await dbService.getUserTradingBalance(user.uid);
                 const balance = balanceResult.success ? Number(balanceResult.balance || 0) : 0;
                 const equity = balance * 1.025;
                 const margin = balance * 0.05;
@@ -1350,11 +1350,11 @@ class TradingPlatform {
         const authManager = window.authManager;
         const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
         const dbService = window.FirebaseDatabaseService;
-        if (!user?.uid || !dbService?.subscribeToUserBalance) return;
+        if (!user?.uid || !dbService?.subscribeToUserTradingBalance) return;
 
         if (this._balanceUnsubscribe) return;
 
-        this._balanceUnsubscribe = dbService.subscribeToUserBalance(user.uid, (balance) => {
+        this._balanceUnsubscribe = dbService.subscribeToUserTradingBalance(user.uid, (balance) => {
             const nextBalance = Number(balance || 0);
             const equity = nextBalance * 1.025;
             const margin = nextBalance * 0.05;

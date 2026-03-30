@@ -192,8 +192,11 @@
                             
                             <!-- Account Balance -->
                             <div class="balance-display">
-                                <h5 class="mb-1">Available Balance</h5>
+                                <h5 class="mb-1">Wallet Balance</h5>
                                 <h2 class="mb-0" id="accountBalance">$0.00</h2>
+                                <div class="text-muted small mt-2">
+                                    Trading Balance: <span id="tradingBalance">$0.00</span>. Transfer from Trading before withdrawing.
+                                </div>
                             </div>
                             
                             <form id="withdrawalForm">
@@ -449,6 +452,8 @@
                 if (!currentUser) {
                     console.log('No authenticated user');
                     document.getElementById('accountBalance').textContent = '$0.00';
+                    const tradingEl = document.getElementById('tradingBalance');
+                    if (tradingEl) tradingEl.textContent = '$0.00';
                     return;
                 }
                 
@@ -457,10 +462,12 @@
                 const userDoc = await userDocRef.get();
                 
                 let balance = 0;
+                let tradingBalance = 0;
                 
                 if (userDoc.exists) {
                     const userData = userDoc.data();
-                    balance = userData.accountBalance || userData.balance || 0;
+                    balance = userData.walletBalance || userData.balance || 0;
+                    tradingBalance = userData.accountBalance || 0;
                     
                     // Fallback to accounts collection
                     if (balance === 0) {
@@ -469,16 +476,22 @@
                         
                         if (accountDoc.exists) {
                             const accountData = accountDoc.data();
-                            balance = accountData.balance || accountData.accountBalance || 0;
+                            balance = accountData.walletBalance || accountData.balance || accountData.accountBalance || 0;
                         }
                     }
                 }
                 
                 document.getElementById('accountBalance').textContent = `$${balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                const tradingEl = document.getElementById('tradingBalance');
+                if (tradingEl) {
+                    tradingEl.textContent = `$${Number(tradingBalance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                }
                 console.log('Balance loaded:', balance);
             } catch (error) {
                 console.error('Error loading balance:', error);
                 document.getElementById('accountBalance').textContent = '$0.00';
+                const tradingEl = document.getElementById('tradingBalance');
+                if (tradingEl) tradingEl.textContent = '$0.00';
             }
         }
         

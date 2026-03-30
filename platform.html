@@ -211,8 +211,12 @@
                 <h3><i class="fas fa-wallet"></i> Account Summary</h3>
                 <div class="balance-info">
                     <div class="balance-item">
-                        <span class="label">Balance:</span>
+                        <span class="label">Trading Balance:</span>
                         <span class="value" id="account-balance">Loading...</span>
+                    </div>
+                    <div class="balance-item">
+                        <span class="label">Wallet Balance:</span>
+                        <span class="value" id="wallet-balance">Loading...</span>
                     </div>
                     <div class="balance-item">
                         <span class="label">Equity:</span>
@@ -225,6 +229,22 @@
                     <div class="balance-item">
                         <span class="label">Free Margin:</span>
                         <span class="value" id="free-margin">Loading...</span>
+                    </div>
+                </div>
+                <div class="balance-info" style="margin-top: 12px;">
+                    <div class="balance-item">
+                        <span class="label">Transfer to Wallet:</span>
+                        <span class="value" style="display:flex; gap:8px; align-items:center; justify-content:flex-end;">
+                            <input id="transferToWalletAmount" type="number" min="1" step="0.01" placeholder="Amount" style="width:110px;">
+                            <button id="transferToWalletBtn" type="button" style="white-space:nowrap;">Transfer</button>
+                        </span>
+                    </div>
+                    <div class="balance-item" style="margin-top: 10px;">
+                        <span class="label">Transfer to Trading:</span>
+                        <span class="value" style="display:flex; gap:8px; align-items:center; justify-content:flex-end;">
+                            <input id="transferToTradingAmount" type="number" min="1" step="0.01" placeholder="Amount" style="width:110px;">
+                            <button id="transferToTradingBtn" type="button" style="white-space:nowrap;">Transfer</button>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -631,6 +651,16 @@
 
             if (propAccount && propAccount.status === 'breached') return;
 
+            if (!propAccount) {
+                try {
+                    const tradingBalanceResult = await FirebaseDatabaseService.getUserTradingBalance(user.uid);
+                    const tradingBalance = tradingBalanceResult?.success ? Number(tradingBalanceResult.balance || 0) : 0;
+                    if (!(tradingBalance > 0)) return;
+                } catch (e) {
+                    return;
+                }
+            }
+
             const activeBots = Object.values(botsOwned).filter((b) => b && b.active);
             if (!activeBots.length) return;
 
@@ -721,7 +751,8 @@
         // Function to load user balance and account data
         async function loadUserAccountData(user) {
             try {
-                const [balanceResult, entitlementsResult] = await Promise.all([
+                const [tradingBalanceResult, walletBalanceResult, entitlementsResult] = await Promise.all([
+                    FirebaseDatabaseService.getUserTradingBalance(user.uid),
                     FirebaseDatabaseService.getUserBalance(user.uid),
                     FirebaseDatabaseService.getUserEntitlements(user.uid)
                 ]);
@@ -738,6 +769,9 @@
                 if (useProp) {
                     const balance = Number(propAccount.currentEquity ?? propAccount.accountSize ?? 0);
                     document.getElementById('account-balance').textContent = formatCurrency(balance);
+                    if (walletBalanceResult?.success) {
+                        document.getElementById('wallet-balance').textContent = formatCurrency(Number(walletBalanceResult.balance || 0));
+                    }
                     
                     // Calculate other account metrics based on balance
                     const equity = balance * 1.025; // 2.5% equity gain example
@@ -747,9 +781,10 @@
                     document.getElementById('account-equity').textContent = formatCurrency(equity);
                     document.getElementById('account-margin').textContent = formatCurrency(margin);
                     document.getElementById('free-margin').textContent = formatCurrency(freeMargin);
-                } else if (balanceResult.success) {
-                    const balance = balanceResult.balance;
+                } else if (tradingBalanceResult.success) {
+                    const balance = tradingBalanceResult.balance;
                     document.getElementById('account-balance').textContent = formatCurrency(balance);
+                    document.getElementById('wallet-balance').textContent = formatCurrency(Number(walletBalanceResult?.balance || 0));
                     
                     const equity = balance * 1.025;
                     const margin = balance * 0.05;
@@ -759,9 +794,10 @@
                     document.getElementById('account-margin').textContent = formatCurrency(margin);
                     document.getElementById('free-margin').textContent = formatCurrency(freeMargin);
                 } else {
-                    console.error('Failed to load balance:', balanceResult.error);
+                    console.error('Failed to load balance:', tradingBalanceResult.error);
                     // Set default values if balance loading fails
                     document.getElementById('account-balance').textContent = '$0.00';
+                    document.getElementById('wallet-balance').textContent = '$0.00';
                     document.getElementById('account-equity').textContent = '$0.00';
                     document.getElementById('account-margin').textContent = '$0.00';
                     document.getElementById('free-margin').textContent = '$0.00';
@@ -770,10 +806,75 @@
                 console.error('Error loading account data:', error);
                 // Set default values on error
                 document.getElementById('account-balance').textContent = '$0.00';
+                document.getElementById('wallet-balance').textContent = '$0.00';
                 document.getElementById('account-equity').textContent = '$0.00';
                 document.getElementById('account-margin').textContent = '$0.00';
                 document.getElementById('free-margin').textContent = '$0.00';
             }
+        }
+
+        function setupTransferToWalletHandler() {
+            const btn = document.getElementById('transferToWalletBtn');
+            const input = document.getElementById('transferToWalletAmount');
+            if (!btn || !input) return;
+            if (btn.dataset.bound === '1') return;
+            btn.dataset.bound = '1';
+            btn.addEventListener('click', async () => {
+                if (!currentUser) return;
+                const amount = Number(input.value || 0);
+                if (!Number.isFinite(amount) || amount <= 0) {
+                    alert('Enter a valid amount to transfer.');
+                    return;
+                }
+                btn.disabled = true;
+                try {
+                    const res = await FirebaseDatabaseService.transferTradingToWallet(currentUser.uid, amount);
+                    if (!res?.success) {
+                        const msg = res?.error === 'insufficient_trading_balance'
+                            ? 'Insufficient trading balance.'
+                            : 'Transfer failed.';
+                        alert(msg);
+                    }
+                    input.value = '';
+                    await loadUserAccountData(currentUser);
+                } catch (e) {
+                    alert('Transfer failed.');
+                } finally {
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        function setupTransferToTradingHandler() {
+            const btn = document.getElementById('transferToTradingBtn');
+            const input = document.getElementById('transferToTradingAmount');
+            if (!btn || !input) return;
+            if (btn.dataset.bound === '1') return;
+            btn.dataset.bound = '1';
+            btn.addEventListener('click', async () => {
+                if (!currentUser) return;
+                const amount = Number(input.value || 0);
+                if (!Number.isFinite(amount) || amount <= 0) {
+                    alert('Enter a valid amount to transfer.');
+                    return;
+                }
+                btn.disabled = true;
+                try {
+                    const res = await FirebaseDatabaseService.transferWalletToTrading(currentUser.uid, amount);
+                    if (!res?.success) {
+                        const msg = res?.error === 'insufficient_wallet_balance'
+                            ? 'Insufficient wallet balance.'
+                            : 'Transfer failed.';
+                        alert(msg);
+                    }
+                    input.value = '';
+                    await loadUserAccountData(currentUser);
+                } catch (e) {
+                    alert('Transfer failed.');
+                } finally {
+                    btn.disabled = false;
+                }
+            });
         }
 
         // Check authentication and load user data
@@ -790,6 +891,8 @@
                 
                 // Load real user account data
                 await loadUserAccountData(user);
+                setupTransferToWalletHandler();
+                setupTransferToTradingHandler();
             } else {
                 console.log('No user found, redirecting to auth page');
                 currentUser = null;

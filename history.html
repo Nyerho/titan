@@ -409,7 +409,7 @@
                     const transactionsRef = collection(db, 'transactions');
                     const q = query(
                         transactionsRef,
-                        where('uid', '==', this.currentUser.uid),
+                        where('userId', '==', this.currentUser.uid),
                         orderBy('timestamp', 'desc'),
                         limit(50)
                     );
@@ -471,20 +471,21 @@
                 
                 const tradesHTML = trades.map(trade => {
                     const date = trade.createdAt ? new Date(trade.createdAt.toDate()).toLocaleDateString() : 'N/A';
-                    const pnl = trade.pnl || 0;
+                    const pnl = Number(trade.pnl ?? trade.profit ?? 0);
                     const pnlClass = pnl >= 0 ? 'status-profit' : 'status-loss';
                     const pnlSign = pnl >= 0 ? '+' : '';
-                    const statusClass = trade.status === 'closed' ? (pnl >= 0 ? 'status-profit' : 'status-loss') : 'status-pending';
+                    const isClosed = String(trade.status || '').toLowerCase() === 'closed' || String(trade.status || '').toLowerCase() === 'completed';
+                    const statusClass = isClosed ? (pnl >= 0 ? 'status-profit' : 'status-loss') : 'status-pending';
                     const source = (trade.source || 'manual').toLowerCase() === 'bot' ? 'Bot' : 'Manual';
                     
                     return `
                         <tr>
                             <td>${date}</td>
                             <td>${trade.symbol || trade.asset || 'N/A'}</td>
-                            <td>${(trade.type || 'N/A').charAt(0).toUpperCase() + (trade.type || 'N/A').slice(1)}</td>
+                            <td>${((trade.type || trade.side || 'N/A').charAt(0).toUpperCase() + (trade.type || trade.side || 'N/A').slice(1))}</td>
                             <td>$${(trade.amount || 0).toLocaleString()}</td>
                             <td>${trade.entryPrice || 'N/A'}</td>
-                            <td>${trade.exitPrice || (trade.status === 'open' ? 'Open' : 'N/A')}</td>
+                            <td>${trade.exitPrice || (String(trade.status || '').toLowerCase() === 'open' ? 'Open' : 'N/A')}</td>
                             <td class="${pnlClass}">${pnlSign}$${Math.abs(pnl).toFixed(2)}</td>
                             <td><span class="${statusClass}">${(trade.status || 'pending').charAt(0).toUpperCase() + (trade.status || 'pending').slice(1)}</span></td>
                             <td>${source}</td>

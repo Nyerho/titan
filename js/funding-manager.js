@@ -208,7 +208,6 @@ class FundingManager {
                 const userRef = db.collection('users').doc(user.uid);
                 await userRef.set({
                     balance: firebase.firestore.FieldValue.increment(amount),
-                    accountBalance: firebase.firestore.FieldValue.increment(amount),
                     walletBalance: firebase.firestore.FieldValue.increment(amount),
                     totalDeposits: firebase.firestore.FieldValue.increment(amount),
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
@@ -269,7 +268,6 @@ class FundingManager {
                 const userRef = db.collection('users').doc(user.uid);
                 await userRef.set({
                     balance: firebase.firestore.FieldValue.increment(amount),
-                    accountBalance: firebase.firestore.FieldValue.increment(amount),
                     walletBalance: firebase.firestore.FieldValue.increment(amount),
                     totalDeposits: firebase.firestore.FieldValue.increment(amount),
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),

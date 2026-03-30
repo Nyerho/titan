@@ -3245,16 +3245,16 @@
                 const userData = userDoc.data();
                 const userId = userDoc.id;
                 
-                // Check if user has sufficient balance
-                const currentBalance = parseFloat(userData.accountBalance) || 0;
-                const currentWalletBalance = parseFloat(userData.walletBalance) || 0;
+                // Check if user has sufficient wallet balance (withdrawals come from wallet)
+                const currentTradingBalance = parseFloat(userData.accountBalance) || 0;
+                const currentWalletBalance = parseFloat(userData.walletBalance || userData.balance) || 0;
                 
-                if (currentBalance < amount) {
-                    throw new Error(`Insufficient account balance. Current: $${currentBalance.toFixed(2)}, Required: $${amount.toFixed(2)}`);
+                if (currentWalletBalance < amount) {
+                    throw new Error(`Insufficient wallet balance. Current: $${currentWalletBalance.toFixed(2)}, Required: $${amount.toFixed(2)}`);
                 }
                 
                 // Calculate new balances
-                const newAccountBalance = currentBalance - amount;
+                const newTradingBalance = currentTradingBalance;
                 const newWalletBalance = Math.max(0, currentWalletBalance - amount);
                 
                 // Use batch write for atomic operations
@@ -3271,9 +3271,10 @@
                 // Update user balances
                 const userRef = firebase.firestore().collection('users').doc(userId);
                 batch.update(userRef, {
-                    accountBalance: newAccountBalance,
-                    walletBalance: newAccountBalance,
-                    balance: newAccountBalance,
+                    accountBalance: newTradingBalance,
+                    walletBalance: newWalletBalance,
+                    balance: newWalletBalance,
+                    totalWithdrawals: firebase.firestore.FieldValue.increment(amount),
                     balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                 });
@@ -3289,8 +3290,8 @@
                     accountDetails: accountDetails,
                     status: 'completed',
                     description: `Withdrawal via ${method} - Approved by Admin`,
-                    balanceBefore: currentBalance,
-                    balanceAfter: newAccountBalance,
+                    tradingBalanceBefore: currentTradingBalance,
+                    tradingBalanceAfter: newTradingBalance,
                     walletBalanceBefore: currentWalletBalance,
                     walletBalanceAfter: newWalletBalance,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -3356,15 +3357,15 @@
                 const userQuery = await firebase.firestore().collection('users').where('email', '==', userEmail).get();
                 
                 let userId = null;
-                let currentBalance = 0;
+                let currentTradingBalance = 0;
                 let currentWalletBalance = 0;
                 
                 if (!userQuery.empty) {
                     const userDoc = userQuery.docs[0];
                     const userData = userDoc.data();
                     userId = userDoc.id;
-                    currentBalance = parseFloat(userData.accountBalance) || 0;
-                    currentWalletBalance = parseFloat(userData.walletBalance) || 0;
+                    currentTradingBalance = parseFloat(userData.accountBalance) || 0;
+                    currentWalletBalance = parseFloat(userData.walletBalance || userData.balance) || 0;
                 }
                 
                 // Use batch write for atomic operations
@@ -3391,10 +3392,10 @@
                         status: 'rejected',
                         description: `Withdrawal via ${method} - Rejected by Admin`,
                         rejectionReason: reason || 'No reason provided',
-                        balanceBefore: currentBalance,
-                        balanceAfter: currentBalance, // No change for rejected withdrawals
+                        tradingBalanceBefore: currentTradingBalance,
+                        tradingBalanceAfter: currentTradingBalance,
                         walletBalanceBefore: currentWalletBalance,
-                        walletBalanceAfter: currentWalletBalance, // No change for rejected withdrawals
+                        walletBalanceAfter: currentWalletBalance,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         rejectedBy: 'admin',
                         withdrawalRequestId: docId,
