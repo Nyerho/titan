@@ -923,7 +923,7 @@ class TradingPlatform {
     }
 
     updatePositionsTable() {
-        const positionsContainer = document.getElementById('positions');
+        const positionsContainer = document.getElementById('positions-list');
         if (positionsContainer) {
             if (this.positions.length === 0) {
                 positionsContainer.innerHTML = '<p class="no-data">No open positions</p>';
@@ -962,7 +962,7 @@ class TradingPlatform {
     }
 
     updateOrdersTable() {
-        const ordersContainer = document.getElementById('orders');
+        const ordersContainer = document.getElementById('history-list');
         if (ordersContainer) {
             if (this.orders.length === 0) {
                 ordersContainer.innerHTML = '<p class="no-data">No pending orders</p>';
