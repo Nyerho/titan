@@ -639,22 +639,47 @@
                     const side = Math.random() > 0.5 ? 'buy' : 'sell';
                     const profit = Math.round(((Math.random() - 0.495) * baseEquity * cfg.riskFactor) * 100) / 100;
 
-                    await FirebaseDatabaseService.createTrade(user.uid, {
-                        source: 'bot',
-                        botId: bot.id,
-                        botName: getBotDisplayName(bot.id, bot.name),
-                        symbol,
-                        side,
-                        volume: cfg.volume,
-                        profit,
-                        status: 'completed',
-                        closedAt: Date.now()
-                    });
+                    try {
+                        await FirebaseDatabaseService.createTrade(user.uid, {
+                            source: 'bot',
+                            botId: bot.id,
+                            botName: getBotDisplayName(bot.id, bot.name),
+                            symbol,
+                            side,
+                            volume: cfg.volume,
+                            profit,
+                            status: 'completed',
+                            closedAt: Date.now()
+                        });
+                    } catch (e) {
+                        const demo = JSON.parse(localStorage.getItem('tt_demo_trades') || '[]');
+                        demo.unshift({
+                            uid: user?.uid || 'demo',
+                            source: 'bot',
+                            botId: bot.id,
+                            botName: getBotDisplayName(bot.id, bot.name),
+                            symbol,
+                            side,
+                            volume: cfg.volume,
+                            profit,
+                            status: 'completed',
+                            closedAt: Date.now(),
+                            createdAt: Date.now()
+                        });
+                        localStorage.setItem('tt_demo_trades', JSON.stringify(demo.slice(0, 200)));
+                    }
 
-                    if (propAccount) {
-                        await FirebaseDatabaseService.applyPropTradeResult(user.uid, profit);
-                    } else {
-                        await FirebaseDatabaseService.applyBalanceDelta(user.uid, profit);
+                    try {
+                        if (propAccount) {
+                            await FirebaseDatabaseService.applyPropTradeResult(user.uid, profit);
+                        } else {
+                            await FirebaseDatabaseService.applyBalanceDelta(user.uid, profit);
+                        }
+                    } catch (e) {
+                        // Demo fallback: update a local balance cache
+                        const key = 'tt_demo_balance';
+                        const prev = Number(localStorage.getItem(key) || '1000');
+                        localStorage.setItem(key, String(Math.max(0, prev + profit)));
                     }
                 }
             }

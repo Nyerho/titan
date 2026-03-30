@@ -251,6 +251,7 @@
                                 <th>Exit Price</th>
                                 <th>P&L</th>
                                 <th>Status</th>
+                                <th>Source</th>
                             </tr>
                         </thead>
                         <tbody id="tradesTableBody">
@@ -474,6 +475,7 @@
                     const pnlClass = pnl >= 0 ? 'status-profit' : 'status-loss';
                     const pnlSign = pnl >= 0 ? '+' : '';
                     const statusClass = trade.status === 'closed' ? (pnl >= 0 ? 'status-profit' : 'status-loss') : 'status-pending';
+                    const source = (trade.source || 'manual').toLowerCase() === 'bot' ? 'Bot' : 'Manual';
                     
                     return `
                         <tr>
@@ -485,6 +487,7 @@
                             <td>${trade.exitPrice || (trade.status === 'open' ? 'Open' : 'N/A')}</td>
                             <td class="${pnlClass}">${pnlSign}$${Math.abs(pnl).toFixed(2)}</td>
                             <td><span class="${statusClass}">${(trade.status || 'pending').charAt(0).toUpperCase() + (trade.status || 'pending').slice(1)}</span></td>
+                            <td>${source}</td>
                         </tr>
                     `;
                 }).join('');
@@ -541,6 +544,22 @@
 
         // Initialize the history manager
         window.historyManager = new HistoryManager();
+
+        // Fallback: if no Firebase auth, show demo trades stored locally
+        try {
+            const tradesBody = document.getElementById('tradesTableBody');
+            const noDataMessage = document.getElementById('noTradesMessage');
+            const demo = JSON.parse(localStorage.getItem('tt_demo_trades') || '[]');
+            if (demo.length > 0) {
+                const mapped = demo.map(t => ({
+                    ...t,
+                    createdAt: { toDate: () => new Date(t.createdAt || Date.now()) }
+                }));
+                window.historyManager.displayTrades(mapped);
+                tradesBody.style.display = 'table-tbody';
+                noDataMessage.style.display = 'none';
+            }
+        } catch (e) {}
     </script>
     
     <style>

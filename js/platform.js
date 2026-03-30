@@ -887,6 +887,7 @@ class TradingPlatform {
             const dbService = window.FirebaseDatabaseService;
             if (user?.uid && dbService?.createTrade) {
                 dbService.createTrade(user.uid, {
+                    source: 'manual',
                     symbol: order.symbol,
                     type: order.type,
                     amount: order.volume,
