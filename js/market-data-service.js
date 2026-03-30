@@ -1,7 +1,10 @@
 // Market Data Service - Unified API for real-time market data
 class MarketDataService {
     constructor() {
-        this.config = new APIConfig();
+        const CfgCtor = (typeof window !== 'undefined' && window.APIConfig)
+            ? window.APIConfig
+            : (typeof APIConfig !== 'undefined' ? APIConfig : null);
+        this.config = CfgCtor ? new CfgCtor() : null;
         this.cache = new Map();
         this.cacheTimeout = 30000;
         this.subscribers = new Map();

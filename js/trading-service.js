@@ -1,7 +1,10 @@
 // Trading Service - Handles order placement, position management, and account information
 class TradingService {
     constructor() {
-        this.config = new APIConfig();
+        const CfgCtor = (typeof window !== 'undefined' && window.APIConfig)
+            ? window.APIConfig
+            : (typeof APIConfig !== 'undefined' ? APIConfig : null);
+        this.config = CfgCtor ? new CfgCtor() : null;
         this.marketDataService = null;
         this.positions = new Map();
         this.orders = new Map();
