@@ -116,9 +116,18 @@ class TradingPlatform {
 
     async applyTradeResultToBackend(profit) {
         const authManager = window.authManager;
-        const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+        let user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
         const dbService = window.FirebaseDatabaseService;
-        if (!user?.uid || !dbService) return;
+        if (!user?.uid && authManager?.initialize) {
+            try {
+                await authManager.initialize();
+                user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+            } catch (_) {}
+        }
+        if (!user?.uid || !dbService) {
+            this.showNotification('Unable to save P&L (not logged in)', 'warning');
+            return;
+        }
 
         const pnl = Number(profit || 0);
         if (!Number.isFinite(pnl) || pnl === 0) return;
@@ -139,8 +148,16 @@ class TradingPlatform {
             if (dbService.applyBalanceDelta) {
                 const res = await dbService.applyBalanceDelta(user.uid, pnl);
                 if (res && res.success === false && res.error === 'prop_account') return;
+                if (res && res.success === false) {
+                    const msg = res.error ? String(res.error) : 'Unknown error';
+                    this.showNotification(`Failed to apply P&L: ${msg}`, 'error');
+                    return;
+                }
             }
-        } catch (e) {}
+        } catch (e) {
+            try { console.error('applyTradeResultToBackend failed:', e); } catch (_) {}
+            this.showNotification('Failed to apply P&L. Please retry.', 'error');
+        }
     }
     
     // Load initial market data
@@ -1015,7 +1032,18 @@ class TradingPlatform {
 
     async closePosition(positionId) {
         const position = this.positions.find((p) => p.id === positionId);
-        const pnl = position ? Number(position.pnl || 0) : 0;
+        let pnl = 0;
+        if (position) {
+            const openPrice = Number(position.openPrice || 0);
+            const volume = Number(position.volume || 0);
+            const tickPrice = this.getCurrentPrice(position.symbol) + (Math.random() - 0.5) * 0.01;
+            const currentPrice = Number.isFinite(Number(position.currentPrice)) ? Number(position.currentPrice) : tickPrice;
+            const priceDiff = position.type === 'buy'
+                ? currentPrice - openPrice
+                : openPrice - currentPrice;
+            const computed = priceDiff * volume * 100000;
+            pnl = Number.isFinite(computed) ? computed : Number(position.pnl || 0);
+        }
         this.positions = this.positions.filter(p => p.id !== positionId);
         this.updatePositionsTable();
         await this.applyTradeResultToBackend(pnl);
@@ -1035,7 +1063,18 @@ class TradingPlatform {
             return;
         }
 
-        const pnl = this.positions.reduce((sum, p) => sum + Number(p.pnl || 0), 0);
+        const pnl = this.positions.reduce((sum, position) => {
+            const openPrice = Number(position?.openPrice || 0);
+            const volume = Number(position?.volume || 0);
+            const tickPrice = this.getCurrentPrice(position?.symbol) + (Math.random() - 0.5) * 0.01;
+            const currentPrice = Number.isFinite(Number(position?.currentPrice)) ? Number(position.currentPrice) : tickPrice;
+            const priceDiff = position?.type === 'buy'
+                ? currentPrice - openPrice
+                : openPrice - currentPrice;
+            const computed = priceDiff * volume * 100000;
+            const safe = Number.isFinite(computed) ? computed : Number(position?.pnl || 0);
+            return sum + (Number.isFinite(safe) ? safe : 0);
+        }, 0);
         this.positions = [];
         this.updatePositionsTable();
         await this.applyTradeResultToBackend(pnl);
@@ -1311,6 +1350,7 @@ class TradingPlatform {
     }
 
     updatePositionsPnL() {
+        let totalPnL = 0;
         this.positions.forEach(position => {
             const currentPrice = this.getCurrentPrice(position.symbol) + (Math.random() - 0.5) * 0.01;
             position.currentPrice = currentPrice;
@@ -1320,7 +1360,9 @@ class TradingPlatform {
                 : position.openPrice - currentPrice;
             
             position.pnl = priceDiff * position.volume * 100000; // Assuming standard lot size
+            totalPnL += Number(position.pnl || 0);
         });
+        this.portfolio.totalPnL = Number.isFinite(totalPnL) ? totalPnL : 0;
         
         this.updatePositionsTable();
         this.updatePortfolioDisplay();
@@ -1344,6 +1386,17 @@ class TradingPlatform {
             this.portfolio.margin = margin;
             this.portfolio.freeMargin = freeMargin;
             this.updatePortfolioDisplay();
+
+            const tradingBalanceEl = document.getElementById('account-balance');
+            if (tradingBalanceEl) tradingBalanceEl.textContent = this.formatCurrency(nextBalance);
+            const walletBalanceEl = document.getElementById('wallet-balance');
+            if (walletBalanceEl) walletBalanceEl.textContent = this.formatCurrency(nextBalance);
+            const equityEl = document.getElementById('account-equity');
+            if (equityEl) equityEl.textContent = this.formatCurrency(equity);
+            const marginEl = document.getElementById('account-margin');
+            if (marginEl) marginEl.textContent = this.formatCurrency(margin);
+            const freeMarginEl = document.getElementById('free-margin');
+            if (freeMarginEl) freeMarginEl.textContent = this.formatCurrency(freeMargin);
         });
     }
 
@@ -2387,7 +2440,18 @@ class TradingPlatform {
 
     async closePosition(positionId) {
         const position = this.positions.find((p) => p.id === positionId);
-        const pnl = position ? Number(position.pnl || 0) : 0;
+        let pnl = 0;
+        if (position) {
+            const openPrice = Number(position.openPrice || 0);
+            const volume = Number(position.volume || 0);
+            const tickPrice = this.getCurrentPrice(position.symbol) + (Math.random() - 0.5) * 0.01;
+            const currentPrice = Number.isFinite(Number(position.currentPrice)) ? Number(position.currentPrice) : tickPrice;
+            const priceDiff = position.type === 'buy'
+                ? currentPrice - openPrice
+                : openPrice - currentPrice;
+            const computed = priceDiff * volume * 100000;
+            pnl = Number.isFinite(computed) ? computed : Number(position.pnl || 0);
+        }
         this.positions = this.positions.filter(p => p.id !== positionId);
         this.updatePositionsTable();
         await this.applyTradeResultToBackend(pnl);
@@ -2407,7 +2471,18 @@ class TradingPlatform {
             return;
         }
 
-        const pnl = this.positions.reduce((sum, p) => sum + Number(p.pnl || 0), 0);
+        const pnl = this.positions.reduce((sum, position) => {
+            const openPrice = Number(position?.openPrice || 0);
+            const volume = Number(position?.volume || 0);
+            const tickPrice = this.getCurrentPrice(position?.symbol) + (Math.random() - 0.5) * 0.01;
+            const currentPrice = Number.isFinite(Number(position?.currentPrice)) ? Number(position.currentPrice) : tickPrice;
+            const priceDiff = position?.type === 'buy'
+                ? currentPrice - openPrice
+                : openPrice - currentPrice;
+            const computed = priceDiff * volume * 100000;
+            const safe = Number.isFinite(computed) ? computed : Number(position?.pnl || 0);
+            return sum + (Number.isFinite(safe) ? safe : 0);
+        }, 0);
         this.positions = [];
         this.updatePositionsTable();
         await this.applyTradeResultToBackend(pnl);
@@ -2457,6 +2532,7 @@ class TradingPlatform {
     }
 
     updatePositionsPnL() {
+        let totalPnL = 0;
         this.positions.forEach(position => {
             const currentPrice = this.getCurrentPrice(position.symbol) + (Math.random() - 0.5) * 0.01;
             position.currentPrice = currentPrice;
@@ -2466,7 +2542,9 @@ class TradingPlatform {
                 : position.openPrice - currentPrice;
             
             position.pnl = priceDiff * position.volume * 100000; // Assuming standard lot size
+            totalPnL += Number(position.pnl || 0);
         });
+        this.portfolio.totalPnL = Number.isFinite(totalPnL) ? totalPnL : 0;
         
         this.updatePositionsTable();
         this.updateAccountInfo();
