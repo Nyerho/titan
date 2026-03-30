@@ -68,6 +68,10 @@ class TradingPlatform {
         } catch (e) {}
 
         const authManager = window.authManager;
+        if (!authManager?.getCurrentUser && !authManager?.currentUser) {
+            this.showNotification('Auth unavailable - demo trading enabled', 'info');
+            return true;
+        }
         const user = authManager?.getCurrentUser?.() || null;
         if (!user) {
             this.showNotification('Please log in to trade', 'warning');
