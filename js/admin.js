@@ -4731,6 +4731,231 @@ EnhancedAdminDashboard.prototype.searchUserForPassword = async function() {
     }
 };
 
+EnhancedAdminDashboard.prototype.searchUserForEntitlements = async function() {
+    const email = document.getElementById('entitlementsUserSearch')?.value?.trim();
+    if (!email) {
+        this.showNotification('Please enter a user email', 'warning');
+        return;
+    }
+
+    try {
+        const userQuery = query(collection(this.db, 'users'), where('email', '==', email));
+        const userSnapshot = await getDocs(userQuery);
+
+        if (userSnapshot.empty) {
+            this.showNotification('User not found', 'error');
+            return;
+        }
+
+        const userDoc = userSnapshot.docs[0];
+        const userData = userDoc.data();
+        const userId = userDoc.id;
+
+        this.selectedEntitlementsUser = { id: userId, ...userData };
+
+        const nameEl = document.getElementById('entitlementsUserName');
+        const emailEl = document.getElementById('entitlementsUserEmail');
+        const idEl = document.getElementById('entitlementsUserId');
+        const statusEl = document.getElementById('entitlementsUserStatus');
+
+        if (nameEl) nameEl.textContent = userData.fullName || userData.displayName || 'N/A';
+        if (emailEl) emailEl.textContent = userData.email || email;
+        if (idEl) idEl.textContent = userId;
+        if (statusEl) {
+            statusEl.textContent = userData.status || 'active';
+            statusEl.className = `badge bg-${this.getStatusColor(userData.status)}`;
+        }
+
+        document.getElementById('entitlementsUserInfo')?.classList.remove('d-none');
+        document.getElementById('entitlementsActions')?.classList.remove('d-none');
+        document.getElementById('noEntitlementsUser')?.classList.add('d-none');
+
+        this.populateEntitlementsJsonEditors(userData);
+        this.setEntitlementsSaveStatus('');
+    } catch (error) {
+        console.error('Error searching user for entitlements:', error);
+        this.showNotification('Error searching for user', 'error');
+    }
+};
+
+EnhancedAdminDashboard.prototype.populateEntitlementsJsonEditors = function(userData) {
+    const botsOwned = userData?.botsOwned || {};
+    const propAccount = typeof userData?.propAccount === 'undefined' ? null : userData.propAccount;
+
+    const botsEl = document.getElementById('adminBotsJson');
+    const propEl = document.getElementById('adminPropJson');
+
+    if (botsEl) botsEl.value = JSON.stringify(botsOwned || {}, null, 2);
+    if (propEl) propEl.value = JSON.stringify(propAccount, null, 2);
+};
+
+EnhancedAdminDashboard.prototype.reloadEntitlementsJson = async function() {
+    if (!this.selectedEntitlementsUser?.id) {
+        this.showNotification('Please search for a user first', 'warning');
+        return;
+    }
+
+    try {
+        const snap = await getDoc(doc(this.db, 'users', this.selectedEntitlementsUser.id));
+        if (!snap.exists()) {
+            this.showNotification('User not found', 'error');
+            return;
+        }
+        const userData = snap.data();
+        this.selectedEntitlementsUser = { id: snap.id, ...userData };
+        this.populateEntitlementsJsonEditors(userData);
+        this.setEntitlementsSaveStatus('Reloaded current values.');
+    } catch (error) {
+        console.error('Error reloading entitlements:', error);
+        this.showNotification('Failed to reload user data', 'error');
+    }
+};
+
+EnhancedAdminDashboard.prototype.saveEntitlementsFromJson = async function() {
+    if (!this.selectedEntitlementsUser?.id) {
+        this.showNotification('Please search for a user first', 'warning');
+        return;
+    }
+
+    const botsText = document.getElementById('adminBotsJson')?.value ?? '';
+    const propText = document.getElementById('adminPropJson')?.value ?? '';
+
+    let botsOwned = {};
+    let propAccount = null;
+
+    try {
+        const parsedBots = botsText.trim() ? JSON.parse(botsText) : {};
+        if (parsedBots && typeof parsedBots !== 'object') {
+            this.showNotification('botsOwned must be a JSON object', 'error');
+            return;
+        }
+        botsOwned = parsedBots || {};
+    } catch (e) {
+        this.showNotification('Bots JSON is invalid', 'error');
+        return;
+    }
+
+    try {
+        const parsedProp = propText.trim() ? JSON.parse(propText) : null;
+        if (parsedProp !== null && typeof parsedProp !== 'object') {
+            this.showNotification('propAccount must be a JSON object or null', 'error');
+            return;
+        }
+        propAccount = parsedProp;
+    } catch (e) {
+        this.showNotification('Prop account JSON is invalid', 'error');
+        return;
+    }
+
+    try {
+        this.setEntitlementsSaveStatus('Saving...');
+        const userRef = doc(this.db, 'users', this.selectedEntitlementsUser.id);
+        await updateDoc(userRef, {
+            botsOwned,
+            propAccount: propAccount ?? null,
+            updatedAt: serverTimestamp()
+        });
+
+        await addDoc(collection(this.db, 'admin_logs'), {
+            action: 'admin_update_bots_prop',
+            targetUserId: this.selectedEntitlementsUser.id,
+            targetUserEmail: this.selectedEntitlementsUser.email || '',
+            adminId: this.currentUser?.uid || null,
+            timestamp: serverTimestamp(),
+            details: {
+                botsOwnedKeys: Object.keys(botsOwned || {}),
+                propAccount: propAccount ? { status: propAccount.status, phase: propAccount.phase || propAccount.currentPhase || null, planId: propAccount.planId || null } : null
+            }
+        });
+
+        this.showNotification('Saved successfully', 'success');
+        this.setEntitlementsSaveStatus('Saved.');
+    } catch (error) {
+        console.error('Error saving entitlements:', error);
+        this.showNotification('Failed to save changes', 'error');
+        this.setEntitlementsSaveStatus('Save failed.');
+    }
+};
+
+EnhancedAdminDashboard.prototype.applyBotTemplateToJson = function() {
+    const botsEl = document.getElementById('adminBotsJson');
+    if (!botsEl) return;
+    const current = (botsEl.value || '').trim();
+    if (current) return;
+    botsEl.value = JSON.stringify({
+        bot_scalper: {
+            id: 'bot_scalper',
+            name: 'Basic Bot',
+            price: 0,
+            roiPctPerCycle: 5,
+            cycleHours: 2,
+            purchasedAt: Date.now(),
+            active: true,
+            botConfig: { volume: 0.02, riskFactor: 0.00035, tradesPerTick: 2, symbols: ['EUR/USD', 'GBP/USD'] }
+        }
+    }, null, 2);
+};
+
+EnhancedAdminDashboard.prototype.resetPropAccountToPhase1 = function() {
+    const propEl = document.getElementById('adminPropJson');
+    if (!propEl) return;
+
+    const existing = this.selectedEntitlementsUser?.propAccount || null;
+    const accountSize = Number(existing?.accountSize || existing?.startingEquity || 10000);
+    const now = Date.now();
+    const today = new Date();
+    const todayKey = today.toISOString().slice(0, 10);
+
+    const next = {
+        planId: existing?.planId || null,
+        firmName: existing?.firmName || 'TitanTrades Prop',
+        accountSize: accountSize,
+        feeUsd: Number(existing?.feeUsd || 0) || 0,
+        phase: 1,
+        currentPhase: 1,
+        phaseStartDate: now,
+        profitTargetPct: 0.1,
+        dailyDrawdownPct: 0.05,
+        maxDrawdownPct: 0.1,
+        minTradingDays: 4,
+        timeLimitDays: 30,
+        status: 'evaluation',
+        startingEquity: accountSize,
+        currentEquity: accountSize,
+        todayDate: todayKey,
+        todayPnl: 0,
+        tradingDaysCount: 0,
+        tradingDays: []
+    };
+
+    propEl.value = JSON.stringify(next, null, 2);
+    this.setEntitlementsSaveStatus('Prop account reset prepared. Click Save.');
+};
+
+EnhancedAdminDashboard.prototype.clearPropAccount = async function() {
+    if (!this.selectedEntitlementsUser?.id) {
+        this.showNotification('Please search for a user first', 'warning');
+        return;
+    }
+    try {
+        const userRef = doc(this.db, 'users', this.selectedEntitlementsUser.id);
+        await updateDoc(userRef, { propAccount: null, updatedAt: serverTimestamp() });
+        const propEl = document.getElementById('adminPropJson');
+        if (propEl) propEl.value = 'null';
+        this.showNotification('Prop account cleared', 'success');
+        this.setEntitlementsSaveStatus('Prop account cleared.');
+    } catch (error) {
+        console.error('Error clearing prop account:', error);
+        this.showNotification('Failed to clear prop account', 'error');
+        this.setEntitlementsSaveStatus('Clear failed.');
+    }
+};
+
+EnhancedAdminDashboard.prototype.setEntitlementsSaveStatus = function(message) {
+    const el = document.getElementById('entitlementsSaveStatus');
+    if (el) el.textContent = message || '';
+};
+
 // Add missing password management methods
 EnhancedAdminDashboard.prototype.resetUserPassword = async function() {
     if (!this.selectedPasswordUser) {

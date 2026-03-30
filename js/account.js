@@ -461,6 +461,10 @@ function bindActions() {
       const result = await FirebaseDatabaseService.setPropAccount(user.uid, plan);
       if (result.success) {
         showToast('Prop account selected.', 'success');
+      } else if (result.error === 'insufficient_funds') {
+        showToast('Insufficient funds to pay the prop fee.', 'error');
+      } else if (result.error === 'already_has_prop') {
+        showToast('You already have an active prop account.', 'warning');
       } else {
         showToast('Unable to select prop account right now.', 'error');
       }

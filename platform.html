@@ -532,6 +532,36 @@
             return BOT_CONFIG[botId] || { volume: 0.01, riskFactor: 0.0003, tradesPerTick: 1, symbols: ['EUR/USD', 'GBP/USD', 'USD/JPY', 'BTC/USD', 'ETH/USD'] };
         }
 
+        function normalizeBotRuntimeConfig(cfg) {
+            if (!cfg || typeof cfg !== 'object') return null;
+            const volume = Number(cfg.volume);
+            const riskFactor = Number(cfg.riskFactor);
+            const tradesPerTick = Number(cfg.tradesPerTick);
+            const symbols = Array.isArray(cfg.symbols) ? cfg.symbols.filter((s) => typeof s === 'string' && s.trim()).slice(0, 12) : null;
+
+            const next = {
+                volume: Number.isFinite(volume) ? Math.min(Math.max(volume, 0.001), 1) : null,
+                riskFactor: Number.isFinite(riskFactor) ? Math.min(Math.max(riskFactor, 0.00001), 0.01) : null,
+                tradesPerTick: Number.isFinite(tradesPerTick) ? Math.min(Math.max(Math.floor(tradesPerTick), 1), 10) : null,
+                symbols: symbols && symbols.length ? symbols : null
+            };
+
+            if (next.volume === null && next.riskFactor === null && next.tradesPerTick === null && next.symbols === null) return null;
+            return next;
+        }
+
+        function getEffectiveBotConfig(bot) {
+            const base = getBotConfig(bot?.id);
+            const override = normalizeBotRuntimeConfig(bot?.botConfig);
+            if (!override) return base;
+            return {
+                volume: override.volume ?? base.volume,
+                riskFactor: override.riskFactor ?? base.riskFactor,
+                tradesPerTick: override.tradesPerTick ?? base.tradesPerTick,
+                symbols: override.symbols ?? base.symbols
+            };
+        }
+
         function renderBotControl(botsOwned) {
             const ownedMap = botsOwned || {};
             const owned = Object.values(ownedMap).filter(Boolean);
@@ -543,7 +573,9 @@
                 if (owned.length) {
                     for (const bot of owned.sort((a, b) => getBotDisplayName(a.id, a.name).localeCompare(getBotDisplayName(b.id, b.name)))) {
                         const meta = getBotMeta(bot.id);
-                        const roiLabel = meta ? `${meta.roiPctPerCycle}% ROI / ${meta.cycleHours}h` : '';
+                        const roiPct = meta?.roiPctPerCycle ?? bot?.roiPctPerCycle;
+                        const cycleHours = meta?.cycleHours ?? bot?.cycleHours;
+                        const roiLabel = Number.isFinite(Number(roiPct)) && Number.isFinite(Number(cycleHours)) ? `${Number(roiPct)}% ROI / ${Number(cycleHours)}h` : '';
                         const row = document.createElement('div');
                         row.className = 'bot-item';
                         row.innerHTML = `
@@ -600,7 +632,7 @@
 
             for (const bot of activeBots) {
                 const baseEquity = propAccount ? Number(propAccount.accountSize || 0) : 1000;
-                const cfg = getBotConfig(bot.id);
+                const cfg = getEffectiveBotConfig(bot);
                 for (let i = 0; i < cfg.tradesPerTick; i++) {
                     const symbol = cfg.symbols[Math.floor(Math.random() * cfg.symbols.length)];
                     const side = Math.random() > 0.5 ? 'buy' : 'sell';

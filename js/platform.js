@@ -82,11 +82,52 @@ class TradingPlatform {
             }
         } catch (e) {}
 
-        if (verified) return true;
+        if (verified) {
+            const dbService = window.FirebaseDatabaseService;
+            if (dbService?.getUserEntitlements) {
+                try {
+                    const entitlementsResult = await dbService.getUserEntitlements(user.uid);
+                    const propAccount = entitlementsResult?.success ? entitlementsResult.data?.propAccount : null;
+                    if (propAccount && propAccount.status === 'breached') {
+                        this.showNotification('Prop account breached. Trading disabled.', 'warning');
+                        return false;
+                    }
+                } catch (e) {}
+            }
+            return true;
+        }
 
         this.showNotification('Verify your email or phone number to trade', 'warning');
         try { authManager?.ensureVerificationBanner?.(); } catch (e) {}
         return false;
+    }
+
+    async applyTradeResultToBackend(profit) {
+        const authManager = window.authManager;
+        const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+        const dbService = window.FirebaseDatabaseService;
+        if (!user?.uid || !dbService) return;
+
+        const pnl = Number(profit || 0);
+        if (!Number.isFinite(pnl) || pnl === 0) return;
+
+        try {
+            if (dbService.getUserEntitlements) {
+                const entitlementsResult = await dbService.getUserEntitlements(user.uid);
+                const propAccount = entitlementsResult?.success ? entitlementsResult.data?.propAccount : null;
+                if (propAccount && propAccount.status !== 'breached' && dbService.applyPropTradeResult) {
+                    const res = await dbService.applyPropTradeResult(user.uid, pnl);
+                    if (res?.success && res.propAccount?.status === 'breached') {
+                        this.showNotification('Prop rules violated. Account breached.', 'warning');
+                    }
+                    return;
+                }
+            }
+
+            if (dbService.applyBalanceDelta) {
+                await dbService.applyBalanceDelta(user.uid, pnl);
+            }
+        } catch (e) {}
     }
     
     // Load initial market data
@@ -959,10 +1000,13 @@ class TradingPlatform {
         }
     }
 
-    closePosition(positionId) {
+    async closePosition(positionId) {
+        const position = this.positions.find((p) => p.id === positionId);
+        const pnl = position ? Number(position.pnl || 0) : 0;
         this.positions = this.positions.filter(p => p.id !== positionId);
         this.updatePositionsTable();
-        this.updateAccountInfo();
+        await this.applyTradeResultToBackend(pnl);
+        await this.refreshAccountInfo();
         this.showNotification('Position closed successfully', 'success');
     }
 
@@ -972,15 +1016,17 @@ class TradingPlatform {
         this.showNotification('Order cancelled successfully', 'info');
     }
 
-    closeAllPositions() {
+    async closeAllPositions() {
         if (this.positions.length === 0) {
             this.showNotification('No positions to close', 'warning');
             return;
         }
-        
+
+        const pnl = this.positions.reduce((sum, p) => sum + Number(p.pnl || 0), 0);
         this.positions = [];
         this.updatePositionsTable();
-        this.updateAccountInfo();
+        await this.applyTradeResultToBackend(pnl);
+        await this.refreshAccountInfo();
         this.showNotification('All positions closed', 'success');
     }
 
@@ -2165,10 +2211,13 @@ class TradingPlatform {
         }
     }
 
-    closePosition(positionId) {
+    async closePosition(positionId) {
+        const position = this.positions.find((p) => p.id === positionId);
+        const pnl = position ? Number(position.pnl || 0) : 0;
         this.positions = this.positions.filter(p => p.id !== positionId);
         this.updatePositionsTable();
-        this.updateAccountInfo();
+        await this.applyTradeResultToBackend(pnl);
+        await this.refreshAccountInfo();
         this.showNotification('Position closed successfully', 'success');
     }
 
@@ -2178,15 +2227,17 @@ class TradingPlatform {
         this.showNotification('Order cancelled successfully', 'info');
     }
 
-    closeAllPositions() {
+    async closeAllPositions() {
         if (this.positions.length === 0) {
             this.showNotification('No positions to close', 'warning');
             return;
         }
-        
+
+        const pnl = this.positions.reduce((sum, p) => sum + Number(p.pnl || 0), 0);
         this.positions = [];
         this.updatePositionsTable();
-        this.updateAccountInfo();
+        await this.applyTradeResultToBackend(pnl);
+        await this.refreshAccountInfo();
         this.showNotification('All positions closed', 'success');
     }
 

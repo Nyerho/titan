@@ -107,15 +107,21 @@ class FirebaseDatabaseService {
         }
 
         const nextBalance = currentBalance - bot.price;
+        const botEntry = {
+          id: bot.id,
+          name: bot.name,
+          price: bot.price,
+          purchasedAt: Date.now(),
+          active: false
+        };
+        const roiPctPerCycle = Number(bot.roiPctPerCycle);
+        const cycleHours = Number(bot.cycleHours);
+        if (Number.isFinite(roiPctPerCycle)) botEntry.roiPctPerCycle = roiPctPerCycle;
+        if (Number.isFinite(cycleHours)) botEntry.cycleHours = cycleHours;
+        if (bot.botConfig && typeof bot.botConfig === 'object') botEntry.botConfig = bot.botConfig;
         const nextBotsOwned = {
           ...botsOwned,
-          [bot.id]: {
-            id: bot.id,
-            name: bot.name,
-            price: bot.price,
-            purchasedAt: Date.now(),
-            active: false
-          }
+          [bot.id]: botEntry
         };
 
         tx.set(
@@ -160,6 +166,7 @@ class FirebaseDatabaseService {
       const userRef = doc(db, 'users', uid);
       const result = await runTransaction(db, async (tx) => {
         const snap = await tx.get(userRef);
+        const data = snap.exists() ? snap.data() : {};
         const phaseDef = getPropPhaseDef(1);
         const planId = plan.planId;
         const firmName = plan.firmName || 'TitanTrades Prop';
@@ -167,6 +174,22 @@ class FirebaseDatabaseService {
         const feeUsd = Number(plan.feeUsd || 0);
         const now = Date.now();
         const today = dateKeyIsoUtc();
+
+        if (!planId || !(accountSize > 0) || !(feeUsd >= 0)) {
+          return { success: false, error: 'invalid_plan' };
+        }
+
+        const existingProp = data.propAccount || null;
+        if (existingProp && existingProp.status !== 'breached') {
+          return { success: false, error: 'already_has_prop' };
+        }
+
+        const currentBalance = Number(data.accountBalance ?? data.walletBalance ?? data.balance ?? 0);
+        if (feeUsd > 0 && currentBalance < feeUsd) {
+          return { success: false, error: 'insufficient_funds' };
+        }
+
+        const nextBalance = Math.max(0, currentBalance - feeUsd + accountSize);
 
         const propAccount = {
           planId,
@@ -195,6 +218,7 @@ class FirebaseDatabaseService {
           scalingEveryMonths: phaseDef.scalingEveryMonths ?? 0,
           scalingRequiresProfitPct: phaseDef.scalingRequiresProfitPct ?? 0,
           phaseDefs: PROP_PHASE_DEFS,
+          feePaidAt: now,
           createdAt: now,
           updatedAt: now
         };
@@ -202,13 +226,17 @@ class FirebaseDatabaseService {
         tx.set(
           userRef,
           {
+            accountBalance: nextBalance,
+            balance: nextBalance,
+            walletBalance: nextBalance,
+            balanceUpdatedAt: new Date().toISOString(),
             propAccount,
             updatedAt: serverTimestamp()
           },
           { merge: true }
         );
 
-        return { success: true, propAccount };
+        return { success: true, propAccount, balance: nextBalance };
       });
 
       return result;
@@ -374,6 +402,12 @@ class FirebaseDatabaseService {
           propAccount: updatedPropAccount,
           updatedAt: serverTimestamp()
         };
+
+        const equityForBalance = Math.max(0, Number(updatedPropAccount.currentEquity || 0));
+        updatePayload.accountBalance = equityForBalance;
+        updatePayload.balance = equityForBalance;
+        updatePayload.walletBalance = equityForBalance;
+        updatePayload.balanceUpdatedAt = new Date().toISOString();
 
         if (nextStatus === 'breached' && data.botsOwned) {
           const botsOwned = data.botsOwned || {};

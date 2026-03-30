@@ -1408,6 +1408,11 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="bots-prop-tab" data-bs-toggle="tab" data-bs-target="#bots-prop-control" type="button" role="tab">
+                        <i class="fas fa-robot me-2"></i>Bots & Prop Accounts
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
                     <button class="nav-link" id="withdrawal-tab" data-bs-toggle="tab" data-bs-target="#withdrawal-control" type="button" role="tab">
                         <i class="fas fa-money-bill-wave me-2"></i>Withdrawal Control
                     </button>
@@ -1545,6 +1550,92 @@
                                         <i class="fas fa-user-slash fa-2x mb-2"></i>
                                         <p>Search for a user to manage their account</p>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="bots-prop-control" role="tabpanel">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-dark">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-search me-2"></i>Find User</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="input-group mb-3">
+                                        <input type="email" class="form-control" id="entitlementsUserSearch" placeholder="Enter user email">
+                                        <button class="btn btn-primary" onclick="adminDashboard.searchUserForEntitlements()">
+                                            <i class="fas fa-search"></i> Search
+                                        </button>
+                                    </div>
+                                    <div id="entitlementsUserInfo" class="d-none">
+                                        <div class="user-info-card p-3 bg-secondary rounded">
+                                            <h6 id="entitlementsUserName"></h6>
+                                            <p class="mb-1">Email: <span id="entitlementsUserEmail"></span></p>
+                                            <p class="mb-1">UID: <span id="entitlementsUserId" class="text-break"></span></p>
+                                            <p class="mb-0">Status: <span id="entitlementsUserStatus" class="badge"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-dark">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-sliders-h me-2"></i>Edit & Save</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="entitlementsActions" class="d-none">
+                                        <button class="btn btn-outline-info w-100 mb-2" onclick="adminDashboard.reloadEntitlementsJson()">
+                                            <i class="fas fa-sync-alt me-2"></i>Reload Current Values
+                                        </button>
+                                        <button class="btn btn-success w-100 mb-2" onclick="adminDashboard.saveEntitlementsFromJson()">
+                                            <i class="fas fa-save me-2"></i>Save Bots & Prop Account
+                                        </button>
+                                        <div id="entitlementsSaveStatus" class="small text-muted"></div>
+                                    </div>
+                                    <div id="noEntitlementsUser" class="text-center text-muted">
+                                        <i class="fas fa-user-slash fa-2x mb-2"></i>
+                                        <p>Search for a user to manage bots and prop accounts</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12 col-lg-6">
+                            <div class="card bg-dark h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="fas fa-robot me-2"></i>User Trading Bots (botsOwned)</h5>
+                                    <button class="btn btn-outline-light btn-sm" onclick="adminDashboard.applyBotTemplateToJson()">
+                                        <i class="fas fa-magic me-1"></i>Insert Template
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <textarea class="form-control bg-secondary text-white font-monospace" id="adminBotsJson" rows="16" placeholder='{"bot_scalper":{"id":"bot_scalper","active":true,"name":"Basic Bot","roiPctPerCycle":5,"cycleHours":2,"botConfig":{"volume":0.02,"riskFactor":0.00035,"tradesPerTick":2,"symbols":["EUR/USD"]}}}'></textarea>
+                                    <div class="small text-muted mt-2">Edit the user document field <strong>botsOwned</strong>. You can include <strong>botConfig</strong> to control how the bot trades for that user.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <div class="card bg-dark h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="fas fa-building-columns me-2"></i>User Prop Account (propAccount)</h5>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-outline-warning btn-sm" onclick="adminDashboard.resetPropAccountToPhase1()">
+                                            <i class="fas fa-undo me-1"></i>Reset Phase 1
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="adminDashboard.clearPropAccount()">
+                                            <i class="fas fa-trash me-1"></i>Clear
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <textarea class="form-control bg-secondary text-white font-monospace" id="adminPropJson" rows="16" placeholder='{"planId":"prop_10k","accountSize":10000,"phase":1,"profitTargetPct":0.1,"dailyDrawdownPct":0.05,"maxDrawdownPct":0.1,"minTradingDays":4,"timeLimitDays":30,"status":"evaluation","startingEquity":10000,"currentEquity":10000,"todayDate":"2026-03-29","todayPnl":0,"tradingDays":["2026-03-29"]}'></textarea>
+                                    <div class="small text-muted mt-2">Edit the user document field <strong>propAccount</strong>. Changes affect prop rule enforcement and phase progression.</div>
                                 </div>
                             </div>
                         </div>
