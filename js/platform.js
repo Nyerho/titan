@@ -109,6 +109,37 @@ class TradingPlatform {
         return false;
     }
 
+    async ensureTradingBalanceInitializedForTrading() {
+        try {
+            if (localStorage.getItem('tt_demo_mode') === '1') return true;
+        } catch (e) {}
+
+        const authManager = window.authManager;
+        const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+        const dbService = window.FirebaseDatabaseService;
+        if (!user?.uid || !dbService) return true;
+
+        try {
+            if (dbService.getUserEntitlements) {
+                const entitlementsResult = await dbService.getUserEntitlements(user.uid);
+                const propAccount = entitlementsResult?.success ? entitlementsResult.data?.propAccount : null;
+                if (propAccount && propAccount.status !== 'breached') return true;
+            }
+        } catch (e) {}
+
+        try {
+            if (dbService.getUserTradingBalance) {
+                const balanceResult = await dbService.getUserTradingBalance(user.uid);
+                if (balanceResult?.success && balanceResult.initialized === false) {
+                    this.showNotification('Transfer funds from wallet to trading before placing trades.', 'warning');
+                    return false;
+                }
+            }
+        } catch (e) {}
+
+        return true;
+    }
+
     async applyTradeResultToBackend(profit) {
         const authManager = window.authManager;
         const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
@@ -331,6 +362,7 @@ class TradingPlatform {
 
         const submitOrder = async (side) => {
             if (!(await this.ensureUserVerifiedForTrading())) return;
+            if (!(await this.ensureTradingBalanceInitializedForTrading())) return;
             const symbol = (symbolSelect && symbolSelect.value) || this.currentSymbol || 'EUR/USD';
             const volume = parseFloat((volumeInput && volumeInput.value) || '0.01');
             const orderType = activeOrderTab();
@@ -1593,6 +1625,7 @@ class TradingPlatform {
 
         const submitOrder = async (side) => {
             if (!(await this.ensureUserVerifiedForTrading())) return;
+            if (!(await this.ensureTradingBalanceInitializedForTrading())) return;
 
             const symbol = getSymbol();
             const volume = getVolume();

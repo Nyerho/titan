@@ -847,7 +847,7 @@ class FirebaseDatabaseService {
     try {
       const userRef = doc(db, 'users', uid);
       const userDoc = await getDoc(userRef);
-      if (!userDoc.exists()) return { success: true, balance: 0 };
+      if (!userDoc.exists()) return { success: true, balance: 0, initialized: false };
       const userData = userDoc.data();
       const hasSplit = !!userData.balancesSeparatedAt;
       if (!hasSplit) {
@@ -864,7 +864,7 @@ class FirebaseDatabaseService {
               updatedAt: serverTimestamp()
             });
           } catch (e) {}
-          return { success: true, balance: 0 };
+          return { success: true, balance: 0, initialized: false };
         }
       }
       const hasPropAccount = !!userData.propAccount;
@@ -878,10 +878,10 @@ class FirebaseDatabaseService {
             updatedAt: serverTimestamp()
           });
         } catch (e) {}
-        return { success: true, balance: 0 };
+        return { success: true, balance: 0, initialized: false };
       }
       const trading = tradingCandidate;
-      return { success: true, balance: Number.isFinite(trading) ? trading : 0 };
+      return { success: true, balance: Number.isFinite(trading) ? trading : 0, initialized: !!(hasPropAccount || hasTradingInit) };
     } catch (error) {
       return { success: false, error: error.message };
     }
