@@ -1213,6 +1213,15 @@ class TradingPlatform {
             }
         });
         
+        const balEl = document.getElementById('account-balance');
+        if (balEl && !balEl._observerAttached) {
+            const observer = new MutationObserver(() => {
+                balEl.textContent = this.formatCurrency(this.portfolio.balance);
+            });
+            observer.observe(balEl, { characterData: true, childList: true, subtree: true });
+            balEl._observerAttached = true;
+        }
+        
         // Update P&L display
         const pnlEl = document.querySelector('.pnl .value');
         if (pnlEl) {
@@ -1364,6 +1373,8 @@ class TradingPlatform {
             this.portfolio.margin = margin;
             this.portfolio.freeMargin = freeMargin;
             this.updatePortfolioDisplay();
+            const balEl = document.getElementById('account-balance');
+            if (balEl) balEl.textContent = this.formatCurrency(this.portfolio.balance);
         });
     }
 
