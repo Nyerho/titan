@@ -640,7 +640,26 @@
                 for (let i = 0; i < cfg.tradesPerTick; i++) {
                     const symbol = cfg.symbols[Math.floor(Math.random() * cfg.symbols.length)];
                     const side = Math.random() > 0.5 ? 'buy' : 'sell';
-                    const profit = Math.round(((Math.random() - 0.495) * baseEquity * cfg.riskFactor) * 100) / 100;
+                    let profit = 0;
+                    try {
+                        const quote = window.platform?.marketDataService ? await window.platform.marketDataService.getQuote(symbol) : null;
+                        const pipSize = /JPY/i.test(symbol) ? 0.01 : 0.0001;
+                        const pipValuePerLot = 10; // approx USD value per pip per standard lot
+                        const lots = Number(cfg.volume || 0.01);
+                        const pipCount = Math.max(1, Math.floor(3 + Math.random() * 17)); // 3..20 pips
+                        const direction = Math.random() > 0.5 ? 1 : -1;
+                        const signedPips = pipCount * direction;
+                        const rawPnL = signedPips * pipValuePerLot * lots;
+                        profit = Math.round(rawPnL * 100) / 100;
+                    } catch (e) {
+                        const direction = Math.random() > 0.5 ? 1 : -1;
+                        const base = Math.max(500, baseEquity || 1000);
+                        const raw = (0.0025 * base * cfg.riskFactor) * direction;
+                        profit = Math.round(raw * 100) / 100;
+                    }
+                    if (Math.abs(profit) < 0.05) {
+                        profit = (profit >= 0 ? 1 : -1) * 0.05;
+                    }
 
                     try {
                         await FirebaseDatabaseService.createTrade(user.uid, {
