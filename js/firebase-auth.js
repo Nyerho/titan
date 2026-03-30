@@ -626,10 +626,17 @@ class FirebaseAuthService {
       phoneVerified: !!user.phoneNumber,
       verificationStatus: isVerified ? 'verified' : 'pending',
       role: userData.role || 'user',
-      balance: 0, // Start with 0 balance for synchronicity
+      balance: 0,
+      walletBalance: 0,
+      accountBalance: 0,
       totalDeposits: 0,
+      totalProfits: 0,
+      totalWithdrawals: 0,
       createdAt: serverTimestamp(),
       lastLogin: serverTimestamp(),
+      balanceUpdatedAt: serverTimestamp(),
+      tradingBalanceUpdatedAt: serverTimestamp(),
+      balancesSeparatedAt: serverTimestamp(),
       profile: {
         firstName: userData.firstName || '',
         lastName: userData.lastName || '',
@@ -640,7 +647,7 @@ class FirebaseAuthService {
       },
       trading: {
         accountType: 'demo',
-        balance: 0, // Start with 0 balance for synchronicity
+        balance: 0,
         currency: 'USD',
         leverage: '1:100',
         accountStatus: 'active'

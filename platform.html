@@ -239,13 +239,6 @@
                             <button id="transferToWalletBtn" type="button" style="white-space:nowrap;">Transfer</button>
                         </span>
                     </div>
-                    <div class="balance-item" style="margin-top: 10px;">
-                        <span class="label">Transfer to Trading:</span>
-                        <span class="value" style="display:flex; gap:8px; align-items:center; justify-content:flex-end;">
-                            <input id="transferToTradingAmount" type="number" min="1" step="0.01" placeholder="Amount" style="width:110px;">
-                            <button id="transferToTradingBtn" type="button" style="white-space:nowrap;">Transfer</button>
-                        </span>
-                    </div>
                 </div>
             </div>
 
@@ -845,38 +838,6 @@
             });
         }
 
-        function setupTransferToTradingHandler() {
-            const btn = document.getElementById('transferToTradingBtn');
-            const input = document.getElementById('transferToTradingAmount');
-            if (!btn || !input) return;
-            if (btn.dataset.bound === '1') return;
-            btn.dataset.bound = '1';
-            btn.addEventListener('click', async () => {
-                if (!currentUser) return;
-                const amount = Number(input.value || 0);
-                if (!Number.isFinite(amount) || amount <= 0) {
-                    alert('Enter a valid amount to transfer.');
-                    return;
-                }
-                btn.disabled = true;
-                try {
-                    const res = await FirebaseDatabaseService.transferWalletToTrading(currentUser.uid, amount);
-                    if (!res?.success) {
-                        const msg = res?.error === 'insufficient_wallet_balance'
-                            ? 'Insufficient wallet balance.'
-                            : 'Transfer failed.';
-                        alert(msg);
-                    }
-                    input.value = '';
-                    await loadUserAccountData(currentUser);
-                } catch (e) {
-                    alert('Transfer failed.');
-                } finally {
-                    btn.disabled = false;
-                }
-            });
-        }
-
         // Check authentication and load user data
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -892,7 +853,6 @@
                 // Load real user account data
                 await loadUserAccountData(user);
                 setupTransferToWalletHandler();
-                setupTransferToTradingHandler();
             } else {
                 console.log('No user found, redirecting to auth page');
                 currentUser = null;

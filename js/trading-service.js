@@ -9,10 +9,10 @@ class TradingService {
         this.positions = new Map();
         this.orders = new Map();
         this.accountInfo = {
-            balance: 100000, // Demo account balance
-            equity: 100000,
+            balance: 0,
+            equity: 0,
             margin: 0,
-            freeMargin: 100000,
+            freeMargin: 0,
             marginLevel: 0,
             currency: 'USD'
         };
@@ -505,10 +505,10 @@ class TradingService {
         this.positions.clear();
         this.orders.clear();
         this.accountInfo = {
-            balance: 100000,
-            equity: 100000,
+            balance: 0,
+            equity: 0,
             margin: 0,
-            freeMargin: 100000,
+            freeMargin: 0,
             marginLevel: 0,
             currency: 'USD'
         };

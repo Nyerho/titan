@@ -2,6 +2,7 @@
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { doc, getDoc, setDoc, onSnapshot, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import FirebaseDatabaseService from './firebase-database.js';
 
 class DashboardManager {
     constructor() {
@@ -141,6 +142,7 @@ class DashboardManager {
     init() {
         this.initializeAuth();
         this.setupMobileMenu();
+        this.setupFundingTransfers();
         
         // Ensure DOM is fully loaded before initializing chart components
         setTimeout(() => {
@@ -298,7 +300,13 @@ class DashboardManager {
                     displayName: user.displayName || 'User',
                     createdAt: new Date().toISOString(),
                     kycStatus: 'unverified',
+                    balance: 0,
+                    walletBalance: 0,
                     accountBalance: 0,
+                    totalDeposits: 0,
+                    totalProfits: 0,
+                    totalWithdrawals: 0,
+                    balancesSeparatedAt: serverTimestamp(),
                     status: 'active'
                 };
                 
@@ -343,7 +351,7 @@ class DashboardManager {
         }
         
         // Update account balance if present in user data
-        const balanceFromUser = userData.accountBalance ?? userData.walletBalance ?? userData.balance;
+        const balanceFromUser = userData.walletBalance ?? userData.balance;
         if (balanceFromUser !== undefined) {
             this.accountData.balance = balanceFromUser;
             this.accountData.accountBalance = balanceFromUser;
@@ -352,6 +360,75 @@ class DashboardManager {
             this.accountData.totalProfits = userData.totalProfits ?? this.accountData.totalProfits;
             this.accountData.totalWithdrawals = userData.totalWithdrawals ?? this.accountData.totalWithdrawals;
             this.updateAccountSummary();
+        }
+    }
+
+    setupFundingTransfers() {
+        const toTradingBtn = document.getElementById('dashboardTransferToTradingBtn');
+        const toTradingInput = document.getElementById('dashboardTransferToTradingAmount');
+        const toWalletBtn = document.getElementById('dashboardTransferToWalletBtn');
+        const toWalletInput = document.getElementById('dashboardTransferToWalletAmount');
+
+        if (toTradingBtn && toTradingInput && !toTradingBtn.dataset.bound) {
+            toTradingBtn.dataset.bound = '1';
+            toTradingBtn.addEventListener('click', async () => {
+                const user = this.currentUser || auth.currentUser;
+                if (!user) return;
+                const amount = Number(toTradingInput.value || 0);
+                if (!Number.isFinite(amount) || amount <= 0) {
+                    this.showNotification('Enter a valid amount', 'error');
+                    return;
+                }
+                toTradingBtn.disabled = true;
+                try {
+                    const res = await FirebaseDatabaseService.transferWalletToTrading(user.uid, amount);
+                    if (!res?.success) {
+                        const msg = res?.error === 'insufficient_wallet_balance'
+                            ? 'Insufficient wallet balance'
+                            : 'Transfer failed';
+                        this.showNotification(msg, 'error');
+                        return;
+                    }
+                    toTradingInput.value = '';
+                    await this.loadAccountData(user);
+                    this.showNotification('Transferred to trading balance', 'success');
+                } catch (e) {
+                    this.showNotification('Transfer failed', 'error');
+                } finally {
+                    toTradingBtn.disabled = false;
+                }
+            });
+        }
+
+        if (toWalletBtn && toWalletInput && !toWalletBtn.dataset.bound) {
+            toWalletBtn.dataset.bound = '1';
+            toWalletBtn.addEventListener('click', async () => {
+                const user = this.currentUser || auth.currentUser;
+                if (!user) return;
+                const amount = Number(toWalletInput.value || 0);
+                if (!Number.isFinite(amount) || amount <= 0) {
+                    this.showNotification('Enter a valid amount', 'error');
+                    return;
+                }
+                toWalletBtn.disabled = true;
+                try {
+                    const res = await FirebaseDatabaseService.transferTradingToWallet(user.uid, amount);
+                    if (!res?.success) {
+                        const msg = res?.error === 'insufficient_trading_balance'
+                            ? 'Insufficient trading balance'
+                            : 'Transfer failed';
+                        this.showNotification(msg, 'error');
+                        return;
+                    }
+                    toWalletInput.value = '';
+                    await this.loadAccountData(user);
+                    this.showNotification('Transferred to wallet balance', 'success');
+                } catch (e) {
+                    this.showNotification('Transfer failed', 'error');
+                } finally {
+                    toWalletBtn.disabled = false;
+                }
+            });
         }
     }
 
@@ -500,7 +577,7 @@ class DashboardManager {
             const userData = userDoc.data();
             
             // Use users collection as the authoritative source (admin updates)
-            const authoritativeBalance = userData.walletBalance ?? userData.balance ?? userData.accountBalance ?? 0;
+            const authoritativeBalance = userData.walletBalance ?? userData.balance ?? 0;
             const authoritativeProfits = userData.totalProfits || 0;
             const authoritativeDeposits = userData.totalDeposits || 0;
             const authoritativeWithdrawals = userData.totalWithdrawals || 0;

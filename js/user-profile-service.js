@@ -55,6 +55,8 @@ class UserProfileService {
                     country: '',
                     accountType: 'Standard',
                     balance: 0,
+                    walletBalance: 0,
+                    accountBalance: 0,
                     equity: 0,
                     margin: 0,
                     freeMargin: 0,
@@ -231,7 +233,7 @@ class UserProfileService {
             return;
         }
         
-        const balance = Number(this.userProfile.walletBalance ?? this.userProfile.balance ?? this.userProfile.accountBalance ?? 0);
+        const balance = Number(this.userProfile.walletBalance ?? this.userProfile.balance ?? 0);
         const equity = Number(this.userProfile.equity ?? 0);
         const margin = Number(this.userProfile.margin ?? 0);
         const freeMargin = Number(this.userProfile.freeMargin ?? this.userProfile.free_margin ?? 0);

@@ -476,7 +476,7 @@
                         
                         if (accountDoc.exists) {
                             const accountData = accountDoc.data();
-                            balance = accountData.walletBalance || accountData.balance || accountData.accountBalance || 0;
+                            balance = accountData.walletBalance || accountData.balance || 0;
                         }
                     }
                 }

@@ -111,12 +111,12 @@ class FirebaseDatabaseService {
           return { success: false, error: 'already_owned' };
         }
 
-        const currentBalance = Number(data.accountBalance || 0);
-        if (currentBalance < bot.price) {
+        const currentWallet = Number(data.walletBalance ?? data.balance ?? 0);
+        if (currentWallet < bot.price) {
           return { success: false, error: 'insufficient_funds' };
         }
 
-        const nextBalance = currentBalance - bot.price;
+        const nextWallet = Math.max(0, currentWallet - bot.price);
         const botEntry = {
           id: bot.id,
           name: bot.name,
@@ -137,16 +137,16 @@ class FirebaseDatabaseService {
         tx.set(
           userRef,
           {
-            accountBalance: nextBalance,
-            balance: nextBalance,
-            walletBalance: nextBalance,
+            walletBalance: nextWallet,
+            balance: nextWallet,
+            balanceUpdatedAt: new Date().toISOString(),
             botsOwned: nextBotsOwned,
             updatedAt: serverTimestamp()
           },
           { merge: true }
         );
 
-        return { success: true, newBalance: nextBalance };
+        return { success: true, walletBalance: nextWallet };
       });
 
       return result;
@@ -194,12 +194,12 @@ class FirebaseDatabaseService {
           return { success: false, error: 'already_has_prop' };
         }
 
-        const currentBalance = Number(data.accountBalance ?? data.walletBalance ?? data.balance ?? 0);
-        if (feeUsd > 0 && currentBalance < feeUsd) {
+        const currentWallet = Number(data.walletBalance ?? data.balance ?? 0);
+        if (feeUsd > 0 && currentWallet < feeUsd) {
           return { success: false, error: 'insufficient_funds' };
         }
 
-        const nextBalance = Math.max(0, currentBalance - feeUsd + accountSize);
+        const nextWallet = Math.max(0, currentWallet - feeUsd);
 
         const propAccount = {
           planId,
@@ -236,9 +236,8 @@ class FirebaseDatabaseService {
         tx.set(
           userRef,
           {
-            accountBalance: nextBalance,
-            balance: nextBalance,
-            walletBalance: nextBalance,
+            walletBalance: nextWallet,
+            balance: nextWallet,
             balanceUpdatedAt: new Date().toISOString(),
             propAccount,
             updatedAt: serverTimestamp()
@@ -246,7 +245,7 @@ class FirebaseDatabaseService {
           { merge: true }
         );
 
-        return { success: true, propAccount, balance: nextBalance };
+        return { success: true, propAccount, walletBalance: nextWallet };
       });
 
       return result;
@@ -827,12 +826,8 @@ class FirebaseDatabaseService {
         const stored = Number(userData.walletBalance ?? userData.balance ?? 0);
         return { success: true, balance: Number.isFinite(stored) ? stored : 0 };
       } else {
-        // Initialize user with default balance if profile doesn't exist
         await this.initializeUserAccount(uid);
-        return {
-          success: true,
-          balance: 1000 // Default starting balance
-        };
+        return { success: true, balance: 0 };
       }
     } catch (error) {
       return {
@@ -952,7 +947,7 @@ class FirebaseDatabaseService {
     }
   }
 
-  async initializeUserAccount(uid, initialBalance = 1000) {
+  async initializeUserAccount(uid, initialBalance = 0) {
     try {
       const userRef = doc(db, 'users', uid);
       await setDoc(userRef, {

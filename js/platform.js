@@ -11,12 +11,12 @@ class TradingPlatform {
         this.symbolUpdateHandler = (data) => this.handleRealTimeUpdate(data);
         this.lastSubscribedSymbol = null;
         this.portfolio = {
-            balance: 50000,
-            equity: 52350,
-            margin: 1250,
-            freeMargin: 51100,
-            marginLevel: 4188,
-            totalPnL: 2350
+            balance: 0,
+            equity: 0,
+            margin: 0,
+            freeMargin: 0,
+            marginLevel: 0,
+            totalPnL: 0
         };
         this.marketOverview = {
             sp500: { value: 4185.47, change: 0.85 },
@@ -1153,26 +1153,14 @@ class TradingPlatform {
                 };
             }
         }
-
-        const token = localStorage.getItem('authToken');
-        if (!token) return this.portfolio;
-        
-        try {
-            const response = await fetch('/api/account/summary', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (response.ok) {
-                return await response.json();
-            }
-        } catch (error) {
-            console.error('Error fetching account data:', error);
-        }
-        
-        return this.portfolio; // Fallback to demo data
+        return {
+            balance: 0,
+            equity: 0,
+            margin: 0,
+            freeMargin: 0,
+            marginLevel: 0,
+            totalPnL: this.portfolio.totalPnL || 0
+        };
     }
     
     // Demo user data for development/testing
@@ -1198,30 +1186,6 @@ class TradingPlatform {
     
     // Update portfolio display with current data
     updatePortfolioDisplay() {
-        const elements = {
-            'account-balance': this.formatCurrency(this.portfolio.balance),
-            'account-equity': this.formatCurrency(this.portfolio.equity),
-            'account-margin': this.formatCurrency(this.portfolio.margin),
-            'free-margin': this.formatCurrency(this.portfolio.freeMargin)
-        };
-        
-        Object.entries(elements).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-                element.classList.remove('loading');
-            }
-        });
-        
-        const balEl = document.getElementById('account-balance');
-        if (balEl && !balEl._observerAttached) {
-            const observer = new MutationObserver(() => {
-                balEl.textContent = this.formatCurrency(this.portfolio.balance);
-            });
-            observer.observe(balEl, { characterData: true, childList: true, subtree: true });
-            balEl._observerAttached = true;
-        }
-        
         // Update P&L display
         const pnlEl = document.querySelector('.pnl .value');
         if (pnlEl) {
@@ -1373,8 +1337,6 @@ class TradingPlatform {
             this.portfolio.margin = margin;
             this.portfolio.freeMargin = freeMargin;
             this.updatePortfolioDisplay();
-            const balEl = document.getElementById('account-balance');
-            if (balEl) balEl.textContent = this.formatCurrency(this.portfolio.balance);
         });
     }
 
