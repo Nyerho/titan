@@ -3245,17 +3245,16 @@
                 const userData = userDoc.data();
                 const userId = userDoc.id;
                 
-                // Check if user has sufficient wallet balance (withdrawals come from wallet)
                 const currentTradingBalance = parseFloat(userData.accountBalance) || 0;
                 const currentWalletBalance = parseFloat(userData.walletBalance || userData.balance) || 0;
+                const currentUnifiedBalance = Math.max(0, currentTradingBalance, currentWalletBalance);
                 
-                if (currentWalletBalance < amount) {
-                    throw new Error(`Insufficient wallet balance. Current: $${currentWalletBalance.toFixed(2)}, Required: $${amount.toFixed(2)}`);
+                if (currentUnifiedBalance < amount) {
+                    throw new Error(`Insufficient balance. Current: $${currentUnifiedBalance.toFixed(2)}, Required: $${amount.toFixed(2)}`);
                 }
                 
                 // Calculate new balances
-                const newTradingBalance = currentTradingBalance;
-                const newWalletBalance = Math.max(0, currentWalletBalance - amount);
+                const newUnifiedBalance = Math.max(0, currentUnifiedBalance - amount);
                 
                 // Use batch write for atomic operations
                 const batch = firebase.firestore().batch();
@@ -3271,9 +3270,9 @@
                 // Update user balances
                 const userRef = firebase.firestore().collection('users').doc(userId);
                 batch.update(userRef, {
-                    accountBalance: newTradingBalance,
-                    walletBalance: newWalletBalance,
-                    balance: newWalletBalance,
+                    accountBalance: newUnifiedBalance,
+                    walletBalance: newUnifiedBalance,
+                    balance: newUnifiedBalance,
                     totalWithdrawals: firebase.firestore.FieldValue.increment(amount),
                     balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
@@ -3290,10 +3289,10 @@
                     accountDetails: accountDetails,
                     status: 'completed',
                     description: `Withdrawal via ${method} - Approved by Admin`,
-                    tradingBalanceBefore: currentTradingBalance,
-                    tradingBalanceAfter: newTradingBalance,
-                    walletBalanceBefore: currentWalletBalance,
-                    walletBalanceAfter: newWalletBalance,
+                    tradingBalanceBefore: currentUnifiedBalance,
+                    tradingBalanceAfter: newUnifiedBalance,
+                    walletBalanceBefore: currentUnifiedBalance,
+                    walletBalanceAfter: newUnifiedBalance,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     approvedBy: 'admin',
                     withdrawalRequestId: docId,
@@ -3322,7 +3321,7 @@
                     }
                 } catch (e) {}
                 
-                alert(`Withdrawal request approved successfully!\n\nAmount: $${amount.toFixed(2)}\nUser: ${userEmail}\nMethod: ${method}\nNew Balance: $${newAccountBalance.toFixed(2)}`);
+                alert(`Withdrawal request approved successfully!\n\nAmount: $${amount.toFixed(2)}\nUser: ${userEmail}\nMethod: ${method}\nNew Balance: $${newUnifiedBalance.toFixed(2)}`);
                 loadWithdrawalControlRequests(); // Refresh the list
                 
             } catch (error) {

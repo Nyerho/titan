@@ -377,8 +377,7 @@
                     accountBalance: 0,
                     createdAt: new Date().toISOString(),
                     balanceUpdatedAt: new Date().toISOString(),
-                    tradingBalanceUpdatedAt: new Date().toISOString(),
-                    balancesSeparatedAt: FieldValue.serverTimestamp()
+                    tradingBalanceUpdatedAt: new Date().toISOString()
                 },
                 { merge: true }
             );
@@ -419,6 +418,7 @@
                         {
                             walletBalance: nextBalance,
                             balance: nextBalance,
+                            accountBalance: nextBalance,
                             botsOwned: nextBotsOwned,
                             updatedAt: FieldValue.serverTimestamp()
                         },

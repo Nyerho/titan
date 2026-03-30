@@ -209,24 +209,11 @@ class FundingManager {
                 await userRef.set({
                     balance: firebase.firestore.FieldValue.increment(amount),
                     walletBalance: firebase.firestore.FieldValue.increment(amount),
+                    accountBalance: firebase.firestore.FieldValue.increment(amount),
                     totalDeposits: firebase.firestore.FieldValue.increment(amount),
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
                     balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
-
-                try {
-                    const snap = await userRef.get();
-                    const data = snap.exists ? (snap.data() || {}) : {};
-                    const hasPropAccount = !!data.propAccount;
-                    const hasTradingInit = !!data.tradingBalanceInitializedAt;
-                    const tradingCandidate = Number(data.accountBalance ?? 0);
-                    if (!hasPropAccount && !hasTradingInit && Number.isFinite(tradingCandidate) && tradingCandidate > 0) {
-                        await userRef.set({
-                            accountBalance: 0,
-                            tradingBalanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        }, { merge: true });
-                    }
-                } catch (e) {}
                 
                 try {
                     await this.notifyDepositReceived({
@@ -283,24 +270,11 @@ class FundingManager {
                 await userRef.set({
                     balance: firebase.firestore.FieldValue.increment(amount),
                     walletBalance: firebase.firestore.FieldValue.increment(amount),
+                    accountBalance: firebase.firestore.FieldValue.increment(amount),
                     totalDeposits: firebase.firestore.FieldValue.increment(amount),
                     lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
                     balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
-
-                try {
-                    const snap = await userRef.get();
-                    const data = snap.exists ? (snap.data() || {}) : {};
-                    const hasPropAccount = !!data.propAccount;
-                    const hasTradingInit = !!data.tradingBalanceInitializedAt;
-                    const tradingCandidate = Number(data.accountBalance ?? 0);
-                    if (!hasPropAccount && !hasTradingInit && Number.isFinite(tradingCandidate) && tradingCandidate > 0) {
-                        await userRef.set({
-                            accountBalance: 0,
-                            tradingBalanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        }, { merge: true });
-                    }
-                } catch (e) {}
                 
                 try {
                     await this.notifyDepositReceived({

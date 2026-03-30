@@ -519,9 +519,15 @@ app.post('/api/withdrawal-requests', verifyUserToken, async (req, res) => {
     try {
       const userSnap = await db.collection('users').doc(req.user.uid).get();
       const userData = userSnap.exists ? (userSnap.data() || {}) : {};
-      const walletBalance = Number(userData.walletBalance ?? userData.balance ?? 0);
-      if (!Number.isFinite(walletBalance) || walletBalance < parsedAmount) {
-        return res.status(400).json({ error: 'Insufficient wallet balance. Transfer from Trading before withdrawing.' });
+      const walletCandidate = Number(userData.walletBalance ?? NaN);
+      const balanceCandidate = Number(userData.balance ?? NaN);
+      const tradingCandidate = Number(userData.accountBalance ?? NaN);
+      const unified = Math.max(
+        0,
+        ...[walletCandidate, balanceCandidate, tradingCandidate].filter((n) => Number.isFinite(n))
+      );
+      if (!Number.isFinite(unified) || unified < parsedAmount) {
+        return res.status(400).json({ error: 'Insufficient balance' });
       }
     } catch (e) {}
 

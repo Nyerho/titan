@@ -757,6 +757,7 @@ async function adjustUserBalance(userId, action) {
         batch.update(userRef, {
             balance: newBalance,
             walletBalance: newBalance,
+            accountBalance: newBalance,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             lastAdminUpdate: firebase.firestore.FieldValue.serverTimestamp()
@@ -770,7 +771,7 @@ async function adjustUserBalance(userId, action) {
             batch.update(accountRef, {
                 balance: newBalance,
                 walletBalance: newBalance,
-                accountBalance: 0,
+                accountBalance: newBalance,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 syncedFromUsers: true
             });
@@ -1408,6 +1409,7 @@ window.addUserDeposit = async function(userId) {
         batch.update(userRef, {
             balance: firebase.firestore.FieldValue.increment(amount),
             walletBalance: firebase.firestore.FieldValue.increment(amount),
+            accountBalance: firebase.firestore.FieldValue.increment(amount),
             totalDeposits: firebase.firestore.FieldValue.increment(amount),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1419,7 +1421,7 @@ window.addUserDeposit = async function(userId) {
         batch.set(accountRef, {
             balance: firebase.firestore.FieldValue.increment(amount),
             walletBalance: firebase.firestore.FieldValue.increment(amount),
-            accountBalance: 0,
+            accountBalance: firebase.firestore.FieldValue.increment(amount),
             totalDeposits: firebase.firestore.FieldValue.increment(amount),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
@@ -1470,6 +1472,7 @@ window.addUserProfit = async function(userId) {
         batch.update(userRef, {
             balance: firebase.firestore.FieldValue.increment(amount),
             walletBalance: firebase.firestore.FieldValue.increment(amount),
+            accountBalance: firebase.firestore.FieldValue.increment(amount),
             totalProfits: firebase.firestore.FieldValue.increment(amount),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             balanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1481,7 +1484,7 @@ window.addUserProfit = async function(userId) {
         batch.set(accountRef, {
             balance: firebase.firestore.FieldValue.increment(amount),
             walletBalance: firebase.firestore.FieldValue.increment(amount),
-            accountBalance: 0,
+            accountBalance: firebase.firestore.FieldValue.increment(amount),
             totalProfits: firebase.firestore.FieldValue.increment(amount),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });

@@ -142,7 +142,6 @@ class DashboardManager {
     init() {
         this.initializeAuth();
         this.setupMobileMenu();
-        this.setupFundingTransfers();
         
         // Ensure DOM is fully loaded before initializing chart components
         setTimeout(() => {
@@ -306,7 +305,6 @@ class DashboardManager {
                     totalDeposits: 0,
                     totalProfits: 0,
                     totalWithdrawals: 0,
-                    balancesSeparatedAt: serverTimestamp(),
                     status: 'active'
                 };
                 
@@ -363,75 +361,6 @@ class DashboardManager {
         }
     }
 
-    setupFundingTransfers() {
-        const toTradingBtn = document.getElementById('dashboardTransferToTradingBtn');
-        const toTradingInput = document.getElementById('dashboardTransferToTradingAmount');
-        const toWalletBtn = document.getElementById('dashboardTransferToWalletBtn');
-        const toWalletInput = document.getElementById('dashboardTransferToWalletAmount');
-
-        if (toTradingBtn && toTradingInput && !toTradingBtn.dataset.bound) {
-            toTradingBtn.dataset.bound = '1';
-            toTradingBtn.addEventListener('click', async () => {
-                const user = this.currentUser || auth.currentUser;
-                if (!user) return;
-                const amount = Number(toTradingInput.value || 0);
-                if (!Number.isFinite(amount) || amount <= 0) {
-                    this.showNotification('Enter a valid amount', 'error');
-                    return;
-                }
-                toTradingBtn.disabled = true;
-                try {
-                    const res = await FirebaseDatabaseService.transferWalletToTrading(user.uid, amount);
-                    if (!res?.success) {
-                        const msg = res?.error === 'insufficient_wallet_balance'
-                            ? 'Insufficient wallet balance'
-                            : 'Transfer failed';
-                        this.showNotification(msg, 'error');
-                        return;
-                    }
-                    toTradingInput.value = '';
-                    await this.loadAccountData(user);
-                    this.showNotification('Transferred to trading balance', 'success');
-                } catch (e) {
-                    this.showNotification('Transfer failed', 'error');
-                } finally {
-                    toTradingBtn.disabled = false;
-                }
-            });
-        }
-
-        if (toWalletBtn && toWalletInput && !toWalletBtn.dataset.bound) {
-            toWalletBtn.dataset.bound = '1';
-            toWalletBtn.addEventListener('click', async () => {
-                const user = this.currentUser || auth.currentUser;
-                if (!user) return;
-                const amount = Number(toWalletInput.value || 0);
-                if (!Number.isFinite(amount) || amount <= 0) {
-                    this.showNotification('Enter a valid amount', 'error');
-                    return;
-                }
-                toWalletBtn.disabled = true;
-                try {
-                    const res = await FirebaseDatabaseService.transferTradingToWallet(user.uid, amount);
-                    if (!res?.success) {
-                        const msg = res?.error === 'insufficient_trading_balance'
-                            ? 'Insufficient trading balance'
-                            : 'Transfer failed';
-                        this.showNotification(msg, 'error');
-                        return;
-                    }
-                    toWalletInput.value = '';
-                    await this.loadAccountData(user);
-                    this.showNotification('Transferred to wallet balance', 'success');
-                } catch (e) {
-                    this.showNotification('Transfer failed', 'error');
-                } finally {
-                    toWalletBtn.disabled = false;
-                }
-            });
-        }
-    }
-
     // New method to setup real-time listeners
     setupRealTimeListeners(user) {
         // Clean up existing listeners
@@ -481,47 +410,32 @@ class DashboardManager {
                     console.log('Real-time user data update:', userData);
                     this.updateUserInterface(userData, user);
 
-                    const hasSplit = !!userData.balancesSeparatedAt;
-                    if (!hasSplit && !this.balanceFieldSyncInFlight) {
-                        const walletCandidate = Number(userData.walletBalance ?? userData.balance ?? userData.accountBalance ?? 0);
-                        if (Number.isFinite(walletCandidate) && walletCandidate >= 0) {
-                            this.balanceFieldSyncInFlight = true;
-                            try {
-                                await updateDoc(userRef, {
-                                    walletBalance: walletCandidate,
-                                    balance: walletCandidate,
-                                    accountBalance: 0,
-                                    balanceUpdatedAt: new Date().toISOString(),
-                                    tradingBalanceUpdatedAt: new Date().toISOString(),
-                                    balancesSeparatedAt: serverTimestamp(),
-                                    updatedAt: serverTimestamp()
-                                });
-                            } catch (syncError) {
-                                console.error('Failed to split legacy balances:', syncError);
-                            } finally {
-                                this.balanceFieldSyncInFlight = false;
-                            }
-                            return;
-                        }
-                    }
+                    const walletCandidate = Number(userData.walletBalance ?? NaN);
+                    const balanceCandidate = Number(userData.balance ?? NaN);
+                    const tradingCandidate = Number(userData.accountBalance ?? NaN);
+                    const unified = Math.max(
+                        0,
+                        ...[walletCandidate, balanceCandidate, tradingCandidate].filter((n) => Number.isFinite(n))
+                    );
 
-                    const hasWalletBalance = userData.walletBalance !== undefined && userData.walletBalance !== null;
-                    const hasBalance = userData.balance !== undefined && userData.balance !== null;
-                    const walletNumber = Number(userData.walletBalance ?? 0);
-                    const balanceNumber = Number(userData.balance ?? 0);
-                    const walletNeedsSync = hasWalletBalance && (!hasBalance || (Number.isFinite(walletNumber) && Number.isFinite(balanceNumber) && walletNumber !== balanceNumber));
-                    const balanceNeedsSync = hasBalance && !hasWalletBalance;
+                    const needsSync =
+                        (Number.isFinite(walletCandidate) && walletCandidate !== unified) ||
+                        (Number.isFinite(balanceCandidate) && balanceCandidate !== unified) ||
+                        (Number.isFinite(tradingCandidate) && tradingCandidate !== unified) ||
+                        !Number.isFinite(walletCandidate) ||
+                        !Number.isFinite(balanceCandidate) ||
+                        !Number.isFinite(tradingCandidate);
 
-                    if (!this.balanceFieldSyncInFlight && (walletNeedsSync || balanceNeedsSync)) {
+                    if (!this.balanceFieldSyncInFlight && needsSync) {
                         this.balanceFieldSyncInFlight = true;
                         try {
-                            const candidate = Number(userData.walletBalance ?? userData.balance ?? 0);
-                            if (Number.isFinite(candidate)) {
-                                await updateDoc(userRef, {
-                                    walletBalance: candidate,
-                                    balance: candidate
-                                });
-                            }
+                            await updateDoc(userRef, {
+                                walletBalance: unified,
+                                balance: unified,
+                                accountBalance: unified,
+                                balanceUpdatedAt: new Date().toISOString(),
+                                tradingBalanceUpdatedAt: new Date().toISOString()
+                            });
                         } catch (syncError) {
                             console.error('Failed to sync balance fields:', syncError);
                         } finally {
@@ -577,7 +491,14 @@ class DashboardManager {
             const userData = userDoc.data();
             
             // Use users collection as the authoritative source (admin updates)
-            const authoritativeBalance = userData.walletBalance ?? userData.balance ?? 0;
+            const authoritativeBalance = Math.max(
+                0,
+                ...[
+                    Number(userData.walletBalance ?? NaN),
+                    Number(userData.balance ?? NaN),
+                    Number(userData.accountBalance ?? NaN)
+                ].filter((n) => Number.isFinite(n))
+            );
             const authoritativeProfits = userData.totalProfits || 0;
             const authoritativeDeposits = userData.totalDeposits || 0;
             const authoritativeWithdrawals = userData.totalWithdrawals || 0;

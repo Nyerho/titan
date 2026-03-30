@@ -3323,6 +3323,7 @@ class EnhancedAdminDashboard {
                 // Also update these for consistency, but your dashboard will use the calculation
                 balance: newCalculatedBalance,
                 walletBalance: newCalculatedBalance,
+                accountBalance: newCalculatedBalance,
                 updatedAt: timestamp,
                 balanceUpdatedAt: timestamp,
                 lastAdminUpdate: timestamp,
@@ -3344,7 +3345,7 @@ class EnhancedAdminDashboard {
                     totalProfits: newProfits,
                     balance: newCalculatedBalance,
                     walletBalance: newCalculatedBalance,
-                    accountBalance: 0,
+                    accountBalance: newCalculatedBalance,
                     updatedAt: timestamp,
                     lastAdminUpdate: timestamp,
                     syncedFromUsers: true
@@ -3355,7 +3356,7 @@ class EnhancedAdminDashboard {
                     totalProfits: newProfits,
                     balance: newCalculatedBalance,
                     walletBalance: newCalculatedBalance,
-                    accountBalance: 0,
+                    accountBalance: newCalculatedBalance,
                     currency: 'USD',
                     createdAt: timestamp,
                     updatedAt: timestamp,
@@ -3422,6 +3423,7 @@ class EnhancedAdminDashboard {
             batch.update(userRef, {
                 balance: exactAmount,
                 walletBalance: exactAmount,
+                accountBalance: exactAmount,
                 updatedAt: timestamp,
                 balanceUpdatedAt: timestamp,
                 lastAdminUpdate: timestamp
@@ -3435,7 +3437,7 @@ class EnhancedAdminDashboard {
                 batch.update(accountRef, {
                     balance: exactAmount,
                     walletBalance: exactAmount,
-                    accountBalance: 0,
+                    accountBalance: exactAmount,
                     updatedAt: timestamp,
                     lastAdminUpdate: timestamp
                 });
@@ -3446,7 +3448,7 @@ class EnhancedAdminDashboard {
                 batch.set(accountRef, {
                     balance: exactAmount,
                     walletBalance: exactAmount,
-                    accountBalance: 0,
+                    accountBalance: exactAmount,
                     totalProfits: userData.totalProfits || 0,
                     totalDeposits: userData.totalDeposits || 0,
                     currency: 'USD',
@@ -4044,6 +4046,7 @@ EnhancedAdminDashboard.prototype.addUserProfit = async function() {
         batch.update(userRef, {
             balance: increment(amount),
             walletBalance: increment(amount),
+            accountBalance: increment(amount),
             totalProfits: increment(amount),
             updatedAt: timestamp,
             balanceUpdatedAt: timestamp,
@@ -4061,7 +4064,7 @@ EnhancedAdminDashboard.prototype.addUserProfit = async function() {
             batch.update(accountRef, {
                 balance: increment(amount),
                 walletBalance: increment(amount),
-                accountBalance: 0,
+                accountBalance: increment(amount),
                 totalProfits: increment(amount),
                 updatedAt: timestamp,
                 lastAdminUpdate: timestamp,
@@ -4076,7 +4079,7 @@ EnhancedAdminDashboard.prototype.addUserProfit = async function() {
             batch.set(accountRef, {
                 balance: newBalance,
                 walletBalance: newBalance,
-                accountBalance: 0,
+                accountBalance: newBalance,
                 totalProfits: newProfits,
                 totalDeposits: userData.totalDeposits || 0,
                 currency: 'USD',
@@ -4157,6 +4160,7 @@ EnhancedAdminDashboard.prototype.addUserDeposit = async function() {
         batch.update(userRef, {
             balance: increment(amount),
             walletBalance: increment(amount),
+            accountBalance: increment(amount),
             totalDeposits: increment(amount),
             updatedAt: timestamp,
             balanceUpdatedAt: timestamp,
@@ -4171,7 +4175,7 @@ EnhancedAdminDashboard.prototype.addUserDeposit = async function() {
             batch.update(accountRef, {
                 balance: increment(amount),
                 walletBalance: increment(amount),
-                accountBalance: 0,
+                accountBalance: increment(amount),
                 totalDeposits: increment(amount),
                 updatedAt: timestamp,
                 lastAdminUpdate: timestamp
@@ -4184,7 +4188,7 @@ EnhancedAdminDashboard.prototype.addUserDeposit = async function() {
             batch.set(accountRef, {
                 balance: amount,
                 walletBalance: amount,
-                accountBalance: 0,
+                accountBalance: amount,
                 totalProfits: userData.totalProfits || 0,
                 totalDeposits: amount,
                 currency: 'USD',
@@ -4265,6 +4269,7 @@ EnhancedAdminDashboard.prototype.setExactBalance = async function() {
         batch.update(userRef, {
             balance: exactAmount,
             walletBalance: exactAmount,
+            accountBalance: exactAmount,
             updatedAt: timestamp,
             balanceUpdatedAt: timestamp,
             lastAdminUpdate: timestamp
@@ -4278,7 +4283,7 @@ EnhancedAdminDashboard.prototype.setExactBalance = async function() {
             batch.update(accountRef, {
                 balance: exactAmount,
                 walletBalance: exactAmount,
-                accountBalance: 0,
+                accountBalance: exactAmount,
                 updatedAt: timestamp,
                 lastAdminUpdate: timestamp
             });
@@ -4289,7 +4294,7 @@ EnhancedAdminDashboard.prototype.setExactBalance = async function() {
             batch.set(accountRef, {
                 balance: exactAmount,
                 walletBalance: exactAmount,
-                accountBalance: 0,
+                accountBalance: exactAmount,
                 totalProfits: userData.totalProfits || 0,
                 totalDeposits: userData.totalDeposits || 0,
                 currency: 'USD',
@@ -4416,6 +4421,7 @@ EnhancedAdminDashboard.prototype.approveDeposit = async function(depositId, user
         await updateDoc(userRef, {
             balance: increment(amount), // Top-level balance
             walletBalance: increment(amount), // Wallet balance
+            accountBalance: increment(amount),
             totalDeposits: increment(amount),
             lastUpdated: serverTimestamp()
         });

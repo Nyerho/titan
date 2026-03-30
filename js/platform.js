@@ -111,33 +111,6 @@ class TradingPlatform {
     }
 
     async ensureTradingBalanceInitializedForTrading() {
-        try {
-            if (localStorage.getItem('tt_demo_mode') === '1') return true;
-        } catch (e) {}
-
-        const authManager = window.authManager;
-        const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
-        const dbService = window.FirebaseDatabaseService;
-        if (!user?.uid || !dbService) return true;
-
-        try {
-            if (dbService.getUserEntitlements) {
-                const entitlementsResult = await dbService.getUserEntitlements(user.uid);
-                const propAccount = entitlementsResult?.success ? entitlementsResult.data?.propAccount : null;
-                if (propAccount && propAccount.status !== 'breached') return true;
-            }
-        } catch (e) {}
-
-        try {
-            if (dbService.getUserTradingBalance) {
-                const balanceResult = await dbService.getUserTradingBalance(user.uid);
-                if (balanceResult?.success && balanceResult.initialized === false) {
-                    this.showNotification('Transfer funds from wallet to trading before placing trades.', 'warning');
-                    return false;
-                }
-            }
-        } catch (e) {}
-
         return true;
     }
 
@@ -165,9 +138,7 @@ class TradingPlatform {
 
             if (dbService.applyBalanceDelta) {
                 const res = await dbService.applyBalanceDelta(user.uid, pnl);
-                if (res && res.success === false && res.error === 'trading_balance_not_initialized') {
-                    this.showNotification('Transfer funds from wallet to trading before P&L can be applied.', 'warning');
-                }
+                if (res && res.success === false && res.error === 'prop_account') return;
             }
         } catch (e) {}
     }

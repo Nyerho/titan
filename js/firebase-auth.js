@@ -636,7 +636,6 @@ class FirebaseAuthService {
       lastLogin: serverTimestamp(),
       balanceUpdatedAt: serverTimestamp(),
       tradingBalanceUpdatedAt: serverTimestamp(),
-      balancesSeparatedAt: serverTimestamp(),
       profile: {
         firstName: userData.firstName || '',
         lastName: userData.lastName || '',
