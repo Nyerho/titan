@@ -488,8 +488,8 @@
     <script type="module">
         import { auth } from './js/firebase-config.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import FirebaseDatabaseServiceClass from './js/firebase-database.js';
-        const FirebaseDatabaseService = window.FirebaseDatabaseService || new FirebaseDatabaseServiceClass();
+        import FirebaseDatabaseServiceModule from './js/firebase-database.js';
+        const FirebaseDatabaseService = window.FirebaseDatabaseService || FirebaseDatabaseServiceModule;
         window.FirebaseDatabaseService = FirebaseDatabaseService;
 
         // Function to format currency
