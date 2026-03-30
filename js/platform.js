@@ -1257,6 +1257,7 @@ class TradingPlatform {
         widget.className = 'tradingview-widget-container__widget';
         widget.style.height = 'calc(100% - 32px)';
         widget.style.width = '100%';
+        widget.id = 'tradingview_chart';
 
         const script = document.createElement('script');
         script.type = 'text/javascript';
@@ -1279,7 +1280,8 @@ class TradingPlatform {
             save_image: false,
             calendar: false,
             hide_volume: false,
-            support_host: 'https://www.tradingview.com'
+            support_host: 'https://www.tradingview.com',
+            container_id: 'tradingview_chart'
         };
         script.text = JSON.stringify(config);
 
