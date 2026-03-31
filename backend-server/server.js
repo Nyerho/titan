@@ -101,6 +101,28 @@ app.get('/health', (req, res) => {
   res.json({ ok: true, service: 'backend-server', ts: Date.now() });
 });
 
+app.get('/api/email/status', async (req, res) => {
+  try {
+    const transporter = createMailerTransport();
+    if (!transporter) {
+      return res.json({ ok: true, emailConfigured: false });
+    }
+    try {
+      await transporter.verify();
+      return res.json({ ok: true, emailConfigured: true, smtpVerified: true });
+    } catch (e) {
+      return res.json({
+        ok: true,
+        emailConfigured: true,
+        smtpVerified: false,
+        error: String(e?.message || 'SMTP verify failed')
+      });
+    }
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: String(e?.message || 'Failed to check email status') });
+  }
+});
+
 function getPublicBaseUrl(req) {
   const configured = process.env.PUBLIC_BASE_URL;
   if (configured) return configured.replace(/\/+$/, '');
