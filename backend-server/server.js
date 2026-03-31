@@ -103,17 +103,24 @@ app.get('/health', (req, res) => {
 
 app.get('/api/email/status', async (req, res) => {
   try {
+    const brevoApiConfigured = !!(process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY);
     const transporter = createMailerTransport();
-    if (!transporter) {
-      return res.json({ ok: true, emailConfigured: false });
+    const smtpConfigured = !!transporter;
+    if (!smtpConfigured && !brevoApiConfigured) {
+      return res.json({ ok: true, emailConfigured: false, brevoApiConfigured: false, smtpConfigured: false });
+    }
+    if (!smtpConfigured) {
+      return res.json({ ok: true, emailConfigured: true, brevoApiConfigured, smtpConfigured: false });
     }
     try {
       await transporter.verify();
-      return res.json({ ok: true, emailConfigured: true, smtpVerified: true });
+      return res.json({ ok: true, emailConfigured: true, brevoApiConfigured, smtpConfigured: true, smtpVerified: true });
     } catch (e) {
       return res.json({
         ok: true,
         emailConfigured: true,
+        brevoApiConfigured,
+        smtpConfigured: true,
         smtpVerified: false,
         error: String(e?.message || 'SMTP verify failed')
       });
@@ -197,15 +204,80 @@ function createMailerTransport() {
   });
 }
 
-async function sendBrandEmail({ to, subject, html }) {
-  const transporter = createMailerTransport();
-  if (!transporter) {
-    const err = new Error('Email transport not configured (SMTP_HOST/SMTP_USER/SMTP_PASS)');
+function parseFrom(value) {
+  const raw = String(value || '').trim();
+  const match = raw.match(/^(.*)<([^>]+)>\s*$/);
+  if (match) {
+    const name = String(match[1] || '').trim().replace(/^"|"$/g, '');
+    const email = String(match[2] || '').trim();
+    return { name: name || 'TitanTrades', email };
+  }
+  return { name: 'TitanTrades', email: raw || 'noreply@titantrades.org' };
+}
+
+async function sendBrevoEmail({ to, subject, html }) {
+  const apiKey = process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY || '';
+  if (!apiKey) {
+    const err = new Error('Brevo API key not configured (BREVO_API_KEY or SENDINBLUE_API_KEY)');
     err.code = 'email/not-configured';
     throw err;
   }
 
+  const fromRaw = process.env.EMAIL_FROM || 'TitanTrades <noreply@titantrades.org>';
+  const sender = parseFrom(fromRaw);
+
+  const payload = {
+    sender,
+    to: [{ email: String(to || '').trim() }],
+    subject: String(subject || '').trim(),
+    htmlContent: String(html || '')
+  };
+
+  if (typeof fetch !== 'function') {
+    const err = new Error('Global fetch is not available in this Node runtime');
+    err.code = 'email/fetch-unavailable';
+    throw err;
+  }
+
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+      'api-key': apiKey
+    },
+    body: JSON.stringify(payload)
+  });
+
+  let data = null;
+  try {
+    data = await res.json();
+  } catch (e) {}
+
+  if (!res.ok) {
+    const err = new Error(String(data?.message || data?.error || res.statusText || 'Brevo API send failed'));
+    err.code = 'email/brevo-failed';
+    err.status = res.status;
+    throw err;
+  }
+
+  return data;
+}
+
+async function sendBrandEmail({ to, subject, html }) {
   const from = process.env.EMAIL_FROM || 'TitanTrades <noreply@titantrades.org>';
+  const hasBrevo = !!(process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY);
+  if (hasBrevo) {
+    return sendBrevoEmail({ to, subject, html });
+  }
+
+  const transporter = createMailerTransport();
+  if (!transporter) {
+    const err = new Error('Email transport not configured (SMTP_HOST/SMTP_USER/SMTP_PASS or BREVO_API_KEY)');
+    err.code = 'email/not-configured';
+    throw err;
+  }
+
   return transporter.sendMail({ from, to, subject, html });
 }
 
