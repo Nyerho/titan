@@ -601,6 +601,33 @@ class FirebaseDatabaseService {
     }
   }
 
+  async closeTradeByPositionId(uid, positionId, updateData) {
+    try {
+      const tradesRef = collection(db, 'trades');
+      const q = query(
+        tradesRef,
+        where('uid', '==', uid),
+        where('positionId', '==', positionId),
+        orderBy('createdAt', 'desc'),
+        limit(1)
+      );
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        return { success: false, error: 'not_found' };
+      }
+
+      const hit = querySnapshot.docs[0];
+      await updateDoc(hit.ref, {
+        ...updateData,
+        updatedAt: serverTimestamp()
+      });
+
+      return { success: true, tradeId: hit.id };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
   // Portfolio Operations
   async updatePortfolio(uid, portfolioData) {
     try {

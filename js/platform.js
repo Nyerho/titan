@@ -888,8 +888,9 @@ class TradingPlatform {
     }
 
     executeOrder(order) {
+        const positionId = order?.id || Date.now();
         const position = {
-            id: order.id,
+            id: positionId,
             symbol: order.symbol,
             type: order.type,
             volume: order.volume,
@@ -910,15 +911,23 @@ class TradingPlatform {
             const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
             const dbService = window.FirebaseDatabaseService;
             if (user?.uid && dbService?.createTrade) {
-                dbService.createTrade(user.uid, {
+                const tradeCreatePromise = Promise.resolve(dbService.createTrade(user.uid, {
                     source: 'manual',
+                    positionId,
                     symbol: order.symbol,
                     type: order.type,
                     amount: order.volume,
                     entryPrice: order.price,
                     status: 'open',
                     timestamp: new Date()
+                })).then((result) => {
+                    if (result?.success && result?.tradeId) {
+                        const pos = this.positions.find((p) => p.id === positionId);
+                        if (pos) pos.tradeId = result.tradeId;
+                    }
+                    return result;
                 });
+                position.tradeCreatePromise = tradeCreatePromise;
             }
         } catch (e) {}
     }
@@ -1033,6 +1042,7 @@ class TradingPlatform {
     async closePosition(positionId) {
         const position = this.positions.find((p) => p.id === positionId);
         let pnl = 0;
+        let exitPrice = 0;
         if (position) {
             const openPrice = Number(position.openPrice || 0);
             const volume = Number(position.volume || 0);
@@ -1043,7 +1053,31 @@ class TradingPlatform {
                 : openPrice - currentPrice;
             const computed = priceDiff * volume * 100000;
             pnl = Number.isFinite(computed) ? computed : Number(position.pnl || 0);
+            exitPrice = currentPrice;
         }
+        try {
+            if (position?.tradeCreatePromise) {
+                await position.tradeCreatePromise;
+            }
+            const authManager = window.authManager;
+            const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+            const dbService = window.FirebaseDatabaseService;
+            if (user?.uid && dbService) {
+                const tradeUpdate = {
+                    status: 'completed',
+                    exitPrice,
+                    closePrice: exitPrice,
+                    pnl,
+                    profit: pnl,
+                    closedAt: new Date()
+                };
+                if (position?.tradeId && dbService.updateTrade) {
+                    await dbService.updateTrade(position.tradeId, tradeUpdate);
+                } else if (dbService.closeTradeByPositionId) {
+                    await dbService.closeTradeByPositionId(user.uid, positionId, tradeUpdate);
+                }
+            }
+        } catch (e) {}
         this.positions = this.positions.filter(p => p.id !== positionId);
         this.updatePositionsTable();
         await this.applyTradeResultToBackend(pnl);
@@ -1063,6 +1097,7 @@ class TradingPlatform {
             return;
         }
 
+        const updates = [];
         const pnl = this.positions.reduce((sum, position) => {
             const openPrice = Number(position?.openPrice || 0);
             const volume = Number(position?.volume || 0);
@@ -1073,8 +1108,37 @@ class TradingPlatform {
                 : openPrice - currentPrice;
             const computed = priceDiff * volume * 100000;
             const safe = Number.isFinite(computed) ? computed : Number(position?.pnl || 0);
-            return sum + (Number.isFinite(safe) ? safe : 0);
+            const pnlValue = Number.isFinite(safe) ? safe : 0;
+            updates.push({ position, pnl: pnlValue, exitPrice: currentPrice });
+            return sum + pnlValue;
         }, 0);
+        try {
+            const authManager = window.authManager;
+            const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+            const dbService = window.FirebaseDatabaseService;
+            if (user?.uid && dbService) {
+                for (const u of updates) {
+                    try {
+                        if (u?.position?.tradeCreatePromise) {
+                            await u.position.tradeCreatePromise;
+                        }
+                        const tradeUpdate = {
+                            status: 'completed',
+                            exitPrice: u.exitPrice,
+                            closePrice: u.exitPrice,
+                            pnl: u.pnl,
+                            profit: u.pnl,
+                            closedAt: new Date()
+                        };
+                        if (u?.position?.tradeId && dbService.updateTrade) {
+                            await dbService.updateTrade(u.position.tradeId, tradeUpdate);
+                        } else if (dbService.closeTradeByPositionId) {
+                            await dbService.closeTradeByPositionId(user.uid, u?.position?.id, tradeUpdate);
+                        }
+                    } catch (e) {}
+                }
+            }
+        } catch (e) {}
         this.positions = [];
         this.updatePositionsTable();
         await this.applyTradeResultToBackend(pnl);
@@ -2296,8 +2360,9 @@ class TradingPlatform {
     }
 
     executeOrder(order) {
+        const positionId = order?.id || Date.now();
         const position = {
-            id: order.id,
+            id: positionId,
             symbol: order.symbol,
             type: order.type,
             volume: order.volume,
@@ -2318,15 +2383,23 @@ class TradingPlatform {
             const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
             const dbService = window.FirebaseDatabaseService;
             if (user?.uid && dbService?.createTrade) {
-                dbService.createTrade(user.uid, {
+                const tradeCreatePromise = Promise.resolve(dbService.createTrade(user.uid, {
                     source: 'manual',
+                    positionId,
                     symbol: order.symbol,
                     type: order.type,
                     amount: order.volume,
                     entryPrice: order.price,
                     status: 'open',
                     timestamp: new Date()
+                })).then((result) => {
+                    if (result?.success && result?.tradeId) {
+                        const pos = this.positions.find((p) => p.id === positionId);
+                        if (pos) pos.tradeId = result.tradeId;
+                    }
+                    return result;
                 });
+                position.tradeCreatePromise = tradeCreatePromise;
             }
         } catch (e) {}
     }
@@ -2441,6 +2514,7 @@ class TradingPlatform {
     async closePosition(positionId) {
         const position = this.positions.find((p) => p.id === positionId);
         let pnl = 0;
+        let exitPrice = 0;
         if (position) {
             const openPrice = Number(position.openPrice || 0);
             const volume = Number(position.volume || 0);
@@ -2451,7 +2525,31 @@ class TradingPlatform {
                 : openPrice - currentPrice;
             const computed = priceDiff * volume * 100000;
             pnl = Number.isFinite(computed) ? computed : Number(position.pnl || 0);
+            exitPrice = currentPrice;
         }
+        try {
+            if (position?.tradeCreatePromise) {
+                await position.tradeCreatePromise;
+            }
+            const authManager = window.authManager;
+            const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+            const dbService = window.FirebaseDatabaseService;
+            if (user?.uid && dbService) {
+                const tradeUpdate = {
+                    status: 'completed',
+                    exitPrice,
+                    closePrice: exitPrice,
+                    pnl,
+                    profit: pnl,
+                    closedAt: new Date()
+                };
+                if (position?.tradeId && dbService.updateTrade) {
+                    await dbService.updateTrade(position.tradeId, tradeUpdate);
+                } else if (dbService.closeTradeByPositionId) {
+                    await dbService.closeTradeByPositionId(user.uid, positionId, tradeUpdate);
+                }
+            }
+        } catch (e) {}
         this.positions = this.positions.filter(p => p.id !== positionId);
         this.updatePositionsTable();
         await this.applyTradeResultToBackend(pnl);
@@ -2471,6 +2569,7 @@ class TradingPlatform {
             return;
         }
 
+        const updates = [];
         const pnl = this.positions.reduce((sum, position) => {
             const openPrice = Number(position?.openPrice || 0);
             const volume = Number(position?.volume || 0);
@@ -2481,8 +2580,37 @@ class TradingPlatform {
                 : openPrice - currentPrice;
             const computed = priceDiff * volume * 100000;
             const safe = Number.isFinite(computed) ? computed : Number(position?.pnl || 0);
-            return sum + (Number.isFinite(safe) ? safe : 0);
+            const pnlValue = Number.isFinite(safe) ? safe : 0;
+            updates.push({ position, pnl: pnlValue, exitPrice: currentPrice });
+            return sum + pnlValue;
         }, 0);
+        try {
+            const authManager = window.authManager;
+            const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+            const dbService = window.FirebaseDatabaseService;
+            if (user?.uid && dbService) {
+                for (const u of updates) {
+                    try {
+                        if (u?.position?.tradeCreatePromise) {
+                            await u.position.tradeCreatePromise;
+                        }
+                        const tradeUpdate = {
+                            status: 'completed',
+                            exitPrice: u.exitPrice,
+                            closePrice: u.exitPrice,
+                            pnl: u.pnl,
+                            profit: u.pnl,
+                            closedAt: new Date()
+                        };
+                        if (u?.position?.tradeId && dbService.updateTrade) {
+                            await dbService.updateTrade(u.position.tradeId, tradeUpdate);
+                        } else if (dbService.closeTradeByPositionId) {
+                            await dbService.closeTradeByPositionId(user.uid, u?.position?.id, tradeUpdate);
+                        }
+                    } catch (e) {}
+                }
+            }
+        } catch (e) {}
         this.positions = [];
         this.updatePositionsTable();
         await this.applyTradeResultToBackend(pnl);
