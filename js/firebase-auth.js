@@ -562,24 +562,31 @@ class FirebaseAuthService {
         baseUrl.startsWith('https://titantrades.com');
       const continueBase = isProdDomain ? baseUrl : 'https://titantrades.org';
 
-      try {
-        await sendPasswordResetEmail(auth, email, {
-          url: `${continueBase}/reset-password.html`,
-          handleCodeInApp: false
-        });
-      } catch (innerError) {
-        if (innerError?.code === 'auth/unauthorized-continue-uri') {
-          await sendPasswordResetEmail(auth, email);
-        } else {
-          throw innerError;
-        }
+      const continueUrl = `${continueBase}/reset-password.html`;
+      const isLocal = window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.port === '5500' ||
+        window.location.port === '3000' ||
+        window.location.protocol === 'file:' ||
+        window.location.href.includes('localhost');
+      const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
+      const apiBaseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : (baseUrl.includes('onrender.com') ? baseUrl : 'https://titantrades.onrender.com'));
+
+      const response = await fetch(`${apiBaseUrl}/api/auth/password-reset`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, continueUrl })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Failed to send password reset email');
       }
       return {
         success: true,
         message: 'Password reset email sent successfully'
       };
     } catch (error) {
-      console.error('Firebase reset password error:', error);
+      console.error('Password reset error:', error);
       return {
         success: false,
         error: error.code,

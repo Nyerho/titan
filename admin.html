@@ -2830,7 +2830,8 @@
                                window.location.protocol === 'file:' ||
                                window.location.href.includes('localhost');
                 const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
-                const baseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : window.location.origin);
+                const origin = String(window.location.origin || '').trim();
+                const baseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : (origin.includes('onrender.com') ? origin : 'https://titantrades.onrender.com'));
                 
                 const emailRes = await fetch(`${baseUrl}/api/withdrawal-requests/${requestId}/send-approved-email`, {
                     method: 'POST',
@@ -3310,7 +3311,8 @@
                                    window.location.protocol === 'file:' ||
                                    window.location.href.includes('localhost');
                     const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
-                    const baseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : window.location.origin);
+                    const origin = String(window.location.origin || '').trim();
+                    const baseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : (origin.includes('onrender.com') ? origin : 'https://titantrades.onrender.com'));
                     const emailRes = await fetch(`${baseUrl}/api/withdrawal-requests/${docId}/send-approved-email`, {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${token}` }

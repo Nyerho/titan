@@ -196,9 +196,12 @@ export const adminApiConfig = {
                        window.location.protocol === 'file:' || // Local file
                        window.location.href.includes('localhost');
         
-        const storedBaseUrl = localStorage.getItem('admin_api_baseUrl');
+        const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
         if (storedBaseUrl) return storedBaseUrl;
-        return isLocal ? 'http://localhost:3001' : window.location.origin;
+        if (isLocal) return 'http://localhost:3001';
+        const origin = String(window.location.origin || '').trim();
+        if (origin.includes('onrender.com')) return origin;
+        return 'https://titantrades.onrender.com';
     })(),
     endpoints: {
         deleteUser: '/api/users',

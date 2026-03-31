@@ -10,7 +10,6 @@ import {
     createUserWithEmailAndPassword,
     updatePassword,
     deleteUser,
-    sendPasswordResetEmail
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { 
     getFirestore, 
@@ -1708,7 +1707,28 @@ class EnhancedAdminDashboard {
 
     async handlePasswordReset(userId, email) {
         try {
-            await sendPasswordResetEmail(this.auth, email);
+            const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
+            const baseUrl = origin && origin !== 'null' ? origin : '';
+            const isProdDomain =
+                baseUrl.startsWith('https://www.centraltradekeplr.com') ||
+                baseUrl.startsWith('https://centraltradekeplr.com') ||
+                baseUrl.startsWith('https://www.titantrades.org') ||
+                baseUrl.startsWith('https://titantrades.org') ||
+                baseUrl.startsWith('https://www.titantrades.com') ||
+                baseUrl.startsWith('https://titantrades.com');
+            const continueBase = isProdDomain ? baseUrl : 'https://titantrades.org';
+            const continueUrl = `${continueBase}/reset-password.html`;
+
+            const response = await fetch(`${adminApiConfig.baseUrl}/api/auth/password-reset`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, continueUrl })
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(payload?.error || 'Failed to send password reset email');
+            }
+
             this.showNotification('Password reset email sent', 'success');
             
         } catch (error) {
@@ -4398,6 +4418,13 @@ EnhancedAdminDashboard.prototype.approveDeposit = async function(depositId, user
     console.log('📋 Parameters:', { depositId, userId, amount, currency });
     
     try {
+        const pendingRef = doc(this.db, 'pending_deposits', depositId);
+        const pendingSnap = await getDoc(pendingRef);
+        if (!pendingSnap.exists()) {
+            throw new Error(`Pending deposit not found: ${depositId}`);
+        }
+        const pendingData = pendingSnap.data() || {};
+
         // Verify user document exists first
         const userRef = doc(this.db, 'users', userId);
         console.log('📍 User document path:', userRef.path);
@@ -4415,53 +4442,83 @@ EnhancedAdminDashboard.prototype.approveDeposit = async function(depositId, user
             walletBalance: userDoc.data().walletBalance || 0,
             totalDeposits: userDoc.data().totalDeposits || 0
         });
-        
-        // Update user balance and deposits - ensure all balance fields are updated
-        console.log('🔄 Updating user document with amount:', amount);
-        await updateDoc(userRef, {
-            balance: increment(amount), // Top-level balance
-            walletBalance: increment(amount), // Wallet balance
-            accountBalance: increment(amount),
-            totalDeposits: increment(amount),
-            lastUpdated: serverTimestamp()
-        });
-        console.log('✅ User document updated successfully');
-        
-        // Verify the update worked
-        const updatedUserDoc = await getDoc(userRef);
-        console.log('💰 Updated balances after update:', {
-            balance: updatedUserDoc.data().balance || 0,
-            accountBalance: updatedUserDoc.data().accountBalance || 0,
-            walletBalance: updatedUserDoc.data().walletBalance || 0,
-            totalDeposits: updatedUserDoc.data().totalDeposits || 0
-        });
 
-        // Create transaction record
-        console.log('📝 Creating transaction record...');
-        const transactionRef = await addDoc(collection(this.db, 'transactions'), {
-            uid: userId,
-            userId: userId, // ensure user history queries match
-            type: 'deposit',
-            method: 'crypto',
-            currency: currency,
-            amount: amount,
-            status: 'completed',
-            description: `Crypto deposit approved - ${currency}`,
-            timestamp: serverTimestamp(),
-            createdAt: serverTimestamp(),
-            processedBy: this.currentUser.email
-        });
-        console.log('✅ Transaction record created:', transactionRef.id);
+        let transactionId = String(pendingData?.creditedTransactionId || '').trim();
+        const wasCredited = !!pendingData?.credited;
+        if (!wasCredited) {
+            // Update user balance and deposits - ensure all balance fields are updated
+            console.log('🔄 Updating user document with amount:', amount);
+            await updateDoc(userRef, {
+                balance: increment(amount),
+                walletBalance: increment(amount),
+                accountBalance: increment(amount),
+                totalDeposits: increment(amount),
+                lastUpdated: serverTimestamp()
+            });
+            console.log('✅ User document updated successfully');
 
-        // Remove from pending deposits
-        console.log('🗑️ Removing from pending deposits...');
-        const pendingRef = doc(this.db, 'pending_deposits', depositId);
-        await deleteDoc(pendingRef);
-        console.log('✅ Pending deposit removed');
+            // Verify the update worked
+            const updatedUserDoc = await getDoc(userRef);
+            console.log('💰 Updated balances after update:', {
+                balance: updatedUserDoc.data().balance || 0,
+                accountBalance: updatedUserDoc.data().accountBalance || 0,
+                walletBalance: updatedUserDoc.data().walletBalance || 0,
+                totalDeposits: updatedUserDoc.data().totalDeposits || 0
+            });
+
+            // Create transaction record
+            console.log('📝 Creating transaction record...');
+            const transactionRef = await addDoc(collection(this.db, 'transactions'), {
+                uid: userId,
+                userId: userId,
+                type: 'deposit',
+                method: 'crypto',
+                currency: currency,
+                amount: amount,
+                status: 'completed',
+                description: `Crypto deposit approved - ${currency}`,
+                timestamp: serverTimestamp(),
+                createdAt: serverTimestamp(),
+                processedBy: this.currentUser.email
+            });
+            transactionId = transactionRef.id;
+            console.log('✅ Transaction record created:', transactionId);
+
+            await updateDoc(pendingRef, {
+                credited: true,
+                creditedAt: serverTimestamp(),
+                creditedBy: this.currentUser.email,
+                creditedTransactionId: transactionId
+            });
+        } else {
+            console.log('ℹ️ Deposit already credited. Will only attempt to send email and finalize.');
+        }
+
+        let emailSentOrSkipped = false;
+        try {
+            const token = await this.currentUser.getIdToken(true);
+            const emailRes = await fetch(`${adminApiConfig.baseUrl}/api/deposits/${depositId}/send-approved-email`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await emailRes.json().catch(() => ({}));
+            if (!emailRes.ok) {
+                throw new Error(data?.error || emailRes.statusText || 'Failed to send deposit email');
+            }
+            emailSentOrSkipped = true;
+        } catch (e) {
+            this.showNotification(`Deposit approved, but email failed: ${e.message}`, 'warning');
+        }
+
+        if (emailSentOrSkipped) {
+            console.log('🗑️ Removing from pending deposits...');
+            await deleteDoc(pendingRef);
+            console.log('✅ Pending deposit removed');
+        }
 
         console.log('🎉 Deposit approval completed successfully!');
         this.showNotification(`Deposit of $${amount} approved successfully`, 'success');
-        this.loadFundingData(); // Refresh the data
+        this.loadFundingData();
         
     } catch (error) {
         console.error('❌ Error approving deposit:', error);
@@ -5241,8 +5298,27 @@ EnhancedAdminDashboard.prototype.resetUserPassword = async function() {
     }
 
     try {
-        // Send password reset email using Firebase Auth
-        await sendPasswordResetEmail(this.auth, this.selectedPasswordUser.email);
+        const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
+        const baseUrl = origin && origin !== 'null' ? origin : '';
+        const isProdDomain =
+            baseUrl.startsWith('https://www.centraltradekeplr.com') ||
+            baseUrl.startsWith('https://centraltradekeplr.com') ||
+            baseUrl.startsWith('https://www.titantrades.org') ||
+            baseUrl.startsWith('https://titantrades.org') ||
+            baseUrl.startsWith('https://www.titantrades.com') ||
+            baseUrl.startsWith('https://titantrades.com');
+        const continueBase = isProdDomain ? baseUrl : 'https://titantrades.org';
+        const continueUrl = `${continueBase}/reset-password.html`;
+
+        const response = await fetch(`${adminApiConfig.baseUrl}/api/auth/password-reset`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: this.selectedPasswordUser.email, continueUrl })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(payload?.error || 'Failed to send password reset email');
+        }
         this.showNotification(`Password reset email sent to ${this.selectedPasswordUser.email}`, 'success');
         
         // Log the action

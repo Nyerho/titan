@@ -1,6 +1,5 @@
 // Forgot Password Functionality
 import { auth } from './firebase-config.js';
-import { sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 class ForgotPasswordManager {
     constructor() {
@@ -76,15 +75,6 @@ class ForgotPasswordManager {
         return payload;
     }
 
-    async sendResetEmailViaFirebase({ email, continueUrl }) {
-        const actionCodeSettings = {
-            url: continueUrl,
-            handleCodeInApp: true
-        };
-        await sendPasswordResetEmail(auth, email, actionCodeSettings);
-        return { ok: true };
-    }
-
     async handleForgotPassword(e) {
         e.preventDefault();
         
@@ -113,11 +103,7 @@ class ForgotPasswordManager {
         
         try {
             const continueUrl = this.computeResetUrl();
-            try {
-                await this.sendResetEmailViaBackend({ email, continueUrl });
-            } catch (backendError) {
-                await this.sendResetEmailViaFirebase({ email, continueUrl });
-            }
+            await this.sendResetEmailViaBackend({ email, continueUrl });
             
             // Store email for resend functionality
             sessionStorage.setItem('resetEmail', email);
@@ -171,11 +157,7 @@ class ForgotPasswordManager {
         
         try {
             const continueUrl = this.computeResetUrl();
-            try {
-                await this.sendResetEmailViaBackend({ email, continueUrl });
-            } catch (backendError) {
-                await this.sendResetEmailViaFirebase({ email, continueUrl });
-            }
+            await this.sendResetEmailViaBackend({ email, continueUrl });
             
             resendLink.textContent = 'Sent!';
             setTimeout(() => {

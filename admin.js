@@ -148,15 +148,36 @@ function renderUserRow(userDocData) {
 
 async function sendPasswordReset(email) {
     try {
-        // v8
-        if (window.firebase?.auth) {
-            await window.firebase.auth().sendPasswordResetEmail(email);
-            toastSuccess('Reset email sent', email);
-            return;
+        const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
+        const baseUrl = origin && origin !== 'null' ? origin : '';
+        const isProdDomain =
+            baseUrl.startsWith('https://www.centraltradekeplr.com') ||
+            baseUrl.startsWith('https://centraltradekeplr.com') ||
+            baseUrl.startsWith('https://www.titantrades.org') ||
+            baseUrl.startsWith('https://titantrades.org') ||
+            baseUrl.startsWith('https://www.titantrades.com') ||
+            baseUrl.startsWith('https://titantrades.com');
+        const continueBase = isProdDomain ? baseUrl : 'https://titantrades.org';
+        const continueUrl = `${continueBase}/reset-password.html`;
+
+        const isLocal = window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.port === '5500' ||
+            window.location.port === '3000' ||
+            window.location.protocol === 'file:' ||
+            window.location.href.includes('localhost');
+        const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
+        const apiBaseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : (baseUrl.includes('onrender.com') ? baseUrl : 'https://titantrades.onrender.com'));
+
+        const res = await fetch(`${apiBaseUrl}/api/auth/password-reset`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, continueUrl })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            throw new Error(data?.error || 'Failed to send reset email');
         }
-        // v9
-        const { getAuth, sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js');
-        await sendPasswordResetEmail(getAuth(), email);
         toastSuccess('Reset email sent', email);
     } catch (e) {
         toastError('Reset email failed', e?.message || String(e));

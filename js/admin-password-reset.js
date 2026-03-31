@@ -1,12 +1,32 @@
-// Admin Password Reset Sender (modular Firebase v10)
-import { auth } from './firebase-config.js';
-import {
-  sendPasswordResetEmail,
-  fetchSignInMethodsForEmail,
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+// Admin Password Reset Sender (backend)
 
-function computeResetUrl() {
-  return `${window.location.origin}/forgot-password.html`;
+function computeContinueUrl() {
+  const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
+  const baseUrl = origin && origin !== 'null' ? origin : '';
+  const isProdDomain =
+    baseUrl.startsWith('https://www.centraltradekeplr.com') ||
+    baseUrl.startsWith('https://centraltradekeplr.com') ||
+    baseUrl.startsWith('https://www.titantrades.org') ||
+    baseUrl.startsWith('https://titantrades.org') ||
+    baseUrl.startsWith('https://www.titantrades.com') ||
+    baseUrl.startsWith('https://titantrades.com');
+  const continueBase = isProdDomain ? baseUrl : 'https://titantrades.org';
+  return `${continueBase}/reset-password.html`;
+}
+
+function computeApiBaseUrl() {
+  const isLocal = window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.port === '5500' ||
+    window.location.port === '3000' ||
+    window.location.protocol === 'file:' ||
+    window.location.href.includes('localhost');
+  const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
+  if (storedBaseUrl) return storedBaseUrl;
+  if (isLocal) return 'http://localhost:3001';
+  const origin = String(window.location.origin || '').trim();
+  if (origin.includes('onrender.com')) return origin;
+  return 'https://titantrades.onrender.com';
 }
 
 function showStatus(message, type = 'info') {
@@ -35,42 +55,25 @@ async function handleSendReset() {
   btn && (btn.disabled = true);
 
   try {
-    // Check sign-in methods to avoid sending to non-password accounts
-    const methods = await fetchSignInMethodsForEmail(auth, email);
-    if (!methods.includes('password')) {
-      showStatus('This account is not using Email/Password sign-in. A password reset email cannot be sent.', 'error');
+    const continueUrl = computeContinueUrl();
+    const baseUrl = computeApiBaseUrl();
+    const res = await fetch(`${baseUrl}/api/auth/password-reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, continueUrl })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data?.error || 'Failed to send reset email');
+    }
+    if (data?.throttled) {
+      showStatus('Please wait a moment and try again.', 'error');
       return;
     }
-
-    const actionCodeSettings = {
-      url: computeResetUrl(),   // Must be on an Authorized domain
-      handleCodeInApp: false,
-    };
-
-    await sendPasswordResetEmail(auth, email, actionCodeSettings);
-    // Note: Firebase does not reveal user existence. A successful call means “request accepted”, email delivery depends on a valid account+provider.
-    showStatus('If the account exists with Email/Password, a reset email has been sent.', 'success');
+    showStatus('If the account exists, a reset email has been sent.', 'success');
   } catch (error) {
-    console.error('sendPasswordResetEmail error:', error);
-    let msg = 'Failed to send reset email.';
-
-    switch (error.code) {
-      case 'auth/invalid-email':
-        msg = 'Invalid email format.';
-        break;
-      case 'auth/missing-android-pkg-name':
-      case 'auth/missing-continue-uri':
-      case 'auth/unauthorized-continue-uri':
-        msg = 'Reset URL is invalid or not authorized. Make sure your domain is in Firebase Auth “Authorized domains”.';
-        break;
-      case 'auth/user-not-found':
-        // Depending on Firebase settings, you may or may not get this error code for non-existing users.
-        msg = 'No user found for this email (or privacy settings prevent disclosure).';
-        break;
-      default:
-        msg = `Error: ${error.message || error.code || 'unknown'}`;
-    }
-    showStatus(msg, 'error');
+    console.error('Password reset error:', error);
+    showStatus(`Error: ${error.message || 'Failed to send reset email.'}`, 'error');
   } finally {
     btn && (btn.disabled = false);
   }
