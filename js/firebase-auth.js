@@ -8,7 +8,6 @@ import {
   signOut,
   onAuthStateChanged,
   updateProfile,
-  sendPasswordResetEmail,
   GoogleAuthProvider,
   RecaptchaVerifier,
   signInWithPhoneNumber,
@@ -17,7 +16,6 @@ import {
   reauthenticateWithCredential,
   updatePassword,
   deleteUser,
-  sendEmailVerification,
   applyActionCode
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
@@ -27,13 +25,11 @@ class FirebaseAuthService {
   constructor() {
     this.currentUser = null;
     this.authStateListeners = [];
-    this.emailService = null;
     this.recaptchaVerifier = null;
     this.phoneConfirmationResult = null;
     this.phoneLinkConfirmationResult = null;
     this.initializeAuthListener();
     this.handleRedirectResult();
-    this.initializeEmailService();
   }
 
   computeContinueBaseUrl() {
@@ -60,6 +56,49 @@ class FirebaseAuthService {
     return 'https://titantrades.org';
   }
 
+  computeApiBaseUrl() {
+    const isLocal = window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.port === '5500' ||
+      window.location.port === '3000' ||
+      window.location.protocol === 'file:' ||
+      window.location.href.includes('localhost');
+    const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
+    if (storedBaseUrl) return storedBaseUrl;
+    const origin = String(window.location.origin || '').trim();
+    if (origin.includes('onrender.com')) return origin;
+    return isLocal ? 'http://localhost:3001' : 'https://titantrades.onrender.com';
+  }
+
+  async sendVerificationEmailViaBackend(user) {
+    if (!user) throw new Error('Missing user');
+    try { await user.reload(); } catch (_) {}
+    try { await user.getIdToken(true); } catch (_) {}
+
+    const continueBase = this.computeContinueBaseUrl();
+    const continueUrl = `${continueBase}/dashboard.html`;
+    const token = await user.getIdToken();
+    const apiBaseUrl = this.computeApiBaseUrl();
+
+    const response = await fetch(`${apiBaseUrl}/api/auth/email-verification`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ continueUrl })
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload?.error || 'Failed to send verification email');
+    }
+    if (payload?.throttled || payload?.emailSent === false) {
+      throw new Error('Please wait a moment and try again.');
+    }
+    return payload;
+  }
+
   async sendVerificationEmailWithFallbacks(user) {
     if (!user) throw new Error('Missing user');
     if (!user.email) {
@@ -68,60 +107,9 @@ class FirebaseAuthService {
       throw err;
     }
 
-    try { await user.reload(); } catch (_) {}
-    try { await user.getIdToken(true); } catch (_) {}
-
-    const continueBase = this.computeContinueBaseUrl();
-    const url = `${continueBase}/dashboard.html`;
-    const attempts = [
-      { url, handleCodeInApp: false },
-      { url, handleCodeInApp: true }
-    ];
-
-    let lastError = null;
-    for (const actionCodeSettings of attempts) {
-      try {
-        await sendEmailVerification(user, actionCodeSettings);
-        return { url, usedSettings: actionCodeSettings };
-      } catch (e) {
-        lastError = e;
-      }
-    }
-
-    if (lastError?.code === 'auth/unauthorized-continue-uri') {
-      await sendEmailVerification(user);
-      return { url: '', usedSettings: null };
-    }
-
-    throw lastError || new Error('Failed to send verification email');
+    return this.sendVerificationEmailViaBackend(user);
   }
 
-  // Add email service initialization
-  async initializeEmailService() {
-    try {
-      const { default: EmailService } = await import('./email-service.js');
-      this.emailService = new EmailService();
-      console.log('Email service initialized successfully');
-    } catch (error) {
-      console.warn('Email service not available:', error.message);
-      this.emailService = null;
-    }
-  }
-
-  // Add the missing sendEmail method
-  async sendEmail(emailData) {
-    if (!this.emailService) {
-      console.warn('Email service not available, skipping email send');
-      return { success: false, error: 'Email service not initialized' };
-    }
-    
-    try {
-      return await this.emailService.sendVerificationEmail(emailData);
-    } catch (error) {
-      console.error('Error sending email:', error);
-      return { success: false, error: error.message };
-    }
-  }
   // Initialize authentication state listener
   initializeAuthListener() {
     try {
@@ -220,7 +208,7 @@ class FirebaseAuthService {
       if (user.emailVerified) {
         return { success: true, message: 'Your email is already verified.' };
       }
-      await this.sendVerificationEmailWithFallbacks(user);
+      await this.sendVerificationEmailViaBackend(user);
       return { success: true, message: 'Verification email sent. Open it and click the link to verify.' };
     } catch (error) {
       const code = error?.code || '';
@@ -250,11 +238,6 @@ class FirebaseAuthService {
   // Send custom verification email
   async sendCustomVerificationEmail(email, userName, token) {
     try {
-      if (!this.emailService) {
-        console.warn('Email service not available, skipping verification email');
-        return;
-      }
-
       const verificationUrl = `${window.location.origin}/auth.html?verify=${token}&email=${encodeURIComponent(email)}`;
       
       const emailData = {
@@ -267,11 +250,6 @@ class FirebaseAuthService {
         user_name: userName
       };
 
-      const result = await this.sendEmail(emailData);
-      if (!result.success) {
-        throw new Error(result.error);
-      }
-      
     } catch (error) {
       console.error('Error sending verification email:', error);
       // Don't throw error - let registration continue

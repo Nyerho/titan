@@ -761,7 +761,11 @@
                 document.getElementById('processingOverlay').style.display = 'none';
                 
                 // Show success message
-                showAlert(`Withdrawal request submitted successfully! Your request is now pending admin approval. Request ID: ${result.requestId || requestId}`, 'success');
+                if (result && result.emailSent === false) {
+                    showAlert(`Withdrawal request submitted. Your request is pending admin approval, but the confirmation email could not be sent. Request ID: ${result.requestId || requestId}`, 'warning');
+                } else {
+                    showAlert(`Withdrawal request submitted successfully! Your request is now pending admin approval. Request ID: ${result.requestId || requestId}`, 'success');
+                }
                 
                 // Reset form
                 document.getElementById('withdrawalForm').reset();

@@ -75,26 +75,33 @@ class FundingManager {
     }
 
     async notifyDepositReceived({ amount, currency, address, depositId }) {
-        try {
-            const user = auth?.currentUser;
-            if (!user) return;
+        const user = auth?.currentUser;
+        if (!user) {
+            throw new Error('User not authenticated');
+        }
 
-            const token = await user.getIdToken();
-            const baseUrl = this.computeApiBaseUrl();
-            await fetch(`${baseUrl}/api/deposits/notify`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    amount,
-                    currency,
-                    address,
-                    depositId
-                })
-            });
-        } catch (e) {}
+        const token = await user.getIdToken();
+        const baseUrl = this.computeApiBaseUrl();
+        const res = await fetch(`${baseUrl}/api/deposits/notify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                amount,
+                currency,
+                address,
+                depositId
+            })
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            throw new Error(data?.error || res.statusText || 'Failed to send deposit email');
+        }
+
+        return data;
     }
 
     getApiKey(keyName) {
@@ -396,16 +403,29 @@ class FundingManager {
             const docRef = await addDoc(collection(db, 'pending_deposits'), pendingDeposit);
             
             console.log('Pending deposit created:', docRef.id);
-            this.notifyDepositReceived({
-                amount: transactionData.amount,
-                currency: transactionData.currency,
-                address: transactionData.address,
-                depositId: docRef.id
-            });
+
+            let emailSent = false;
+            let emailError = '';
+            try {
+                await this.notifyDepositReceived({
+                    amount: transactionData.amount,
+                    currency: transactionData.currency,
+                    address: transactionData.address,
+                    depositId: docRef.id
+                });
+                emailSent = true;
+            } catch (e) {
+                emailSent = false;
+                emailError = String(e?.message || 'Failed to send email');
+            }
             return {
                 success: true,
                 depositId: docRef.id,
-                message: 'Payment confirmation received. Your deposit is now pending admin approval.'
+                emailSent,
+                emailError,
+                message: emailSent
+                    ? 'Payment confirmation received. Your deposit is now pending admin approval.'
+                    : 'Payment confirmation received, but we could not send the confirmation email. Your deposit is still pending admin approval.'
             };
 
         } catch (error) {

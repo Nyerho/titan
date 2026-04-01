@@ -1,7 +1,7 @@
 // Profile Management JavaScript
 import userProfileService from './user-profile-service.js';
 import { auth } from './firebase-config.js';
-import { updatePassword, reauthenticateWithCredential, EmailAuthProvider, updateEmail, sendEmailVerification } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { updatePassword, reauthenticateWithCredential, EmailAuthProvider, updateEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { db } from './firebase-config.js';
 import { collection, query, where, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
@@ -309,26 +309,40 @@ class ProfileManager {
                 await reauthenticateWithCredential(currentUser, credential);
                 await updateEmail(currentUser, newEmail);
 
-                const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
-                const baseUrl = origin && origin !== 'null' ? origin : '';
-                const isProdDomain =
-                    baseUrl.startsWith('https://www.centraltradekeplr.com') ||
-                    baseUrl.startsWith('https://centraltradekeplr.com') ||
-                    baseUrl.startsWith('https://www.titantrades.org') ||
-                    baseUrl.startsWith('https://titantrades.org') ||
-                    baseUrl.startsWith('https://www.titantrades.com') ||
-                    baseUrl.startsWith('https://titantrades.com');
-                const continueBase = isProdDomain ? baseUrl : 'https://titantrades.org';
-                const actionCodeSettings = { url: `${continueBase}/dashboard.html`, handleCodeInApp: false };
-                try {
-                    await sendEmailVerification(currentUser, actionCodeSettings);
-                } catch (innerError) {
-                    if (innerError?.code === 'auth/unauthorized-continue-uri') {
-                        await sendEmailVerification(currentUser);
-                    } else {
-                        throw innerError;
+                    const origin = typeof window !== 'undefined' ? String(window.location?.origin || '') : '';
+                    const baseOrigin = origin && origin !== 'null' ? origin : '';
+                    const isProdDomain =
+                        baseOrigin.startsWith('https://www.centraltradekeplr.com') ||
+                        baseOrigin.startsWith('https://centraltradekeplr.com') ||
+                        baseOrigin.startsWith('https://www.titantrades.org') ||
+                        baseOrigin.startsWith('https://titantrades.org') ||
+                        baseOrigin.startsWith('https://www.titantrades.com') ||
+                        baseOrigin.startsWith('https://titantrades.com');
+                    const continueBase = isProdDomain ? baseOrigin : 'https://titantrades.org';
+                    const continueUrl = `${continueBase}/dashboard.html`;
+
+                    const isLocal = window.location.hostname === 'localhost' ||
+                        window.location.hostname === '127.0.0.1' ||
+                        window.location.port === '5500' ||
+                        window.location.port === '3000' ||
+                        window.location.protocol === 'file:' ||
+                        window.location.href.includes('localhost');
+                    const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
+                    const apiBaseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : (baseOrigin.includes('onrender.com') ? baseOrigin : 'https://titantrades.onrender.com'));
+                    const token = await currentUser.getIdToken(true);
+
+                    const resp = await fetch(`${apiBaseUrl}/api/auth/email-verification`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ continueUrl })
+                    });
+                    const payload = await resp.json().catch(() => ({}));
+                    if (!resp.ok) {
+                        throw new Error(payload?.error || 'Failed to send verification email');
                     }
-                }
             }
 
             const result = await userProfileService.updateUserProfile(auth.currentUser.uid, profileData);

@@ -12,7 +12,6 @@ class AuthManager {
     this._isAdmin = false;
     this._verificationPollInterval = null;
     this._verificationPollStartedAt = 0;
-    this.initializeEmailService();
     this.initializeFirebaseAuth();
   }
 
@@ -64,17 +63,6 @@ class AuthManager {
   // Add onAuthStateChanged method that main.js expects
   onAuthStateChanged(callback) {
     FirebaseAuthService.addAuthStateListener(callback);
-  }
-
-  async initializeEmailService() {
-    try {
-      const { default: EmailService } = await import('./email-service.js');
-      this.emailService = new EmailService();
-      console.log('Email service initialized successfully');
-    } catch (error) {
-      console.warn('Email service failed to initialize:', error.message);
-      this.emailService = null; // Continue without email service
-    }
   }
 
   showMessage(message, type = 'info') {
@@ -685,21 +673,6 @@ async logout() {
       if (result.success) {
         console.log('Registration successful');
         this.showMessage('Registration successful! Please verify your email or phone number to unlock deposits, withdrawals, and trading.', 'success');
-        
-        // Send welcome email only if email service is available
-        if (this.emailService) {
-          try {
-            await this.emailService.sendWelcomeEmail(
-              firebaseUserData.email, 
-              firebaseUserData.displayName
-            );
-            console.log('Welcome email sent successfully');
-          } catch (emailError) {
-            console.warn('Failed to send welcome email:', emailError.message);
-            // Don't fail registration if email fails
-          }
-        }
-        
         return true;
       } else {
         console.error('Registration failed:', result);

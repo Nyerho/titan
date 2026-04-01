@@ -821,7 +821,12 @@
                 document.getElementById('crypto-confirmation').style.display = 'block';
                 
                 // Show success message
-                showAlert('Payment confirmation submitted successfully! Your deposit is pending admin approval.', 'success');
+                if (result && result.emailSent === false) {
+                    const details = result.emailError ? ` (${result.emailError})` : '';
+                    showAlert(`Payment confirmation submitted. Your deposit is pending admin approval, but the email confirmation could not be sent${details}.`, 'warning');
+                } else {
+                    showAlert('Payment confirmation submitted successfully! Your deposit is pending admin approval.', 'success');
+                }
                 
                 // Refresh transaction history
                 setTimeout(() => {

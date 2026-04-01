@@ -266,19 +266,19 @@ async function sendBrevoEmail({ to, subject, html }) {
 
 async function sendBrandEmail({ to, subject, html }) {
   const from = process.env.EMAIL_FROM || 'TitanTrades <noreply@titantrades.org>';
+  const transporter = createMailerTransport();
+  if (transporter) {
+    return transporter.sendMail({ from, to, subject, html });
+  }
+
   const hasBrevo = !!(process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY);
   if (hasBrevo) {
     return sendBrevoEmail({ to, subject, html });
   }
 
-  const transporter = createMailerTransport();
-  if (!transporter) {
-    const err = new Error('Email transport not configured (SMTP_HOST/SMTP_USER/SMTP_PASS or BREVO_API_KEY)');
-    err.code = 'email/not-configured';
-    throw err;
-  }
-
-  return transporter.sendMail({ from, to, subject, html });
+  const err = new Error('Email transport not configured (SMTP_HOST/SMTP_USER/SMTP_PASS or BREVO_API_KEY)');
+  err.code = 'email/not-configured';
+  throw err;
 }
 
 // Middleware to verify admin token
@@ -332,6 +332,16 @@ function canSendPasswordReset(key) {
   const windowMs = 60 * 1000;
   if (now - last < windowMs) return false;
   passwordResetThrottle.set(key, now);
+  return true;
+}
+
+const emailVerificationThrottle = new Map();
+function canSendEmailVerification(key) {
+  const now = Date.now();
+  const last = emailVerificationThrottle.get(key) || 0;
+  const windowMs = 60 * 1000;
+  if (now - last < windowMs) return false;
+  emailVerificationThrottle.set(key, now);
   return true;
 }
 
@@ -401,6 +411,73 @@ app.post('/api/auth/password-reset', async (req, res) => {
   } catch (error) {
     console.error('Password reset email error:', error);
     return res.status(500).json({ error: error?.message || 'Failed to send password reset email' });
+  }
+});
+
+app.post('/api/auth/email-verification', verifyUserToken, async (req, res) => {
+  try {
+    const userRecord = await auth.getUser(req.user.uid);
+    const email = String(userRecord.email || '').trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'User email not found' });
+    }
+
+    const continueUrlRaw = String(req.body?.continueUrl || '').trim();
+    const continueUrl = continueUrlRaw || `${getPublicBaseUrl(req)}/dashboard.html`;
+
+    const throttleKey = `${String(req.ip || '').trim()}|${req.user.uid}|${email}`;
+    if (!canSendEmailVerification(throttleKey)) {
+      return res.json({ success: true, emailSent: false, throttled: true });
+    }
+
+    let link = '';
+    try {
+      link = await auth.generateEmailVerificationLink(email, {
+        url: continueUrl,
+        handleCodeInApp: false
+      });
+    } catch (e) {
+      throw e;
+    }
+
+    let appLink = link;
+    try {
+      const generated = new URL(link);
+      const oobCode = generated.searchParams.get('oobCode');
+      const mode = generated.searchParams.get('mode') || 'verifyEmail';
+      if (oobCode) {
+        const direct = new URL(continueUrl);
+        direct.searchParams.set('mode', mode);
+        direct.searchParams.set('oobCode', oobCode);
+        const lang = generated.searchParams.get('lang');
+        if (lang) direct.searchParams.set('lang', lang);
+        appLink = direct.toString();
+      }
+    } catch (e) {}
+
+    const html = buildEmailHtml({
+      req,
+      title: 'Verify your email address',
+      intro: `Please confirm your email address to unlock deposits, withdrawals, and trading on TitanTrades.`,
+      rows: [
+        {
+          label: 'Verification link',
+          value: `<a href="${appLink}" style="color:#2563eb;font-weight:700;text-decoration:none;">Verify email</a>`
+        }
+      ],
+      outro: `If you did not create this account, you can ignore this email.`
+    });
+
+    await sendBrandEmail({
+      to: email,
+      subject: 'TitanTrades — Verify your email',
+      html
+    });
+
+    return res.json({ success: true, emailSent: true });
+  } catch (error) {
+    console.error('Email verification send error:', error);
+    return res.status(500).json({ error: error?.message || 'Failed to send verification email' });
   }
 });
 

@@ -794,8 +794,8 @@ class EnhancedAdminDashboard {
     async loadWithdrawals() {
         try {
             const withdrawalsQuery = query(
-                collection(this.db, 'withdrawals'),
-                orderBy('timestamp', 'desc')
+                collection(this.db, 'withdrawal-requests'),
+                orderBy('requestDate', 'desc')
             );
             
             const snapshot = await getDocs(withdrawalsQuery);
@@ -1537,7 +1537,7 @@ class EnhancedAdminDashboard {
 
         // Real-time withdrawals listener
         const withdrawalsQuery = query(
-            collection(this.db, 'withdrawals'),
+            collection(this.db, 'withdrawal-requests'),
             where('status', '==', 'pending')
         );
         onSnapshot(withdrawalsQuery, (snapshot) => {
@@ -1826,7 +1826,7 @@ class EnhancedAdminDashboard {
     // Withdrawal Management Methods
     async handleWithdrawalApproval(withdrawalId, status) {
         try {
-            const withdrawalDoc = await getDoc(doc(this.db, 'withdrawals', withdrawalId));
+            const withdrawalDoc = await getDoc(doc(this.db, 'withdrawal-requests', withdrawalId));
             if (!withdrawalDoc.exists()) {
                 throw new Error('Withdrawal not found');
             }
@@ -1841,7 +1841,7 @@ class EnhancedAdminDashboard {
                 return;
             }
 
-            await updateDoc(doc(this.db, 'withdrawals', withdrawalId), {
+            await updateDoc(doc(this.db, 'withdrawal-requests', withdrawalId), {
                 status: status,
                 processedAt: serverTimestamp(),
                 processedBy: this.currentUser.uid
@@ -1875,6 +1875,20 @@ class EnhancedAdminDashboard {
                         withdrawalId: withdrawalId,
                         processedBy: this.currentUser.uid
                     });
+                }
+
+                try {
+                    const token = await this.currentUser.getIdToken(true);
+                    const emailRes = await fetch(`${adminApiConfig.baseUrl}/api/withdrawal-requests/${withdrawalId}/send-approved-email`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await emailRes.json().catch(() => ({}));
+                    if (!emailRes.ok) {
+                        throw new Error(data?.error || emailRes.statusText || 'Failed to send withdrawal email');
+                    }
+                } catch (e) {
+                    this.showNotification(`Withdrawal approved, but email failed: ${e.message}`, 'warning');
                 }
             } else if (status === 'rejected') {
                 await addDoc(collection(this.db, 'transactions'), {
@@ -2204,9 +2218,9 @@ class EnhancedAdminDashboard {
                 <td>${withdrawal.id}</td>
                 <td>${withdrawal.userEmail || 'N/A'}</td>
                 <td>$${withdrawal.amount?.toFixed(2) || '0.00'}</td>
-                <td>${withdrawal.walletAddress || 'N/A'}</td>
+                <td>${String(withdrawal.details?.method || withdrawal.method || 'N/A').toUpperCase()}</td>
                 <td><span class="badge bg-${this.getWithdrawalStatusColor(withdrawal.status)}">${withdrawal.status}</span></td>
-                <td>${withdrawal.timestamp ? new Date(withdrawal.timestamp.toDate()).toLocaleString() : 'N/A'}</td>
+                <td>${withdrawal.requestDate ? new Date(withdrawal.requestDate.toDate()).toLocaleString() : 'N/A'}</td>
                 <td>
                     ${withdrawal.status === 'pending' ? `
                         <div class="btn-group btn-group-sm">
@@ -3048,11 +3062,11 @@ class EnhancedAdminDashboard {
                 </tr>
             `;
 
-            // Fetch collections: transactions, trades, withdrawals
+            // Fetch collections: transactions, trades, withdrawal requests
             const [transactionsSnap, tradesSnap, withdrawalsSnap] = await Promise.all([
                 getDocs(query(collection(this.db, 'transactions'), orderBy('timestamp', 'desc'))),
                 getDocs(query(collection(this.db, 'trades'), orderBy('timestamp', 'desc'))),
-                getDocs(query(collection(this.db, 'withdrawals'), orderBy('timestamp', 'desc')))
+                getDocs(query(collection(this.db, 'withdrawal-requests'), orderBy('requestDate', 'desc')))
             ]);
 
             const events = [];
@@ -3096,8 +3110,8 @@ class EnhancedAdminDashboard {
             // Normalize withdrawals
             withdrawalsSnap.forEach(docSnap => {
                 const data = docSnap.data();
-                const ts = data.timestamp?.toDate
-                    ? data.timestamp.toDate()
+                const ts = data.requestDate?.toDate
+                    ? data.requestDate.toDate()
                     : (data.createdAt?.toDate ? data.createdAt.toDate() : new Date());
                 events.push({
                     id: docSnap.id,
@@ -3617,7 +3631,7 @@ class EnhancedAdminDashboard {
 
     async viewWithdrawal(withdrawalId) {
         try {
-            const withdrawalDoc = await getDoc(doc(this.db, 'withdrawals', withdrawalId));
+            const withdrawalDoc = await getDoc(doc(this.db, 'withdrawal-requests', withdrawalId));
             if (withdrawalDoc.exists()) {
                 const withdrawalData = withdrawalDoc.data();
                 // Implement withdrawal details modal
@@ -5803,8 +5817,8 @@ EnhancedAdminDashboard.prototype.backfillWithdrawalTransactions = async function
 
         this.showNotification('Starting withdrawal backfill...', 'info');
 
-        // Fetch all withdrawals, newest first
-        const withdrawalsSnap = await getDocs(query(collection(this.db, 'withdrawals'), orderBy('timestamp', 'desc')));
+        // Fetch all withdrawal requests, newest first
+        const withdrawalsSnap = await getDocs(query(collection(this.db, 'withdrawal-requests'), orderBy('requestDate', 'desc')));
 
         let createdCount = 0;
         let skippedCount = 0;
@@ -5845,7 +5859,7 @@ EnhancedAdminDashboard.prototype.backfillWithdrawalTransactions = async function
             }
 
             // Use withdrawal timestamp if present
-            const ts = w.timestamp ? w.timestamp : (w.createdAt ? w.createdAt : serverTimestamp());
+            const ts = w.requestDate ? w.requestDate : (w.createdAt ? w.createdAt : serverTimestamp());
 
             const description = statusLower === 'approved' || statusLower === 'completed'
                 ? 'Withdrawal approved by admin (backfill)'
