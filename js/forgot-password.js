@@ -1,5 +1,6 @@
 // Forgot Password Functionality
 import { auth } from './firebase-config.js';
+import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 class ForgotPasswordManager {
     constructor() {
@@ -75,6 +76,24 @@ class ForgotPasswordManager {
         return payload;
     }
 
+    async sendResetEmail({ email, continueUrl }) {
+        try {
+            return await this.sendResetEmailViaBackend({ email, continueUrl });
+        } catch (error) {
+            const msg = String(error?.message || '').trim().toLowerCase();
+            const shouldFallback =
+                msg.includes('key not found') ||
+                msg.includes('email transport not configured') ||
+                msg.includes('password reset service is not available') ||
+                msg.includes('email service is not configured');
+
+            if (!shouldFallback) throw error;
+
+            await sendPasswordResetEmail(auth, email, { url: continueUrl, handleCodeInApp: false });
+            return { success: true, emailSent: true, fallback: 'firebase' };
+        }
+    }
+
     async handleForgotPassword(e) {
         e.preventDefault();
         
@@ -103,7 +122,7 @@ class ForgotPasswordManager {
         
         try {
             const continueUrl = this.computeResetUrl();
-            await this.sendResetEmailViaBackend({ email, continueUrl });
+            await this.sendResetEmail({ email, continueUrl });
             
             // Store email for resend functionality
             sessionStorage.setItem('resetEmail', email);
@@ -157,7 +176,7 @@ class ForgotPasswordManager {
         
         try {
             const continueUrl = this.computeResetUrl();
-            await this.sendResetEmailViaBackend({ email, continueUrl });
+            await this.sendResetEmail({ email, continueUrl });
             
             resendLink.textContent = 'Sent!';
             setTimeout(() => {

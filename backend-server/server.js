@@ -326,24 +326,17 @@ async function verifyUserToken(req, res, next) {
 // API Routes
 
 const passwordResetThrottle = new Map();
-function canSendPasswordReset(key) {
+function isThrottled(throttleMap, key, windowMs) {
   const now = Date.now();
-  const last = passwordResetThrottle.get(key) || 0;
-  const windowMs = 60 * 1000;
-  if (now - last < windowMs) return false;
-  passwordResetThrottle.set(key, now);
-  return true;
+  const last = throttleMap.get(key) || 0;
+  return now - last < windowMs;
+}
+
+function markThrottled(throttleMap, key) {
+  throttleMap.set(key, Date.now());
 }
 
 const emailVerificationThrottle = new Map();
-function canSendEmailVerification(key) {
-  const now = Date.now();
-  const last = emailVerificationThrottle.get(key) || 0;
-  const windowMs = 60 * 1000;
-  if (now - last < windowMs) return false;
-  emailVerificationThrottle.set(key, now);
-  return true;
-}
 
 app.post('/api/auth/password-reset', async (req, res) => {
   try {
@@ -356,7 +349,7 @@ app.post('/api/auth/password-reset', async (req, res) => {
     const continueUrl = continueUrlRaw || `${getPublicBaseUrl(req)}/reset-password.html`;
 
     const throttleKey = `${String(req.ip || '').trim()}|${email}`;
-    if (!canSendPasswordReset(throttleKey)) {
+    if (isThrottled(passwordResetThrottle, throttleKey, 60 * 1000)) {
       return res.json({ success: true, emailSent: false, throttled: true });
     }
 
@@ -368,6 +361,7 @@ app.post('/api/auth/password-reset', async (req, res) => {
       });
     } catch (e) {
       if (e?.code === 'auth/user-not-found') {
+        markThrottled(passwordResetThrottle, throttleKey);
         return res.json({ success: true, emailSent: false });
       }
       throw e;
@@ -407,10 +401,29 @@ app.post('/api/auth/password-reset', async (req, res) => {
       html
     });
 
+    markThrottled(passwordResetThrottle, throttleKey);
     return res.json({ success: true, emailSent: true });
   } catch (error) {
     console.error('Password reset email error:', error);
-    return res.status(500).json({ error: error?.message || 'Failed to send password reset email' });
+    const raw = String(error?.message || '').trim();
+    const lower = raw.toLowerCase();
+    const code = String(error?.code || '').trim();
+
+    let status = 500;
+    let message = raw || 'Failed to send password reset email';
+
+    if (code === 'email/not-configured') {
+      status = 503;
+      message = 'Email service is not configured. Please contact support.';
+    } else if (code === 'email/brevo-failed') {
+      status = 502;
+      message = 'Email service is temporarily unavailable. Please try again later.';
+    } else if (lower.includes('key not found') || lower.includes('api-key') || lower.includes('api key')) {
+      status = 503;
+      message = 'Email service is not configured. Please contact support.';
+    }
+
+    return res.status(status).json({ error: message, code: code || undefined });
   }
 });
 
@@ -426,7 +439,7 @@ app.post('/api/auth/email-verification', verifyUserToken, async (req, res) => {
     const continueUrl = continueUrlRaw || `${getPublicBaseUrl(req)}/dashboard.html`;
 
     const throttleKey = `${String(req.ip || '').trim()}|${req.user.uid}|${email}`;
-    if (!canSendEmailVerification(throttleKey)) {
+    if (isThrottled(emailVerificationThrottle, throttleKey, 60 * 1000)) {
       return res.json({ success: true, emailSent: false, throttled: true });
     }
 
@@ -474,6 +487,7 @@ app.post('/api/auth/email-verification', verifyUserToken, async (req, res) => {
       html
     });
 
+    markThrottled(emailVerificationThrottle, throttleKey);
     return res.json({ success: true, emailSent: true });
   } catch (error) {
     console.error('Email verification send error:', error);
