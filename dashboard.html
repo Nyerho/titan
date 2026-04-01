@@ -6,7 +6,6 @@
     <title>Dashboard - TitanTrades</title>
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/ai-support-chat.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -43,7 +42,6 @@
     <script type="module" src="js/crypto-service.js"></script>
     <script type="module" src="js/wallet-service.js"></script>
     <script type="module" src="js/market-news.js"></script>
-    <script type="module" src="js/ai-support-chat.js"></script>
     <script type="module" src="js/auth-integration.js"></script>
     <script type="module" src="js/dashboard.js"></script>
 </head>
@@ -2709,7 +2707,6 @@
         </div>
         </div>
         </div>
-      <!-- AI Support Chat will be initialized by JavaScript -->
         </div>
         </div>
         </div>
@@ -2722,5 +2719,21 @@
         </div>
         </div>
         </div>
+    <script type="text/javascript">
+    var _smartsupp = _smartsupp || {};
+    _smartsupp.key = 'ea6833cb9795452323affd97ec4cf9bf1b16656f';
+    window.smartsupp || (function (d) {
+        var s, c, o = smartsupp = function () { o._.push(arguments); };
+        o._ = [];
+        s = d.getElementsByTagName('script')[0];
+        c = d.createElement('script');
+        c.type = 'text/javascript';
+        c.charset = 'utf-8';
+        c.async = true;
+        c.src = 'https://www.smartsuppchat.com/loader.js?';
+        s.parentNode.insertBefore(c, s);
+    })(document);
+    </script>
+    <noscript>Powered by <a href="https://www.smartsupp.com" target="_blank" rel="noopener noreferrer">Smartsupp</a></noscript>
 </body>
 </html>
