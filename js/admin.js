@@ -3025,6 +3025,42 @@ class EnhancedAdminDashboard {
         
         // Load page-specific data
         this.loadPageData(sectionId);
+
+        switch (sectionId) {
+            case 'dashboard':
+                this.loadDashboardData();
+                this.updateDashboardStats();
+                break;
+            case 'users':
+                console.log('Loading users section...'); // Debug log
+                this.loadUsersSection();
+                this.updateUserStats();
+                break;
+            case 'ai-chat':
+                this.initAiChatManagement();
+                break;
+            case 'withdrawals':
+                this.loadGlobalCotCode();
+                break;
+            case 'financial':
+                this.loadFinancialData();
+                break;
+            case 'funding':
+                this.loadFundingData();
+                this.loadCryptoDepositAddresses();
+                break;
+            case 'user-financial':
+                this.loadUserFinancialSection();
+                break;
+            case 'user-control':
+                this.loadUserControlSection();
+                break;
+            case 'history':
+                this.loadGlobalHistory();
+                break;
+            default:
+                console.warn('Unknown page:', sectionId); // Warning log
+        }
     }
 
     async loadPageData(page) {
