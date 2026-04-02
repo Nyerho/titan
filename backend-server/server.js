@@ -268,7 +268,13 @@ async function sendBrandEmail({ to, subject, html }) {
   const from = process.env.EMAIL_FROM || 'TitanTrades <noreply@titantrades.org>';
   const transporter = createMailerTransport();
   if (transporter) {
-    return transporter.sendMail({ from, to, subject, html });
+    try {
+      return await transporter.sendMail({ from, to, subject, html });
+    } catch (e) {
+      const hasBrevo = !!(process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY);
+      if (!hasBrevo) throw e;
+      return sendBrevoEmail({ to, subject, html });
+    }
   }
 
   const hasBrevo = !!(process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY);

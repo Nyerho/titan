@@ -66,7 +66,9 @@ class ForgotPasswordManager {
 
         if (!response.ok) {
             const msg = String(payload?.error || '').trim();
-            throw new Error(msg || 'Password reset service is not available. Please try again later.');
+            const err = new Error(msg || 'Password reset service is not available. Please try again later.');
+            err.status = response.status;
+            throw err;
         }
 
         if (payload?.throttled) {
@@ -81,11 +83,16 @@ class ForgotPasswordManager {
             return await this.sendResetEmailViaBackend({ email, continueUrl });
         } catch (error) {
             const msg = String(error?.message || '').trim().toLowerCase();
+            const status = Number(error?.status || 0);
             const shouldFallback =
                 msg.includes('key not found') ||
+                msg.includes('temporarily unavailable') ||
+                msg.includes('bad gateway') ||
+                msg.includes('timeout') ||
                 msg.includes('email transport not configured') ||
                 msg.includes('password reset service is not available') ||
-                msg.includes('email service is not configured');
+                msg.includes('email service is not configured') ||
+                status >= 500;
 
             if (!shouldFallback) throw error;
 
