@@ -380,72 +380,12 @@
                     return false;
                 }
 
-                try { await currentUser.reload(); } catch (e) {}
-                const verified = !!currentUser.emailVerified || !!currentUser.phoneNumber;
-                if (verified) return true;
-
-                showAlert(
-                    `Please verify your email or phone number to continue.
-                    <div class="mt-2 d-flex gap-2 flex-wrap">
-                        <button type="button" class="btn btn-sm btn-primary" onclick="resendVerificationEmail()">Resend verification email</button>
-                        <button type="button" class="btn btn-sm btn-outline-light" onclick="refreshVerificationStatus()">I verified, refresh</button>
-                    </div>`,
-                    'warning',
-                    containerId
-                );
-                return false;
+                return true;
             } catch (e) {
-                showAlert(
-                    `Please verify your email or phone number to continue.
-                    <div class="mt-2 d-flex gap-2 flex-wrap">
-                        <button type="button" class="btn btn-sm btn-primary" onclick="resendVerificationEmail()">Resend verification email</button>
-                        <button type="button" class="btn btn-sm btn-outline-light" onclick="refreshVerificationStatus()">I verified, refresh</button>
-                    </div>`,
-                    'warning',
-                    containerId
-                );
+                showAlert('Please log in to continue.', 'danger', containerId);
                 return false;
             }
         }
-
-        window.resendVerificationEmail = async function() {
-            try {
-                const user = firebase.auth().currentUser || currentUser;
-                if (!user) {
-                    showAlert('Please log in to continue.', 'danger', 'cotAlert');
-                    return;
-                }
-                if (user.emailVerified || user.phoneNumber) {
-                    showAlert('Your account is already verified.', 'success', 'cotAlert');
-                    return;
-                }
-                await user.sendEmailVerification();
-                showAlert('Verification email sent. Check your inbox (and spam). After verifying, click “I verified, refresh”.', 'success', 'cotAlert');
-            } catch (e) {
-                showAlert('Failed to send verification email. Please try again.', 'danger', 'cotAlert');
-            }
-        };
-
-        window.refreshVerificationStatus = async function() {
-            try {
-                const user = firebase.auth().currentUser || currentUser;
-                if (!user) {
-                    showAlert('Please log in to continue.', 'danger', 'cotAlert');
-                    return;
-                }
-                try { await user.reload(); } catch (e) {}
-                currentUser = firebase.auth().currentUser || user;
-                if (currentUser?.emailVerified || currentUser?.phoneNumber) {
-                    showAlert('Verified. You can continue.', 'success', 'cotAlert');
-                    try { checkFormValidity(); } catch (e) {}
-                    return;
-                }
-                showAlert('Still not verified yet. If you just verified, wait a moment and click refresh again.', 'warning', 'cotAlert');
-                try { checkFormValidity(); } catch (e) {}
-            } catch (e) {
-                showAlert('Could not refresh verification status. Please reload the page.', 'danger', 'cotAlert');
-            }
-        };
         
         // Verify COT code
         async function verifyCotCode() {
@@ -754,10 +694,6 @@
             }
             
             try {
-                if (!await ensureVerifiedOrExplain()) {
-                    return;
-                }
-
                 // Show processing overlay
                 document.getElementById('processingOverlay').style.display = 'flex';
                 
@@ -865,8 +801,6 @@
             
             const amount = parseFloat(amountInput.value);
             const isAuthenticated = currentUser !== null;
-            const isVerified = !!currentUser && (!!currentUser.emailVerified || !!currentUser.phoneNumber);
-            
             console.log('Form validation check:', {
                 amount,
                 isAuthenticated,
@@ -876,7 +810,7 @@
             
             let isValid = false;
             
-            if (isAuthenticated && isVerified && amount >= 50 && selectedMethod) {
+            if (isAuthenticated && amount >= 50 && selectedMethod) {
                 const method = selectedMethod.dataset.method;
                 
                 if (method === 'bank') {
