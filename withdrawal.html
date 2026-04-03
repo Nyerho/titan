@@ -300,7 +300,7 @@
                                 
                                 <!-- Submit Button -->
                                 <div class="d-grid">
-                                    <button type="button" id="submitWithdrawal" class="btn btn-primary btn-lg" disabled>
+                                    <button type="button" id="submitWithdrawal" class="btn btn-primary btn-lg">
                                         <i class="fas fa-paper-plane me-2"></i>Submit Withdrawal Request
                                     </button>
                                 </div>
@@ -547,54 +547,23 @@
             console.log('Button disabled:', submitBtn?.disabled);
         }
         
-        // Modified checkFormValidity function with better debugging
         function checkFormValidity() {
             const submitBtn = document.getElementById('submitWithdrawal');
             const amountInput = document.getElementById('withdrawalAmount');
             const selectedMethod = document.querySelector('.method-card.selected');
             
             if (!submitBtn || !amountInput) {
-                console.log('Missing elements:', { submitBtn: !!submitBtn, amountInput: !!amountInput });
                 return;
             }
             
             const amount = parseFloat(amountInput.value);
             const isAuthenticated = currentUser !== null;
-            
-            console.log('Form validation check:', {
-                amount,
-                isAuthenticated,
-                selectedMethod: selectedMethod?.dataset?.method,
-                minAmount: amount >= 50
-            });
-            
-            let isValid = false;
-            
-            if (isAuthenticated && amount >= 50 && selectedMethod) {
-                const method = selectedMethod.dataset.method;
-                
-                if (method === 'bank') {
-                    const bankName = document.getElementById('bankName')?.value?.trim();
-                    const accountName = document.getElementById('accountName')?.value?.trim();
-                    const accountNumber = document.getElementById('accountNumber')?.value?.trim();
-                    const routingNumber = document.getElementById('routingNumber')?.value?.trim();
-                    
-                    isValid = !!(bankName && accountName && accountNumber && routingNumber);
-                    console.log('Bank validation:', { bankName, accountName, accountNumber, routingNumber, isValid });
-                } else if (method === 'crypto') {
-                    const cryptoCurrency = document.getElementById('cryptoCurrency')?.value?.trim();
-                    const cryptoAddress = document.getElementById('cryptoAddress')?.value?.trim();
-                    
-                    isValid = !!(cryptoCurrency && cryptoAddress);
-                    console.log('Crypto validation:', { cryptoCurrency, cryptoAddress, isValid });
-                }
+            if (!isAuthenticated) {
+                submitBtn.disabled = true;
+                return;
             }
-            
-            console.log('Final validation result:', isValid);
-            submitBtn.disabled = !isValid;
-            
-            // Force enable button for testing (remove this line after debugging)
-            // submitBtn.disabled = false;
+
+            submitBtn.disabled = false;
         }
         
         // Modified initializeAuth to ensure proper user loading
@@ -788,51 +757,7 @@
             }
         };
         
-        // Also fix the validation logic - the issue is with boolean evaluation
-        function checkFormValidity() {
-            const submitBtn = document.getElementById('submitWithdrawal');
-            const amountInput = document.getElementById('withdrawalAmount');
-            const selectedMethod = document.querySelector('.method-card.selected');
-            
-            if (!submitBtn || !amountInput) {
-                console.log('Missing elements:', { submitBtn: !!submitBtn, amountInput: !!amountInput });
-                return;
-            }
-            
-            const amount = parseFloat(amountInput.value);
-            const isAuthenticated = currentUser !== null;
-            console.log('Form validation check:', {
-                amount,
-                isAuthenticated,
-                selectedMethod: selectedMethod?.dataset?.method,
-                minAmount: amount >= 50
-            });
-            
-            let isValid = false;
-            
-            if (isAuthenticated && amount >= 50 && selectedMethod) {
-                const method = selectedMethod.dataset.method;
-                
-                if (method === 'bank') {
-                    const bankName = document.getElementById('bankName')?.value?.trim();
-                    const accountName = document.getElementById('accountName')?.value?.trim();
-                    const accountNumber = document.getElementById('accountNumber')?.value?.trim();
-                    const routingNumber = document.getElementById('routingNumber')?.value?.trim();
-                    
-                    isValid = !!(bankName && accountName && accountNumber && routingNumber);
-                    console.log('Bank validation:', { bankName, accountName, accountNumber, routingNumber, isValid });
-                } else if (method === 'crypto') {
-                    const cryptoCurrency = document.getElementById('cryptoCurrency')?.value?.trim();
-                    const cryptoAddress = document.getElementById('cryptoAddress')?.value?.trim();
-                    
-                    isValid = !!(cryptoCurrency && cryptoAddress);
-                    console.log('Crypto validation:', { cryptoCurrency, cryptoAddress, isValid });
-                }
-            }
-            
-            console.log('Final validation result:', isValid);
-            submitBtn.disabled = !isValid;
-        }
+        
         
         // Generate unique request ID
         function generateRequestId() {
