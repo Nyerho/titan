@@ -37,6 +37,7 @@ class TradingPlatform {
         this._accountCurrency = 'USD';
         this._accountLeverage = null;
         this._tradingProfileUnsubscribe = null;
+        this._walletBalanceUnsubscribe = null;
     }
 
     async init() {
@@ -1174,6 +1175,7 @@ class TradingPlatform {
             }
 
             this.startBalanceListener();
+            this.startWalletBalanceListener();
             this.startTradingProfileListener();
         } catch (error) {
             console.error('Error updating account info:', error);
@@ -1451,6 +1453,21 @@ class TradingPlatform {
             const nextBalance = Number(balance || 0);
             this.portfolio.balance = nextBalance;
             this.updateAccountInfo();
+        });
+    }
+
+    startWalletBalanceListener() {
+        const authManager = window.authManager;
+        const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+        const dbService = window.FirebaseDatabaseService;
+        if (!user?.uid || !dbService?.subscribeToUserBalance) return;
+
+        if (this._walletBalanceUnsubscribe) return;
+
+        this._walletBalanceUnsubscribe = dbService.subscribeToUserBalance(user.uid, (balance) => {
+            const nextWallet = Number(balance || 0);
+            this._externalWalletBalance = Number.isFinite(nextWallet) ? nextWallet : null;
+            this.updatePortfolioDisplay();
         });
     }
 
