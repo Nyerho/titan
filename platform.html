@@ -755,31 +755,30 @@
 
                 if (useProp) {
                     const balance = Number(propAccount.currentEquity ?? propAccount.accountSize ?? 0);
-                    document.getElementById('account-balance').textContent = formatCurrency(balance);
-                    if (walletBalanceResult?.success) {
-                        document.getElementById('wallet-balance').textContent = formatCurrency(Number(walletBalanceResult.balance || 0));
+                    const walletBalance = walletBalanceResult?.success ? Number(walletBalanceResult.balance || 0) : 0;
+
+                    if (window.platform?.setExternalAccountBalances) {
+                        window.platform.setExternalAccountBalances({ tradingBalance: balance, walletBalance });
+                    } else {
+                        document.getElementById('account-balance').textContent = formatCurrency(balance);
+                        document.getElementById('wallet-balance').textContent = formatCurrency(walletBalance);
+                        document.getElementById('account-equity').textContent = formatCurrency(balance);
+                        document.getElementById('account-margin').textContent = formatCurrency(0);
+                        document.getElementById('free-margin').textContent = formatCurrency(balance);
                     }
-                    
-                    // Calculate other account metrics based on balance
-                    const equity = balance * 1.025; // 2.5% equity gain example
-                    const margin = balance * 0.05; // 5% margin usage
-                    const freeMargin = balance - margin;
-                    
-                    document.getElementById('account-equity').textContent = formatCurrency(equity);
-                    document.getElementById('account-margin').textContent = formatCurrency(margin);
-                    document.getElementById('free-margin').textContent = formatCurrency(freeMargin);
                 } else if (tradingBalanceResult.success) {
                     const balance = tradingBalanceResult.balance;
-                    document.getElementById('account-balance').textContent = formatCurrency(balance);
-                    document.getElementById('wallet-balance').textContent = formatCurrency(Number(walletBalanceResult?.balance || 0));
-                    
-                    const equity = balance * 1.025;
-                    const margin = balance * 0.05;
-                    const freeMargin = balance - margin;
-                    
-                    document.getElementById('account-equity').textContent = formatCurrency(equity);
-                    document.getElementById('account-margin').textContent = formatCurrency(margin);
-                    document.getElementById('free-margin').textContent = formatCurrency(freeMargin);
+                    const walletBalance = Number(walletBalanceResult?.balance || 0);
+
+                    if (window.platform?.setExternalAccountBalances) {
+                        window.platform.setExternalAccountBalances({ tradingBalance: balance, walletBalance });
+                    } else {
+                        document.getElementById('account-balance').textContent = formatCurrency(balance);
+                        document.getElementById('wallet-balance').textContent = formatCurrency(walletBalance);
+                        document.getElementById('account-equity').textContent = formatCurrency(balance);
+                        document.getElementById('account-margin').textContent = formatCurrency(0);
+                        document.getElementById('free-margin').textContent = formatCurrency(balance);
+                    }
                 } else {
                     console.error('Failed to load balance:', tradingBalanceResult.error);
                     // Set default values if balance loading fails

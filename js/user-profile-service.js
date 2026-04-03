@@ -223,17 +223,24 @@ class UserProfileService {
     updateAccountSummary() {
         const path = (window.location && window.location.pathname || '').toLowerCase();
         const isTradingPlatform = path.includes('platform.html');
+        const deposits = Number(this.userProfile.totalDeposits ?? NaN);
+        const profits = Number(this.userProfile.totalProfits ?? NaN);
+        const withdrawals = Number(this.userProfile.totalWithdrawals ?? NaN);
+        const hasTotals = [deposits, profits, withdrawals].every((n) => Number.isFinite(n));
+        const totalsUnified = hasTotals ? Math.max(0, deposits + profits - withdrawals) : NaN;
         
         if (isTradingPlatform) {
             const wallet = Number(this.userProfile.walletBalance ?? this.userProfile.balance ?? 0);
             const walletEl = document.getElementById('wallet-balance');
             if (walletEl) {
-                walletEl.textContent = this.formatCurrency(wallet);
+                const unified = Number.isFinite(totalsUnified) ? Math.max(wallet, totalsUnified) : wallet;
+                walletEl.textContent = this.formatCurrency(unified);
             }
             return;
         }
         
-        const balance = Number(this.userProfile.walletBalance ?? this.userProfile.balance ?? 0);
+        const balanceRaw = Number(this.userProfile.walletBalance ?? this.userProfile.balance ?? 0);
+        const balance = Number.isFinite(totalsUnified) ? Math.max(balanceRaw, totalsUnified) : balanceRaw;
         const equity = Number(this.userProfile.equity ?? 0);
         const margin = Number(this.userProfile.margin ?? 0);
         const freeMargin = Number(this.userProfile.freeMargin ?? this.userProfile.free_margin ?? 0);

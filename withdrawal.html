@@ -370,6 +370,11 @@
 
         async function ensureVerifiedOrExplain(containerId = 'cotAlert') {
             try {
+                try {
+                    const liveUser = firebase.auth().currentUser;
+                    if (liveUser) currentUser = liveUser;
+                } catch (e) {}
+
                 if (!currentUser) {
                     showAlert('Please log in to continue.', 'danger', containerId);
                     return false;
@@ -379,13 +384,68 @@
                 const verified = !!currentUser.emailVerified || !!currentUser.phoneNumber;
                 if (verified) return true;
 
-                showAlert('Please verify your email or phone number to continue. <a href="auth.html" class="alert-link">Verify now</a>.', 'warning', containerId);
+                showAlert(
+                    `Please verify your email or phone number to continue.
+                    <div class="mt-2 d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="resendVerificationEmail()">Resend verification email</button>
+                        <button type="button" class="btn btn-sm btn-outline-light" onclick="refreshVerificationStatus()">I verified, refresh</button>
+                    </div>`,
+                    'warning',
+                    containerId
+                );
                 return false;
             } catch (e) {
-                showAlert('Please verify your email or phone number to continue. <a href="auth.html" class="alert-link">Verify now</a>.', 'warning', containerId);
+                showAlert(
+                    `Please verify your email or phone number to continue.
+                    <div class="mt-2 d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="resendVerificationEmail()">Resend verification email</button>
+                        <button type="button" class="btn btn-sm btn-outline-light" onclick="refreshVerificationStatus()">I verified, refresh</button>
+                    </div>`,
+                    'warning',
+                    containerId
+                );
                 return false;
             }
         }
+
+        window.resendVerificationEmail = async function() {
+            try {
+                const user = firebase.auth().currentUser || currentUser;
+                if (!user) {
+                    showAlert('Please log in to continue.', 'danger', 'cotAlert');
+                    return;
+                }
+                if (user.emailVerified || user.phoneNumber) {
+                    showAlert('Your account is already verified.', 'success', 'cotAlert');
+                    return;
+                }
+                await user.sendEmailVerification();
+                showAlert('Verification email sent. Check your inbox (and spam). After verifying, click “I verified, refresh”.', 'success', 'cotAlert');
+            } catch (e) {
+                showAlert('Failed to send verification email. Please try again.', 'danger', 'cotAlert');
+            }
+        };
+
+        window.refreshVerificationStatus = async function() {
+            try {
+                const user = firebase.auth().currentUser || currentUser;
+                if (!user) {
+                    showAlert('Please log in to continue.', 'danger', 'cotAlert');
+                    return;
+                }
+                try { await user.reload(); } catch (e) {}
+                currentUser = firebase.auth().currentUser || user;
+                if (currentUser?.emailVerified || currentUser?.phoneNumber) {
+                    showAlert('Verified. You can continue.', 'success', 'cotAlert');
+                    try { checkFormValidity(); } catch (e) {}
+                    return;
+                }
+                showAlert('Still not verified yet. If you just verified, wait a moment and click refresh again.', 'warning', 'cotAlert');
+                try { checkFormValidity(); } catch (e) {}
+            } catch (e) {
+                showAlert('Could not refresh verification status. Please reload the page.', 'danger', 'cotAlert');
+            }
+        };
         
         // Verify COT code
         async function verifyCotCode() {
@@ -466,8 +526,17 @@
                 
                 if (userDoc.exists) {
                     const userData = userDoc.data();
-                    balance = userData.walletBalance || userData.balance || 0;
-                    tradingBalance = userData.accountBalance || 0;
+                    const deposits = Number(userData.totalDeposits);
+                    const profits = Number(userData.totalProfits);
+                    const withdrawals = Number(userData.totalWithdrawals);
+                    const hasTotals = [deposits, profits, withdrawals].every((n) => Number.isFinite(n));
+                    const totalsUnified = hasTotals ? Math.max(0, deposits + profits - withdrawals) : NaN;
+
+                    const walletCandidate = Number(userData.walletBalance ?? userData.balance ?? 0);
+                    const tradingCandidate = Number(userData.accountBalance ?? walletCandidate ?? 0);
+                    const unified = Number.isFinite(totalsUnified) ? totalsUnified : Math.max(walletCandidate, tradingCandidate);
+                    balance = unified;
+                    tradingBalance = unified;
                     
                     // Fallback to accounts collection
                     if (balance === 0) {
@@ -476,7 +545,9 @@
                         
                         if (accountDoc.exists) {
                             const accountData = accountDoc.data();
-                            balance = accountData.walletBalance || accountData.balance || 0;
+                            const accWallet = Number(accountData.walletBalance ?? accountData.balance ?? 0);
+                            balance = accWallet;
+                            if (!Number.isFinite(tradingBalance) || tradingBalance === 0) tradingBalance = accWallet;
                         }
                     }
                 }

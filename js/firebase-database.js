@@ -745,13 +745,15 @@ class FirebaseDatabaseService {
       
       if (userDoc.exists()) {
         const userData = userDoc.data();
+        const totalsUnified = computeUnifiedBalanceFromTotals(userData);
         const walletCandidate = Number(userData.walletBalance ?? NaN);
         const balanceCandidate = Number(userData.balance ?? NaN);
         const tradingCandidate = Number(userData.accountBalance ?? NaN);
-        const unified = Math.max(
+        const fieldsUnified = Math.max(
           0,
           ...[walletCandidate, balanceCandidate, tradingCandidate].filter((n) => Number.isFinite(n))
         );
+        const unified = Number.isFinite(totalsUnified) ? totalsUnified : fieldsUnified;
 
         const needsSync =
           (Number.isFinite(walletCandidate) && walletCandidate !== unified) ||
@@ -793,13 +795,19 @@ class FirebaseDatabaseService {
       const userDoc = await getDoc(userRef);
       if (!userDoc.exists()) return { success: true, balance: 0, initialized: true };
       const userData = userDoc.data();
+      const deposits = Number(userData.totalDeposits ?? NaN);
+      const profits = Number(userData.totalProfits ?? NaN);
+      const withdrawals = Number(userData.totalWithdrawals ?? NaN);
+      const hasTotals = [deposits, profits, withdrawals].every((n) => Number.isFinite(n));
+      const totalsUnified = hasTotals ? Math.max(0, deposits + profits - withdrawals) : NaN;
       const walletCandidate = Number(userData.walletBalance ?? NaN);
       const balanceCandidate = Number(userData.balance ?? NaN);
       const tradingCandidate = Number(userData.accountBalance ?? NaN);
-      const unified = Math.max(
+      const fieldsUnified = Math.max(
         0,
         ...[walletCandidate, balanceCandidate, tradingCandidate].filter((n) => Number.isFinite(n))
       );
+      const unified = Number.isFinite(totalsUnified) ? totalsUnified : fieldsUnified;
 
       const needsSync =
         (Number.isFinite(walletCandidate) && walletCandidate !== unified) ||
@@ -836,13 +844,15 @@ class FirebaseDatabaseService {
         return;
       }
       const data = snap.data() || {};
+      const totalsUnified = computeUnifiedBalanceFromTotals(data);
       const walletCandidate = Number(data.walletBalance ?? NaN);
       const balanceCandidate = Number(data.balance ?? NaN);
       const tradingCandidate = Number(data.accountBalance ?? NaN);
-      const unified = Math.max(
+      const fieldsUnified = Math.max(
         0,
         ...[walletCandidate, balanceCandidate, tradingCandidate].filter((n) => Number.isFinite(n))
       );
+      const unified = Number.isFinite(totalsUnified) ? totalsUnified : fieldsUnified;
       callback(unified);
     });
 
@@ -858,17 +868,41 @@ class FirebaseDatabaseService {
         return;
       }
       const data = snap.data() || {};
+      const deposits = Number(data.totalDeposits ?? NaN);
+      const profits = Number(data.totalProfits ?? NaN);
+      const withdrawals = Number(data.totalWithdrawals ?? NaN);
+      const hasTotals = [deposits, profits, withdrawals].every((n) => Number.isFinite(n));
+      const totalsUnified = hasTotals ? Math.max(0, deposits + profits - withdrawals) : NaN;
       const walletCandidate = Number(data.walletBalance ?? NaN);
       const balanceCandidate = Number(data.balance ?? NaN);
       const tradingCandidate = Number(data.accountBalance ?? NaN);
-      const unified = Math.max(
+      const fieldsUnified = Math.max(
         0,
         ...[walletCandidate, balanceCandidate, tradingCandidate].filter((n) => Number.isFinite(n))
       );
+      const unified = Number.isFinite(totalsUnified) ? totalsUnified : fieldsUnified;
       callback(unified);
     });
 
     this.listeners.set(`trading_balance_${uid}`, unsubscribe);
+    return unsubscribe;
+  }
+
+  subscribeToUserTradingProfile(uid, callback) {
+    const userRef = doc(db, 'users', uid);
+    const unsubscribe = onSnapshot(userRef, (snap) => {
+      if (!snap.exists()) {
+        callback({ leverage: null, currency: 'USD' });
+        return;
+      }
+      const data = snap.data() || {};
+      const trading = data.trading || {};
+      const leverage = trading.leverage ?? data.leverage ?? null;
+      const currency = trading.currency || 'USD';
+      callback({ leverage, currency });
+    });
+
+    this.listeners.set(`trading_profile_${uid}`, unsubscribe);
     return unsubscribe;
   }
 

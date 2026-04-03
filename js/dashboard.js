@@ -410,6 +410,11 @@ class DashboardManager {
                     console.log('Real-time user data update:', userData);
                     this.updateUserInterface(userData, user);
 
+                    const deposits = Number(userData.totalDeposits ?? NaN);
+                    const profits = Number(userData.totalProfits ?? NaN);
+                    const withdrawals = Number(userData.totalWithdrawals ?? NaN);
+                    const hasTotals = [deposits, profits, withdrawals].every((n) => Number.isFinite(n));
+                    const totalsUnified = hasTotals ? Math.max(0, deposits + profits - withdrawals) : NaN;
                     const walletCandidate = Number(userData.walletBalance ?? NaN);
                     const balanceCandidate = Number(userData.balance ?? NaN);
                     const tradingCandidate = Number(userData.accountBalance ?? NaN);
@@ -417,11 +422,12 @@ class DashboardManager {
                         0,
                         ...[walletCandidate, balanceCandidate, tradingCandidate].filter((n) => Number.isFinite(n))
                     );
+                    const nextUnified = Number.isFinite(totalsUnified) ? Math.max(unified, totalsUnified) : unified;
 
                     const needsSync =
-                        (Number.isFinite(walletCandidate) && walletCandidate !== unified) ||
-                        (Number.isFinite(balanceCandidate) && balanceCandidate !== unified) ||
-                        (Number.isFinite(tradingCandidate) && tradingCandidate !== unified) ||
+                        (Number.isFinite(walletCandidate) && walletCandidate !== nextUnified) ||
+                        (Number.isFinite(balanceCandidate) && balanceCandidate !== nextUnified) ||
+                        (Number.isFinite(tradingCandidate) && tradingCandidate !== nextUnified) ||
                         !Number.isFinite(walletCandidate) ||
                         !Number.isFinite(balanceCandidate) ||
                         !Number.isFinite(tradingCandidate);
@@ -430,9 +436,9 @@ class DashboardManager {
                         this.balanceFieldSyncInFlight = true;
                         try {
                             await updateDoc(userRef, {
-                                walletBalance: unified,
-                                balance: unified,
-                                accountBalance: unified,
+                                walletBalance: nextUnified,
+                                balance: nextUnified,
+                                accountBalance: nextUnified,
                                 balanceUpdatedAt: new Date().toISOString(),
                                 tradingBalanceUpdatedAt: new Date().toISOString()
                             });
@@ -491,17 +497,22 @@ class DashboardManager {
             const userData = userDoc.data();
             
             // Use users collection as the authoritative source (admin updates)
-            const authoritativeBalance = Math.max(
+            const walletCandidate = Number(userData.walletBalance ?? NaN);
+            const balanceCandidate = Number(userData.balance ?? NaN);
+            const tradingCandidate = Number(userData.accountBalance ?? NaN);
+            const fieldsUnified = Math.max(
                 0,
                 ...[
-                    Number(userData.walletBalance ?? NaN),
-                    Number(userData.balance ?? NaN),
-                    Number(userData.accountBalance ?? NaN)
+                    walletCandidate,
+                    balanceCandidate,
+                    tradingCandidate
                 ].filter((n) => Number.isFinite(n))
             );
             const authoritativeProfits = userData.totalProfits || 0;
             const authoritativeDeposits = userData.totalDeposits || 0;
             const authoritativeWithdrawals = userData.totalWithdrawals || 0;
+            const totalsUnified = Math.max(0, Number(authoritativeDeposits || 0) + Number(authoritativeProfits || 0) - Number(authoritativeWithdrawals || 0));
+            const authoritativeBalance = Math.max(fieldsUnified, totalsUnified);
             
             console.log('AUTHORITATIVE DATA from users collection:', {
                 balance: authoritativeBalance,
@@ -570,8 +581,14 @@ class DashboardManager {
             storedBalance: this.accountData.balance
         });
         
-        // Use the stored balance from Firebase (which is authoritative)
-        const displayBalance = (this.accountData.balance ?? calculatedWalletBalance);
+        const walletCandidate = Number(this.accountData.walletBalance ?? NaN);
+        const balanceCandidate = Number(this.accountData.balance ?? NaN);
+        const tradingCandidate = Number(this.accountData.accountBalance ?? NaN);
+        const fieldsUnified = Math.max(
+            0,
+            ...[walletCandidate, balanceCandidate, tradingCandidate].filter((n) => Number.isFinite(n))
+        );
+        const displayBalance = Math.max(fieldsUnified, calculatedWalletBalance);
         
         if (balanceElement) {
             const formattedBalance = `${displayBalance.toLocaleString('en-US', {

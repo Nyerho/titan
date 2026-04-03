@@ -33,6 +33,10 @@ class TradingPlatform {
         this.marketDataService = new MarketDataService();
         this.realTimeData = new Map();
         this.userProfileService = null;
+        this._externalWalletBalance = null;
+        this._accountCurrency = 'USD';
+        this._accountLeverage = null;
+        this._tradingProfileUnsubscribe = null;
     }
 
     async init() {
@@ -1045,14 +1049,10 @@ class TradingPlatform {
         let exitPrice = 0;
         if (position) {
             const openPrice = Number(position.openPrice || 0);
-            const volume = Number(position.volume || 0);
             const tickPrice = this.getCurrentPrice(position.symbol) + (Math.random() - 0.5) * 0.01;
             const currentPrice = Number.isFinite(Number(position.currentPrice)) ? Number(position.currentPrice) : tickPrice;
-            const priceDiff = position.type === 'buy'
-                ? currentPrice - openPrice
-                : openPrice - currentPrice;
-            const computed = priceDiff * volume * 100000;
-            pnl = Number.isFinite(computed) ? computed : Number(position.pnl || 0);
+            position.currentPrice = currentPrice;
+            pnl = this.computePositionPnl(position);
             exitPrice = currentPrice;
         }
         try {
@@ -1100,15 +1100,11 @@ class TradingPlatform {
         const updates = [];
         const pnl = this.positions.reduce((sum, position) => {
             const openPrice = Number(position?.openPrice || 0);
-            const volume = Number(position?.volume || 0);
             const tickPrice = this.getCurrentPrice(position?.symbol) + (Math.random() - 0.5) * 0.01;
             const currentPrice = Number.isFinite(Number(position?.currentPrice)) ? Number(position.currentPrice) : tickPrice;
-            const priceDiff = position?.type === 'buy'
-                ? currentPrice - openPrice
-                : openPrice - currentPrice;
-            const computed = priceDiff * volume * 100000;
-            const safe = Number.isFinite(computed) ? computed : Number(position?.pnl || 0);
-            const pnlValue = Number.isFinite(safe) ? safe : 0;
+            position.currentPrice = currentPrice;
+            const computedPnl = this.computePositionPnl(position);
+            const pnlValue = Number.isFinite(computedPnl) ? computedPnl : 0;
             updates.push({ position, pnl: pnlValue, exitPrice: currentPrice });
             return sum + pnlValue;
         }, 0);
@@ -1171,19 +1167,14 @@ class TradingPlatform {
             
             // Update account balance and portfolio data
             if (accountData) {
-                this.portfolio = {
-                    balance: accountData.balance || 0,
-                    equity: accountData.equity || accountData.balance || 0,
-                    margin: accountData.margin || 0,
-                    freeMargin: accountData.freeMargin || accountData.balance || 0,
-                    marginLevel: accountData.marginLevel || 0,
-                    totalPnL: accountData.totalPnL || 0
-                };
-                
+                this.portfolio.balance = Number(accountData.balance || 0);
+                this.portfolio.totalPnL = Number(accountData.totalPnL || 0);
+                this.recalculateAccountMetrics();
                 this.updatePortfolioDisplay();
             }
 
             this.startBalanceListener();
+            this.startTradingProfileListener();
         } catch (error) {
             console.error('Error updating account info:', error);
             // Fallback to demo data
@@ -1241,16 +1232,18 @@ class TradingPlatform {
             try {
                 const balanceResult = await dbService.getUserTradingBalance(user.uid);
                 const balance = balanceResult.success ? Number(balanceResult.balance || 0) : 0;
-                const equity = balance * 1.025;
-                const margin = balance * 0.05;
-                const freeMargin = balance - margin;
+                const totalPnL = Number(this.portfolio.totalPnL || 0);
+                const equity = balance + totalPnL;
+                const margin = this.calculateUsedMargin();
+                const freeMargin = equity - margin;
+                const marginLevel = margin > 0 ? (equity / margin) * 100 : 0;
                 return {
                     balance,
                     equity,
                     margin,
                     freeMargin,
-                    marginLevel: 0,
-                    totalPnL: this.portfolio.totalPnL || 0
+                    marginLevel,
+                    totalPnL
                 };
             } catch (_) {
                 return {
@@ -1313,6 +1306,24 @@ class TradingPlatform {
         if (equityEl) {
             equityEl.textContent = `$${this.portfolio.equity.toLocaleString()}`;
         }
+
+        const tradingBalanceEl = document.getElementById('account-balance');
+        if (tradingBalanceEl) tradingBalanceEl.textContent = this.formatCurrency(this.portfolio.balance);
+
+        const walletBalanceEl = document.getElementById('wallet-balance');
+        const walletBalance = Number.isFinite(Number(this._externalWalletBalance))
+            ? Number(this._externalWalletBalance)
+            : this.portfolio.balance;
+        if (walletBalanceEl) walletBalanceEl.textContent = this.formatCurrency(walletBalance);
+
+        const accountEquityEl = document.getElementById('account-equity');
+        if (accountEquityEl) accountEquityEl.textContent = this.formatCurrency(this.portfolio.equity);
+
+        const accountMarginEl = document.getElementById('account-margin');
+        if (accountMarginEl) accountMarginEl.textContent = this.formatCurrency(this.portfolio.margin);
+
+        const freeMarginEl = document.getElementById('free-margin');
+        if (freeMarginEl) freeMarginEl.textContent = this.formatCurrency(this.portfolio.freeMargin);
     }
     
     // Format currency values
@@ -1419,17 +1430,13 @@ class TradingPlatform {
             const currentPrice = this.getCurrentPrice(position.symbol) + (Math.random() - 0.5) * 0.01;
             position.currentPrice = currentPrice;
             
-            const priceDiff = position.type === 'buy' 
-                ? currentPrice - position.openPrice
-                : position.openPrice - currentPrice;
-            
-            position.pnl = priceDiff * position.volume * 100000; // Assuming standard lot size
+            position.pnl = this.computePositionPnl(position);
             totalPnL += Number(position.pnl || 0);
         });
         this.portfolio.totalPnL = Number.isFinite(totalPnL) ? totalPnL : 0;
         
         this.updatePositionsTable();
-        this.updatePortfolioDisplay();
+        this.updateAccountInfo();
     }
 
     startBalanceListener() {
@@ -1442,26 +1449,234 @@ class TradingPlatform {
 
         this._balanceUnsubscribe = dbService.subscribeToUserTradingBalance(user.uid, (balance) => {
             const nextBalance = Number(balance || 0);
-            const equity = nextBalance * 1.025;
-            const margin = nextBalance * 0.05;
-            const freeMargin = nextBalance - margin;
             this.portfolio.balance = nextBalance;
-            this.portfolio.equity = equity;
-            this.portfolio.margin = margin;
-            this.portfolio.freeMargin = freeMargin;
-            this.updatePortfolioDisplay();
-
-            const tradingBalanceEl = document.getElementById('account-balance');
-            if (tradingBalanceEl) tradingBalanceEl.textContent = this.formatCurrency(nextBalance);
-            const walletBalanceEl = document.getElementById('wallet-balance');
-            if (walletBalanceEl) walletBalanceEl.textContent = this.formatCurrency(nextBalance);
-            const equityEl = document.getElementById('account-equity');
-            if (equityEl) equityEl.textContent = this.formatCurrency(equity);
-            const marginEl = document.getElementById('account-margin');
-            if (marginEl) marginEl.textContent = this.formatCurrency(margin);
-            const freeMarginEl = document.getElementById('free-margin');
-            if (freeMarginEl) freeMarginEl.textContent = this.formatCurrency(freeMargin);
+            this.updateAccountInfo();
         });
+    }
+
+    startTradingProfileListener() {
+        const authManager = window.authManager;
+        const user = authManager?.getCurrentUser?.() || authManager?.currentUser || null;
+        const dbService = window.FirebaseDatabaseService;
+        if (!user?.uid || !dbService?.subscribeToUserTradingProfile) return;
+
+        if (this._tradingProfileUnsubscribe) return;
+
+        this._tradingProfileUnsubscribe = dbService.subscribeToUserTradingProfile(user.uid, (profile) => {
+            const currency = String(profile?.currency || 'USD').toUpperCase();
+            this._accountCurrency = currency || 'USD';
+            const lev = this.parseLeverage(profile?.leverage);
+            this._accountLeverage = Number.isFinite(lev) && lev > 0 ? lev : null;
+            this.updateAccountInfo();
+        });
+    }
+
+    parseLeverage(value) {
+        if (typeof value === 'number' && Number.isFinite(value) && value > 0) return value;
+        const raw = String(value || '').trim();
+        if (!raw) return 100;
+        const match = raw.match(/(\d+)\s*:\s*(\d+)/);
+        if (match) {
+            const rhs = Number(match[2]);
+            return Number.isFinite(rhs) && rhs > 0 ? rhs : 100;
+        }
+        const n = Number(raw.replace(/[^\d.]/g, ''));
+        return Number.isFinite(n) && n > 0 ? n : 100;
+    }
+
+    getEffectiveLeverage() {
+        try {
+            if (Number.isFinite(Number(this._accountLeverage)) && Number(this._accountLeverage) > 0) {
+                return Number(this._accountLeverage);
+            }
+            const profile = this.userProfileService?.getCurrentUserProfile?.() || null;
+            const leverageRaw =
+                profile?.trading?.leverage ??
+                profile?.leverage ??
+                profile?.defaultLeverage ??
+                null;
+            return this.parseLeverage(leverageRaw);
+        } catch (e) {
+            return 100;
+        }
+    }
+
+    getAccountCurrency() {
+        const cur = String(this._accountCurrency || 'USD').toUpperCase();
+        return cur || 'USD';
+    }
+
+    getFxRate(fromCurrency, toCurrency) {
+        const from = String(fromCurrency || '').toUpperCase();
+        const to = String(toCurrency || '').toUpperCase();
+        if (!from || !to) return 1;
+        if (from === to) return 1;
+
+        const directSymbol = `${from}/${to}`;
+        const direct = Number(this.getCurrentPrice(directSymbol));
+        if (Number.isFinite(direct) && direct > 0) return direct;
+
+        const inverseSymbol = `${to}/${from}`;
+        const inv = Number(this.getCurrentPrice(inverseSymbol));
+        if (Number.isFinite(inv) && inv > 0) return 1 / inv;
+
+        if (from !== 'USD' && to !== 'USD') {
+            const fromToUsd = this.getFxRate(from, 'USD');
+            const usdToTo = this.getFxRate('USD', to);
+            const cross = fromToUsd * usdToTo;
+            if (Number.isFinite(cross) && cross > 0) return cross;
+        }
+
+        return 1;
+    }
+
+    getSymbolSpec(symbol) {
+        const s = String(symbol || '').trim().toUpperCase();
+        const result = {
+            symbol: s,
+            type: 'unknown',
+            base: null,
+            quote: null,
+            contractSize: 1,
+            maxLeverage: null
+        };
+
+        const fxMatch = s.match(/^([A-Z0-9]{2,10})\/([A-Z0-9]{2,10})$/);
+        if (fxMatch) {
+            const base = fxMatch[1];
+            const quote = fxMatch[2];
+            result.base = base;
+            result.quote = quote;
+
+            if (base === 'XAU' || base === 'XAG' || quote === 'XAU' || quote === 'XAG') {
+                result.type = 'metals';
+                result.contractSize = base === 'XAU' || quote === 'XAU' ? 100 : 5000;
+                result.maxLeverage = 50;
+                return result;
+            }
+
+            const cryptoBases = new Set(['BTC', 'ETH', 'SOL', 'XRP', 'BNB', 'ADA', 'DOGE', 'DOT', 'LINK', 'LTC', 'AVAX', 'MATIC']);
+            if (cryptoBases.has(base)) {
+                result.type = 'crypto';
+                result.contractSize = 1;
+                result.maxLeverage = 20;
+                return result;
+            }
+
+            if (/^[A-Z]{3}$/.test(base) && /^[A-Z]{3}$/.test(quote)) {
+                result.type = 'forex';
+                result.contractSize = 100000;
+                result.maxLeverage = 100;
+                return result;
+            }
+        }
+
+        const indexSymbols = new Set(['US100', 'NAS100', 'GER40', 'UK100', 'SPX500', 'DJI30']);
+        if (indexSymbols.has(s)) {
+            result.type = 'index';
+            result.contractSize = 1;
+            result.maxLeverage = 50;
+            return result;
+        }
+
+        if (/^[A-Z]{1,5}$/.test(s)) {
+            result.type = 'stock';
+            result.contractSize = 1;
+            result.maxLeverage = 5;
+            return result;
+        }
+
+        return result;
+    }
+
+    getContractSize(symbol) {
+        return Number(this.getSymbolSpec(symbol)?.contractSize || 1);
+    }
+
+    getInstrumentLeverage(symbol) {
+        const accountLev = this.getEffectiveLeverage();
+        const spec = this.getSymbolSpec(symbol);
+        const maxLev = Number(spec?.maxLeverage || 0);
+        if (Number.isFinite(maxLev) && maxLev > 0) return Math.min(accountLev, maxLev);
+        return accountLev;
+    }
+
+    computePositionPnl(position) {
+        const symbol = String(position?.symbol || '');
+        const spec = this.getSymbolSpec(symbol);
+        const volume = Number(position?.volume || 0);
+        const openPrice = Number(position?.openPrice ?? 0);
+        const currentPrice = Number(position?.currentPrice ?? 0);
+        if (!(volume > 0) || !(openPrice > 0) || !(currentPrice > 0)) return 0;
+
+        const side = String(position?.type || '').toLowerCase();
+        const dir = side === 'sell' ? -1 : 1;
+        const priceDiff = (currentPrice - openPrice) * dir;
+
+        const contractSize = Number(spec?.contractSize || 1);
+        const pnlInQuote = priceDiff * volume * contractSize;
+
+        const accountCcy = this.getAccountCurrency();
+        const quoteCcy = spec?.quote || accountCcy;
+        const quoteToAccount = this.getFxRate(quoteCcy, accountCcy);
+        const pnl = pnlInQuote * quoteToAccount;
+
+        return Number.isFinite(pnl) ? pnl : 0;
+    }
+
+    computePositionMargin(position) {
+        const symbol = String(position?.symbol || '');
+        const spec = this.getSymbolSpec(symbol);
+        const volume = Number(position?.volume || 0);
+        const currentPrice = Number(position?.currentPrice ?? position?.openPrice ?? 0);
+        if (!(volume > 0) || !(currentPrice > 0)) return 0;
+
+        const accountCcy = this.getAccountCurrency();
+        const leverage = this.getInstrumentLeverage(symbol);
+        if (!(leverage > 0)) return 0;
+
+        let notionalAccount = 0;
+        if (spec.type === 'forex') {
+            const baseToAccount = this.getFxRate(spec.base, accountCcy);
+            notionalAccount = volume * spec.contractSize * baseToAccount;
+        } else if (spec.type === 'metals' || spec.type === 'crypto' || spec.type === 'index' || spec.type === 'stock') {
+            notionalAccount = volume * spec.contractSize * currentPrice;
+        } else {
+            notionalAccount = volume * (Number(spec?.contractSize || 1)) * currentPrice;
+        }
+
+        const margin = Math.abs(notionalAccount) / leverage;
+        return Number.isFinite(margin) ? margin : 0;
+    }
+
+    calculateUsedMargin() {
+        let used = 0;
+        for (const position of this.positions) {
+            used += this.computePositionMargin(position);
+        }
+        return Number.isFinite(used) ? used : 0;
+    }
+
+    recalculateAccountMetrics() {
+        const balance = Number(this.portfolio.balance || 0);
+        const totalPnL = Number(this.portfolio.totalPnL || 0);
+        const equity = balance + totalPnL;
+        const margin = this.calculateUsedMargin();
+        const freeMargin = equity - margin;
+        const marginLevel = margin > 0 ? (equity / margin) * 100 : 0;
+
+        this.portfolio.equity = Number.isFinite(equity) ? equity : balance;
+        this.portfolio.margin = Number.isFinite(margin) ? margin : 0;
+        this.portfolio.freeMargin = Number.isFinite(freeMargin) ? freeMargin : (Number.isFinite(equity) ? equity : balance);
+        this.portfolio.marginLevel = Number.isFinite(marginLevel) ? marginLevel : 0;
+    }
+
+    setExternalAccountBalances({ tradingBalance, walletBalance } = {}) {
+        const nextTrading = Number(tradingBalance);
+        if (Number.isFinite(nextTrading)) this.portfolio.balance = nextTrading;
+        const nextWallet = Number(walletBalance);
+        this._externalWalletBalance = Number.isFinite(nextWallet) ? nextWallet : this._externalWalletBalance;
+        this.updateAccountInfo();
     }
 
     initSymbolControls() {
@@ -2517,14 +2732,10 @@ class TradingPlatform {
         let exitPrice = 0;
         if (position) {
             const openPrice = Number(position.openPrice || 0);
-            const volume = Number(position.volume || 0);
             const tickPrice = this.getCurrentPrice(position.symbol) + (Math.random() - 0.5) * 0.01;
             const currentPrice = Number.isFinite(Number(position.currentPrice)) ? Number(position.currentPrice) : tickPrice;
-            const priceDiff = position.type === 'buy'
-                ? currentPrice - openPrice
-                : openPrice - currentPrice;
-            const computed = priceDiff * volume * 100000;
-            pnl = Number.isFinite(computed) ? computed : Number(position.pnl || 0);
+            position.currentPrice = currentPrice;
+            pnl = this.computePositionPnl(position);
             exitPrice = currentPrice;
         }
         try {
@@ -2572,15 +2783,11 @@ class TradingPlatform {
         const updates = [];
         const pnl = this.positions.reduce((sum, position) => {
             const openPrice = Number(position?.openPrice || 0);
-            const volume = Number(position?.volume || 0);
             const tickPrice = this.getCurrentPrice(position?.symbol) + (Math.random() - 0.5) * 0.01;
             const currentPrice = Number.isFinite(Number(position?.currentPrice)) ? Number(position.currentPrice) : tickPrice;
-            const priceDiff = position?.type === 'buy'
-                ? currentPrice - openPrice
-                : openPrice - currentPrice;
-            const computed = priceDiff * volume * 100000;
-            const safe = Number.isFinite(computed) ? computed : Number(position?.pnl || 0);
-            const pnlValue = Number.isFinite(safe) ? safe : 0;
+            position.currentPrice = currentPrice;
+            const computedPnl = this.computePositionPnl(position);
+            const pnlValue = Number.isFinite(computedPnl) ? computedPnl : 0;
             updates.push({ position, pnl: pnlValue, exitPrice: currentPrice });
             return sum + pnlValue;
         }, 0);
@@ -2630,6 +2837,7 @@ class TradingPlatform {
     }
 
     updateAccountInfo() {
+        this.recalculateAccountMetrics();
         this.updatePortfolioDisplay();
         this.updatePortfolioSummary();
     }
@@ -2665,11 +2873,7 @@ class TradingPlatform {
             const currentPrice = this.getCurrentPrice(position.symbol) + (Math.random() - 0.5) * 0.01;
             position.currentPrice = currentPrice;
             
-            const priceDiff = position.type === 'buy' 
-                ? currentPrice - position.openPrice
-                : position.openPrice - currentPrice;
-            
-            position.pnl = priceDiff * position.volume * 100000; // Assuming standard lot size
+            position.pnl = this.computePositionPnl(position);
             totalPnL += Number(position.pnl || 0);
         });
         this.portfolio.totalPnL = Number.isFinite(totalPnL) ? totalPnL : 0;
