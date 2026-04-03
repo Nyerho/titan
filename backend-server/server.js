@@ -797,16 +797,97 @@ app.post('/api/withdrawal-requests/:id/send-approved-email', verifyAdminToken, a
       return res.status(400).json({ error: 'Withdrawal is not approved' });
     }
 
+    const amount = Number(data.amount || 0);
+    const userId = data.userId;
+    if (!userId) return res.status(400).json({ error: 'User id not found' });
+    if (!Number.isFinite(amount) || amount <= 0) return res.status(400).json({ error: 'Invalid amount' });
+
+    const requestId = data.requestId || id;
+    const method = data.details?.method || data.method || '—';
+
+    if (!data.fundsDeducted) {
+      try {
+        await db.runTransaction(async (tx) => {
+          const requestRef = db.collection('withdrawal-requests').doc(id);
+          const latestRequestSnap = await tx.get(requestRef);
+          const latest = latestRequestSnap.exists ? (latestRequestSnap.data() || {}) : {};
+          if (latest.fundsDeducted) return;
+
+          const userRef = db.collection('users').doc(userId);
+          const userSnap = await tx.get(userRef);
+          const userData = userSnap.exists ? (userSnap.data() || {}) : {};
+
+          const deposits = Number(userData.totalDeposits ?? NaN);
+          const profits = Number(userData.totalProfits ?? NaN);
+          const withdrawals = Number(userData.totalWithdrawals ?? NaN);
+          const hasTotals = [deposits, profits, withdrawals].every((n) => Number.isFinite(n));
+          const totalsUnified = hasTotals ? Math.max(0, deposits + profits - withdrawals) : NaN;
+
+          const walletCandidate = Number(userData.walletBalance ?? NaN);
+          const balanceCandidate = Number(userData.balance ?? NaN);
+          const tradingCandidate = Number(userData.accountBalance ?? NaN);
+          const fieldsUnified = Math.max(
+            0,
+            ...[walletCandidate, balanceCandidate, tradingCandidate].filter((n) => Number.isFinite(n))
+          );
+          const currentUnified = Number.isFinite(totalsUnified) ? totalsUnified : fieldsUnified;
+
+          if (!Number.isFinite(currentUnified) || currentUnified < amount) {
+            throw new Error('Insufficient balance to deduct withdrawal');
+          }
+
+          const nextUnified = Math.max(0, currentUnified - amount);
+
+          const nextTotalWithdrawals = Number.isFinite(withdrawals) ? (withdrawals + amount) : amount;
+
+          tx.set(
+            userRef,
+            {
+              walletBalance: nextUnified,
+              balance: nextUnified,
+              accountBalance: nextUnified,
+              totalWithdrawals: nextTotalWithdrawals,
+              balanceUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              tradingBalanceUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            },
+            { merge: true }
+          );
+
+          tx.set(
+            requestRef,
+            {
+              fundsDeducted: true,
+              fundsDeductedAt: admin.firestore.FieldValue.serverTimestamp()
+            },
+            { merge: true }
+          );
+        });
+
+        try {
+          await db.collection('users').doc(userId).collection('transactions').add({
+            type: 'withdrawal',
+            amount,
+            status: 'approved',
+            method: String(method || '').toLowerCase() || null,
+            details: data.details || {},
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            requestId,
+            withdrawalRequestId: id
+          });
+        } catch (e) {}
+      } catch (e) {
+        console.error('Failed to deduct withdrawal funds:', e);
+        return res.status(500).json({ error: e?.message || 'Failed to deduct withdrawal funds' });
+      }
+    }
+
     if (data.emailApprovedSent) {
       return res.json({ success: true, skipped: true });
     }
 
     const email = data.userEmail;
     if (!email) return res.status(400).json({ error: 'User email not found' });
-
-    const amount = Number(data.amount || 0);
-    const requestId = data.requestId || id;
-    const method = data.details?.method || data.method || '—';
 
     const html = buildEmailHtml({
       req,
