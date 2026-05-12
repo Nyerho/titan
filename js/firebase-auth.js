@@ -66,8 +66,10 @@ class FirebaseAuthService {
     const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
     if (storedBaseUrl) return storedBaseUrl;
     const origin = String(window.location.origin || '').trim();
-    if (origin.includes('onrender.com')) return origin;
-    return isLocal ? 'http://localhost:3001' : 'https://titantrades.onrender.com';
+    const isHttpOrigin = origin.startsWith('http://') || origin.startsWith('https://');
+    if (isLocal) return 'http://localhost:3001';
+    if (isHttpOrigin && origin !== 'null') return origin;
+    return 'https://titantrades.org';
   }
 
   async sendVerificationEmailViaBackend(user) {
@@ -548,7 +550,8 @@ class FirebaseAuthService {
         window.location.protocol === 'file:' ||
         window.location.href.includes('localhost');
       const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
-      const apiBaseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : (baseUrl.includes('onrender.com') ? baseUrl : 'https://titantrades.onrender.com'));
+      const isHttpOrigin = baseUrl.startsWith('http://') || baseUrl.startsWith('https://');
+      const apiBaseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : (isHttpOrigin ? baseUrl : 'https://titantrades.org'));
 
       const response = await fetch(`${apiBaseUrl}/api/auth/password-reset`, {
         method: 'POST',

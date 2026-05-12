@@ -48,7 +48,11 @@ class ForgotPasswordManager {
             window.location.href.includes('localhost');
         const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
         if (storedBaseUrl) return storedBaseUrl;
-        return isLocal ? 'http://localhost:3001' : 'https://titantrades.onrender.com';
+        if (isLocal) return 'http://localhost:3001';
+        const origin = String(window.location.origin || '').trim();
+        const isHttpOrigin = origin.startsWith('http://') || origin.startsWith('https://');
+        if (isHttpOrigin && origin !== 'null') return origin;
+        return 'https://titantrades.org';
     }
 
     async sendResetEmailViaBackend({ email, continueUrl }) {

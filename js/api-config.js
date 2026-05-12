@@ -200,8 +200,9 @@ export const adminApiConfig = {
         if (storedBaseUrl) return storedBaseUrl;
         if (isLocal) return 'http://localhost:3001';
         const origin = String(window.location.origin || '').trim();
-        if (origin.includes('onrender.com')) return origin;
-        return 'https://titantrades.onrender.com';
+        const isHttpOrigin = origin.startsWith('http://') || origin.startsWith('https://');
+        if (isHttpOrigin && origin !== 'null') return origin;
+        return 'https://titantrades.org';
     })(),
     endpoints: {
         deleteUser: '/api/users',

@@ -328,7 +328,8 @@ class ProfileManager {
                         window.location.protocol === 'file:' ||
                         window.location.href.includes('localhost');
                     const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
-                    const apiBaseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : (baseOrigin.includes('onrender.com') ? baseOrigin : 'https://titantrades.onrender.com'));
+                    const isHttpOrigin = baseOrigin.startsWith('http://') || baseOrigin.startsWith('https://');
+                    const apiBaseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : (isHttpOrigin ? baseOrigin : 'https://titantrades.org'));
                     const token = await currentUser.getIdToken(true);
 
                     const resp = await fetch(`${apiBaseUrl}/api/auth/email-verification`, {
