@@ -1,7 +1,7 @@
 import FirebaseAuthService from './firebase-auth.js';
 import FirebaseDatabaseService from './firebase-database.js';
 import { db } from './firebase-config.js';
-import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { doc, getDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { getIdTokenResult } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 class AuthManager {
@@ -12,6 +12,8 @@ class AuthManager {
     this._isAdmin = false;
     this._verificationPollInterval = null;
     this._verificationPollStartedAt = 0;
+    this._userProfileUnsubscribe = null;
+    this._userProfile = null;
     this.initializeFirebaseAuth();
   }
 
@@ -103,7 +105,38 @@ class AuthManager {
     const user = this.currentUser;
     if (!user) return false;
     try { await user.reload(); } catch (e) {}
-    return !!user.emailVerified || !!user.phoneNumber;
+    if (!!user.emailVerified || !!user.phoneNumber) return true;
+    const profile = this._userProfile;
+    if (profile && (profile.manualVerified || profile.verificationStatus === 'verified')) return true;
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      const data = snap.exists() ? (snap.data() || {}) : {};
+      return !!data.manualVerified || data.verificationStatus === 'verified';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  startUserProfileListener(uid) {
+    if (!uid) return;
+    if (this._userProfileUnsubscribe) return;
+    const userRef = doc(db, 'users', uid);
+    this._userProfileUnsubscribe = onSnapshot(userRef, (snap) => {
+      if (!snap.exists()) {
+        this._userProfile = null;
+        return;
+      }
+      this._userProfile = snap.data() || null;
+      this.ensureVerificationBanner();
+    });
+  }
+
+  stopUserProfileListener() {
+    if (this._userProfileUnsubscribe) {
+      try { this._userProfileUnsubscribe(); } catch (_) {}
+    }
+    this._userProfileUnsubscribe = null;
+    this._userProfile = null;
   }
 
   ensureVerificationBanner() {
@@ -144,7 +177,11 @@ class AuthManager {
         return;
       }
 
-      const verified = !!this.currentUser.emailVerified || !!this.currentUser.phoneNumber;
+      const verified =
+        !!this.currentUser.emailVerified ||
+        !!this.currentUser.phoneNumber ||
+        !!this._userProfile?.manualVerified ||
+        this._userProfile?.verificationStatus === 'verified';
       if (verified) {
         removeUi();
         return;
@@ -169,7 +206,11 @@ class AuthManager {
           }
 
           try { await user.reload(); } catch (_) {}
-          const verifiedNow = !!user.emailVerified || !!user.phoneNumber;
+          const verifiedNow =
+            !!user.emailVerified ||
+            !!user.phoneNumber ||
+            !!this._userProfile?.manualVerified ||
+            this._userProfile?.verificationStatus === 'verified';
           if (verifiedNow) removeUi();
         }, 5000);
       };
@@ -457,6 +498,11 @@ class AuthManager {
         this.isInitialized = true; // Set initialization flag
         this.updateUI();
         this.handleEmailVerificationActionLink().catch(() => {});
+        if (user?.uid) {
+          this.startUserProfileListener(user.uid);
+        } else {
+          this.stopUserProfileListener();
+        }
         this.ensureVerificationBanner();
         console.log('AuthManager: Firebase auth state updated, user:', user ? user.email : 'No user');
         if (user) {

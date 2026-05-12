@@ -75,7 +75,7 @@ class FundingManager {
     }
 
     async notifyDepositReceived({ amount, currency, address, depositId }) {
-        const user = auth?.currentUser;
+        const user = window.authManager?.getCurrentUser?.() || auth?.currentUser;
         if (!user) {
             throw new Error('User not authenticated');
         }

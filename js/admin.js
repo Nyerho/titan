@@ -302,6 +302,7 @@ class EnhancedAdminDashboard {
 
         // User management events
         this.setupUserManagementEvents();
+        this.setupVerificationEvents();
         
         // Trading management events
         this.setupTradingManagementEvents();
@@ -320,6 +321,200 @@ class EnhancedAdminDashboard {
 
         // Funding settings events
         this.setupFundingSettingsEvents();
+    }
+
+    setupVerificationEvents() {
+        const refreshBtn = document.getElementById('refreshVerificationRequestsBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => this.loadVerificationRequests());
+        }
+    }
+
+    async getAdminAuthToken() {
+        try {
+            if (this.currentUser && typeof this.currentUser.getIdToken === 'function') {
+                return await this.currentUser.getIdToken(true);
+            }
+        } catch (e) {
+            console.warn('Failed to get admin auth token', e);
+        }
+
+        return localStorage.getItem('adminToken') || localStorage.getItem('idToken') || null;
+    }
+
+    renderVerificationRequestsTable(requests = []) {
+        const tableBody = document.getElementById('verificationRequestsTableBody');
+        if (!tableBody) return;
+
+        if (!Array.isArray(requests) || requests.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No pending verification requests</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = requests.map((request) => {
+            const uid = encodeURIComponent(String(request.uid || ''));
+            const email = this.escapeHtml(request.email || 'N/A');
+            const name = this.escapeHtml(request.displayName || 'N/A');
+            const joined = this.escapeHtml(this.formatVerificationRequestDate(request.createdAt));
+            const lastSentSource = request.verificationEmailSentAt || request.verificationEmailRequestedAt;
+            const lastSent = this.escapeHtml(this.formatVerificationRequestDate(lastSentSource));
+            const errorText = this.escapeHtml(request.verificationEmailLastError || 'None');
+
+            return `
+                <tr>
+                    <td>${email}</td>
+                    <td>${name}</td>
+                    <td>${joined}</td>
+                    <td>${lastSent}</td>
+                    <td class="text-break" style="max-width: 280px;">${errorText}</td>
+                    <td>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-success btn-sm" onclick="adminDashboard.approveVerificationRequest(decodeURIComponent('${uid}'))">
+                                <i class="fas fa-check me-1"></i>Approve
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="adminDashboard.sendVerificationEmailRequest(decodeURIComponent('${uid}'))">
+                                <i class="fas fa-envelope me-1"></i>Resend Email
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    formatVerificationRequestDate(value) {
+        if (!value) return 'N/A';
+
+        try {
+            if (typeof value.toDate === 'function') {
+                return value.toDate().toLocaleString();
+            }
+        } catch (e) {}
+
+        const parsed = new Date(value);
+        if (!Number.isNaN(parsed.getTime())) {
+            return parsed.toLocaleString();
+        }
+
+        return 'N/A';
+    }
+
+    async loadVerificationRequests() {
+        const tableBody = document.getElementById('verificationRequestsTableBody');
+        if (!tableBody) return;
+
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-4">
+                    <div class="text-muted">
+                        <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                        <p>Loading verification requests...</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        try {
+            const token = await this.getAdminAuthToken();
+            if (!token) {
+                throw new Error('You must be logged in as an admin to load verification requests.');
+            }
+
+            const response = await fetch(`${adminApiConfig.baseUrl}/api/admin/verification-requests`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data?.error || response.statusText || 'Failed to load verification requests');
+            }
+
+            this.renderVerificationRequestsTable(data?.requests || []);
+        } catch (error) {
+            console.error('Failed to load verification requests:', error);
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-danger">
+                        Failed to load verification requests
+                    </td>
+                </tr>
+            `;
+            this.showNotification(`Failed to load verification requests: ${error.message}`, 'error');
+        }
+    }
+
+    async approveVerificationRequest(userId) {
+        if (!userId) return;
+        if (!confirm('Approve this user verification manually?')) {
+            return;
+        }
+
+        try {
+            const token = await this.getAdminAuthToken();
+            if (!token) {
+                throw new Error('You must be logged in as an admin to approve verification requests.');
+            }
+
+            const response = await fetch(`${adminApiConfig.baseUrl}/api/admin/users/${encodeURIComponent(userId)}/approve-verification`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data?.error || response.statusText || 'Failed to approve verification');
+            }
+
+            this.showNotification('Verification approved successfully', 'success');
+            await this.loadVerificationRequests();
+            if (this.currentPage === 'users') {
+                this.loadUsersSection();
+            }
+        } catch (error) {
+            console.error('Failed to approve verification:', error);
+            this.showNotification(`Failed to approve verification: ${error.message}`, 'error');
+        }
+    }
+
+    async sendVerificationEmailRequest(userId) {
+        if (!userId) return;
+
+        try {
+            const token = await this.getAdminAuthToken();
+            if (!token) {
+                throw new Error('You must be logged in as an admin to resend verification emails.');
+            }
+
+            const continueUrl = new URL('dashboard.html', window.location.href).toString();
+            const response = await fetch(`${adminApiConfig.baseUrl}/api/admin/users/${encodeURIComponent(userId)}/send-verification-email`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ continueUrl })
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data?.error || response.statusText || 'Failed to send verification email');
+            }
+
+            if (data?.throttled) {
+                this.showNotification('Verification email recently sent. Please wait a minute and try again.', 'warning');
+            } else {
+                this.showNotification('Verification email sent successfully', 'success');
+            }
+
+            await this.loadVerificationRequests();
+        } catch (error) {
+            console.error('Failed to send verification email:', error);
+            this.showNotification(`Failed to send verification email: ${error.message}`, 'error');
+        }
     }
 
     setupFundingSettingsEvents() {
@@ -2965,6 +3160,9 @@ class EnhancedAdminDashboard {
                 this.loadUsersSection();
                 this.updateUserStats();
                 break;
+            case 'verifications':
+                this.loadVerificationRequests();
+                break;
             case 'ai-chat':
                 this.initAiChatManagement();
                 break;
@@ -3035,6 +3233,9 @@ class EnhancedAdminDashboard {
                 console.log('Loading users section...'); // Debug log
                 this.loadUsersSection();
                 this.updateUserStats();
+                break;
+            case 'verifications':
+                this.loadVerificationRequests();
                 break;
             case 'ai-chat':
                 this.initAiChatManagement();

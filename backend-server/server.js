@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const dotenv = require('dotenv');
 const nodemailer = require('nodemailer');
+const https = require('https');
 
 // Explicitly load ../.env (optional; we’ll still prefer the file)
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
@@ -215,6 +216,51 @@ function parseFrom(value) {
   return { name: 'TitanTrades', email: raw || 'noreply@titantrades.org' };
 }
 
+function brevoRequest({ apiKey, payload }) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify(payload);
+    const req = https.request(
+      'https://api.brevo.com/v3/smtp/email',
+      {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          'api-key': apiKey,
+          'content-length': Buffer.byteLength(body)
+        }
+      },
+      (res) => {
+        let raw = '';
+        res.on('data', (chunk) => {
+          raw += chunk;
+        });
+        res.on('end', () => {
+          let data = null;
+          try {
+            data = raw ? JSON.parse(raw) : null;
+          } catch (e) {}
+          if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+            resolve(data);
+            return;
+          }
+          const err = new Error(String(data?.message || data?.error || res.statusMessage || 'Brevo API send failed'));
+          err.code = 'email/brevo-failed';
+          err.status = res.statusCode || 500;
+          reject(err);
+        });
+      }
+    );
+    req.on('error', (e) => {
+      const err = new Error(String(e?.message || 'Brevo API send failed'));
+      err.code = 'email/brevo-failed';
+      reject(err);
+    });
+    req.write(body);
+    req.end();
+  });
+}
+
 async function sendBrevoEmail({ to, subject, html }) {
   const apiKey = process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY || '';
   if (!apiKey) {
@@ -233,35 +279,33 @@ async function sendBrevoEmail({ to, subject, html }) {
     htmlContent: String(html || '')
   };
 
-  if (typeof fetch !== 'function') {
-    const err = new Error('Global fetch is not available in this Node runtime');
-    err.code = 'email/fetch-unavailable';
-    throw err;
+  if (typeof fetch === 'function') {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'api-key': apiKey
+      },
+      body: JSON.stringify(payload)
+    });
+
+    let data = null;
+    try {
+      data = await res.json();
+    } catch (e) {}
+
+    if (!res.ok) {
+      const err = new Error(String(data?.message || data?.error || res.statusText || 'Brevo API send failed'));
+      err.code = 'email/brevo-failed';
+      err.status = res.status;
+      throw err;
+    }
+
+    return data;
   }
 
-  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      accept: 'application/json',
-      'content-type': 'application/json',
-      'api-key': apiKey
-    },
-    body: JSON.stringify(payload)
-  });
-
-  let data = null;
-  try {
-    data = await res.json();
-  } catch (e) {}
-
-  if (!res.ok) {
-    const err = new Error(String(data?.message || data?.error || res.statusText || 'Brevo API send failed'));
-    err.code = 'email/brevo-failed';
-    err.status = res.status;
-    throw err;
-  }
-
-  return data;
+  return brevoRequest({ apiKey, payload });
 }
 
 async function sendBrandEmail({ to, subject, html }) {
@@ -449,6 +493,17 @@ app.post('/api/auth/email-verification', verifyUserToken, async (req, res) => {
       return res.json({ success: true, emailSent: false, throttled: true });
     }
 
+    try {
+      await db.collection('users').doc(req.user.uid).set(
+        {
+          verificationEmailRequestedAt: admin.firestore.FieldValue.serverTimestamp(),
+          verificationEmailLastError: admin.firestore.FieldValue.delete(),
+          verificationEmailLastErrorAt: admin.firestore.FieldValue.delete()
+        },
+        { merge: true }
+      );
+    } catch (e) {}
+
     let link = '';
     try {
       link = await auth.generateEmailVerificationLink(email, {
@@ -493,10 +548,33 @@ app.post('/api/auth/email-verification', verifyUserToken, async (req, res) => {
       html
     });
 
+    try {
+      await db.collection('users').doc(req.user.uid).set(
+        {
+          verificationEmailSentAt: admin.firestore.FieldValue.serverTimestamp(),
+          verificationEmailLastError: admin.firestore.FieldValue.delete(),
+          verificationEmailLastErrorAt: admin.firestore.FieldValue.delete()
+        },
+        { merge: true }
+      );
+    } catch (e) {}
+
     markThrottled(emailVerificationThrottle, throttleKey);
     return res.json({ success: true, emailSent: true });
   } catch (error) {
     console.error('Email verification send error:', error);
+    try {
+      const uid = String(req.user?.uid || '').trim();
+      if (!uid) throw new Error('Missing uid');
+      const msg = String(error?.message || 'Failed to send verification email').slice(0, 500);
+      await db.collection('users').doc(uid).set(
+        {
+          verificationEmailLastError: msg,
+          verificationEmailLastErrorAt: admin.firestore.FieldValue.serverTimestamp()
+        },
+        { merge: true }
+      );
+    } catch (e) {}
     return res.status(500).json({ error: error?.message || 'Failed to send verification email' });
   }
 });
@@ -624,6 +702,151 @@ app.get('/api/users', verifyAdminToken, async (req, res) => {
   } catch (error) {
     console.error('Error listing users:', error);
     res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+function toIsoTimestamp(value) {
+  if (!value) return null;
+  try {
+    if (typeof value.toDate === 'function') return value.toDate().toISOString();
+  } catch (e) {}
+  try {
+    if (typeof value.toMillis === 'function') return new Date(value.toMillis()).toISOString();
+  } catch (e) {}
+  if (value instanceof Date) return value.toISOString();
+  const parsed = new Date(value);
+  if (!Number.isNaN(parsed.getTime())) return parsed.toISOString();
+  return null;
+}
+
+app.get('/api/admin/verification-requests', verifyAdminToken, async (req, res) => {
+  try {
+    const snap = await db.collection('users').where('verificationStatus', '==', 'pending').limit(500).get();
+    const requests = [];
+    snap.forEach((docSnap) => {
+      const data = docSnap.data() || {};
+      if (data.manualVerified) return;
+      requests.push({
+        uid: docSnap.id,
+        email: data.email || null,
+        displayName: data.displayName || null,
+        emailVerified: !!data.emailVerified,
+        phoneVerified: !!data.phoneVerified,
+        verificationStatus: data.verificationStatus || 'pending',
+        createdAt: toIsoTimestamp(data.createdAt),
+        verificationEmailRequestedAt: toIsoTimestamp(data.verificationEmailRequestedAt),
+        verificationEmailSentAt: toIsoTimestamp(data.verificationEmailSentAt),
+        verificationEmailLastError: data.verificationEmailLastError || null,
+        verificationEmailLastErrorAt: toIsoTimestamp(data.verificationEmailLastErrorAt)
+      });
+    });
+
+    requests.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+    return res.json({ requests });
+  } catch (error) {
+    console.error('Error fetching verification requests:', error);
+    return res.status(500).json({ error: 'Failed to fetch verification requests' });
+  }
+});
+
+app.post('/api/admin/users/:userId/approve-verification', verifyAdminToken, async (req, res) => {
+  try {
+    const userId = String(req.params?.userId || '').trim();
+    if (!userId) return res.status(400).json({ error: 'Missing user id' });
+
+    await db.collection('users').doc(userId).set(
+      {
+        manualVerified: true,
+        manualVerifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+        manualVerifiedBy: req.user.uid,
+        verificationStatus: 'verified'
+      },
+      { merge: true }
+    );
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Error approving verification:', error);
+    return res.status(500).json({ error: 'Failed to approve verification' });
+  }
+});
+
+const adminVerificationEmailThrottle = new Map();
+
+app.post('/api/admin/users/:userId/send-verification-email', verifyAdminToken, async (req, res) => {
+  try {
+    const userId = String(req.params?.userId || '').trim();
+    if (!userId) return res.status(400).json({ error: 'Missing user id' });
+
+    const userRecord = await auth.getUser(userId);
+    const email = String(userRecord.email || '').trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'User email not found' });
+    }
+
+    const continueUrlRaw = String(req.body?.continueUrl || '').trim();
+    const continueUrl = continueUrlRaw || `${getPublicBaseUrl(req)}/dashboard.html`;
+
+    const throttleKey = `${String(req.ip || '').trim()}|${userId}|${email}`;
+    if (isThrottled(adminVerificationEmailThrottle, throttleKey, 60 * 1000)) {
+      return res.json({ success: true, emailSent: false, throttled: true });
+    }
+
+    let link = await auth.generateEmailVerificationLink(email, {
+      url: continueUrl,
+      handleCodeInApp: false
+    });
+
+    let appLink = link;
+    try {
+      const generated = new URL(link);
+      const oobCode = generated.searchParams.get('oobCode');
+      const mode = generated.searchParams.get('mode') || 'verifyEmail';
+      if (oobCode) {
+        const direct = new URL(continueUrl);
+        direct.searchParams.set('mode', mode);
+        direct.searchParams.set('oobCode', oobCode);
+        const lang = generated.searchParams.get('lang');
+        if (lang) direct.searchParams.set('lang', lang);
+        appLink = direct.toString();
+      }
+    } catch (e) {}
+
+    const html = buildEmailHtml({
+      req,
+      title: 'Verify your email address',
+      intro: `Please confirm your email address to unlock deposits, withdrawals, and trading on TitanTrades.`,
+      rows: [
+        {
+          label: 'Verification link',
+          value: `<a href="${appLink}" style="color:#2563eb;font-weight:700;text-decoration:none;">Verify email</a>`
+        }
+      ],
+      outro: `If you did not create this account, you can ignore this email.`
+    });
+
+    await sendBrandEmail({
+      to: email,
+      subject: 'TitanTrades — Verify your email',
+      html
+    });
+
+    try {
+      await db.collection('users').doc(userId).set(
+        {
+          verificationEmailSentAt: admin.firestore.FieldValue.serverTimestamp(),
+          verificationEmailLastError: admin.firestore.FieldValue.delete(),
+          verificationEmailLastErrorAt: admin.firestore.FieldValue.delete()
+        },
+        { merge: true }
+      );
+    } catch (e) {}
+
+    markThrottled(adminVerificationEmailThrottle, throttleKey);
+    return res.json({ success: true, emailSent: true });
+  } catch (error) {
+    console.error('Admin email verification send error:', error);
+    return res.status(500).json({ error: error?.message || 'Failed to send verification email' });
   }
 });
 

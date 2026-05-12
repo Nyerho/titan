@@ -610,6 +610,9 @@ class FirebaseAuthService {
       emailVerified: user.emailVerified,
       phoneVerified: !!user.phoneNumber,
       verificationStatus: isVerified ? 'verified' : 'pending',
+      manualVerified: false,
+      manualVerifiedAt: null,
+      manualVerifiedBy: null,
       role: userData.role || 'user',
       balance: 0,
       walletBalance: 0,
@@ -621,6 +624,8 @@ class FirebaseAuthService {
       lastLogin: serverTimestamp(),
       balanceUpdatedAt: serverTimestamp(),
       tradingBalanceUpdatedAt: serverTimestamp(),
+      verificationEmailRequestedAt: serverTimestamp(),
+      verificationEmailSentAt: null,
       profile: {
         firstName: userData.firstName || '',
         lastName: userData.lastName || '',
@@ -675,7 +680,7 @@ class FirebaseAuthService {
       const data = userDoc.data() || {};
       const emailVerified = !!user.emailVerified;
       const phoneVerified = !!user.phoneNumber;
-      const nextVerificationStatus = (emailVerified || phoneVerified) ? 'verified' : 'pending';
+      const nextVerificationStatus = (emailVerified || phoneVerified || !!data.manualVerified) ? 'verified' : 'pending';
 
       const updates = {};
       if (data.emailVerified !== emailVerified) updates.emailVerified = emailVerified;
