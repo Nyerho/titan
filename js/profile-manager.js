@@ -321,15 +321,17 @@ class ProfileManager {
                     const continueBase = isProdDomain ? baseOrigin : 'https://titantrades.org';
                     const continueUrl = `${continueBase}/dashboard.html`;
 
-                    const isLocal = window.location.hostname === 'localhost' ||
-                        window.location.hostname === '127.0.0.1' ||
-                        window.location.port === '5500' ||
-                        window.location.port === '3000' ||
-                        window.location.protocol === 'file:' ||
-                        window.location.href.includes('localhost');
                     const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
+                    const protocol = String(window.location.protocol || '').toLowerCase();
+                    const hostname = String(window.location.hostname || '').toLowerCase();
+                    const port = String(window.location.port || '').trim();
+                    const isLocal = hostname === 'localhost' ||
+                        hostname === '127.0.0.1' ||
+                        port === '5500' ||
+                        port === '3000' ||
+                        String(window.location.href || '').includes('localhost');
                     const isHttpOrigin = baseOrigin.startsWith('http://') || baseOrigin.startsWith('https://');
-                    const apiBaseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : (isHttpOrigin ? baseOrigin : 'https://titantrades.org'));
+                    const apiBaseUrl = storedBaseUrl || (protocol === 'file:' ? 'https://titantrades.onrender.com' : (isLocal ? 'http://localhost:3001' : (isHttpOrigin ? baseOrigin : 'https://titantrades.org')));
                     const token = await currentUser.getIdToken(true);
 
                     const resp = await fetch(`${apiBaseUrl}/api/auth/email-verification`, {

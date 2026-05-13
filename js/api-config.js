@@ -188,16 +188,18 @@ if (typeof module !== 'undefined' && module.exports) {
 // Admin API Configuration
 export const adminApiConfig = {
     baseUrl: (() => {
-        // Force localhost for development - more reliable detection
-        const isLocal = window.location.hostname === 'localhost' || 
-                       window.location.hostname === '127.0.0.1' || 
-                       window.location.port === '5500' || // Live Server
-                       window.location.port === '3000' || // React dev server
-                       window.location.protocol === 'file:' || // Local file
-                       window.location.href.includes('localhost');
-        
         const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
         if (storedBaseUrl) return storedBaseUrl;
+
+        const protocol = String(window.location.protocol || '').toLowerCase();
+        if (protocol === 'file:') return 'https://titantrades.onrender.com';
+
+        const hostname = String(window.location.hostname || '').toLowerCase();
+        const port = String(window.location.port || '').trim();
+        const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1';
+        const isDevPort = port === '5500' || port === '3000';
+        const isLocal = isLocalHost || isDevPort || String(window.location.href || '').includes('localhost');
+
         if (isLocal) return 'http://localhost:3001';
         const origin = String(window.location.origin || '').trim();
         const isHttpOrigin = origin.startsWith('http://') || origin.startsWith('https://');
