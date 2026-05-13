@@ -167,7 +167,8 @@ async function sendPasswordReset(email) {
             window.location.protocol === 'file:' ||
             window.location.href.includes('localhost');
         const storedBaseUrl = localStorage.getItem('admin_api_baseUrl') || localStorage.getItem('tt_api_baseUrl');
-        const apiBaseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : (baseUrl.includes('onrender.com') ? baseUrl : 'https://titantrades.onrender.com'));
+        const isHttpOrigin = baseUrl.startsWith('http://') || baseUrl.startsWith('https://');
+        const apiBaseUrl = storedBaseUrl || (isLocal ? 'http://localhost:3001' : (isHttpOrigin ? baseUrl : 'https://titantrades.org'));
 
         const res = await fetch(`${apiBaseUrl}/api/auth/password-reset`, {
             method: 'POST',
