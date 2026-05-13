@@ -361,7 +361,7 @@ class EnhancedAdminDashboard {
             const errorText = this.escapeHtml(request.verificationEmailLastError || 'None');
 
             return `
-                <tr>
+                <tr data-verification-user-id="${this.escapeHtml(String(request.uid || ''))}">
                     <td>${email}</td>
                     <td>${name}</td>
                     <td>${joined}</td>
@@ -445,6 +445,29 @@ class EnhancedAdminDashboard {
         }
     }
 
+    removeVerificationRequestRow(userId) {
+        const tableBody = document.getElementById('verificationRequestsTableBody');
+        if (!tableBody || !userId) return;
+
+        const row = tableBody.querySelector(`tr[data-verification-user-id="${CSS.escape(String(userId))}"]`);
+        if (row) {
+            row.remove();
+        }
+
+        if (!tableBody.children.length) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No pending verification requests</td></tr>';
+        }
+    }
+
+    async refreshVerificationRequestsAfterAction() {
+        try {
+            await this.loadVerificationRequests();
+        } catch (error) {
+            console.warn('Verification list refresh failed after action:', error);
+            this.showNotification('Action succeeded, but the verification list could not refresh. Please reload the page.', 'warning');
+        }
+    }
+
     async approveVerificationRequest(userId) {
         if (!userId) return;
         if (!confirm('Approve this user verification manually?')) {
@@ -470,7 +493,8 @@ class EnhancedAdminDashboard {
             }
 
             this.showNotification('Verification approved successfully', 'success');
-            await this.loadVerificationRequests();
+            this.removeVerificationRequestRow(userId);
+            await this.refreshVerificationRequestsAfterAction();
             if (this.currentPage === 'users') {
                 this.loadUsersSection();
             }
@@ -501,6 +525,9 @@ class EnhancedAdminDashboard {
 
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
+                if (response.status === 429 || data?.code === 'too-many-attempts') {
+                    throw new Error(data?.error || 'Verification email is temporarily rate-limited. Please wait and try again later, or approve the user manually.');
+                }
                 throw new Error(data?.error || response.statusText || 'Failed to send verification email');
             }
 
@@ -510,7 +537,7 @@ class EnhancedAdminDashboard {
                 this.showNotification('Verification email sent successfully', 'success');
             }
 
-            await this.loadVerificationRequests();
+            await this.refreshVerificationRequestsAfterAction();
         } catch (error) {
             console.error('Failed to send verification email:', error);
             this.showNotification(`Failed to send verification email: ${error.message}`, 'error');

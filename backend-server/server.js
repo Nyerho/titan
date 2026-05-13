@@ -331,6 +331,33 @@ async function sendBrandEmail({ to, subject, html }) {
   throw err;
 }
 
+function isFirebaseTooManyAttempts(error) {
+  const message = String(error?.message || '').toUpperCase();
+  const code = String(error?.code || '').toLowerCase();
+  return (
+    code === 'auth/too-many-requests' ||
+    message.includes('TOO_MANY_ATTEMPTS_TRY_LATER') ||
+    message.includes('TOO MANY ATTEMPTS') ||
+    message.includes('TOO_MANY_REQUESTS')
+  );
+}
+
+function getVerificationEmailErrorPayload(error) {
+  if (isFirebaseTooManyAttempts(error)) {
+    return {
+      status: 429,
+      code: 'too-many-attempts',
+      message: 'Verification email is temporarily rate-limited by Firebase. Please wait and try again later, or approve the user manually.'
+    };
+  }
+
+  return {
+    status: 500,
+    code: String(error?.code || '').trim() || undefined,
+    message: String(error?.message || 'Failed to send verification email')
+  };
+}
+
 // Middleware to verify admin token
 async function verifyAdminToken(req, res, next) {
   try {
@@ -563,10 +590,11 @@ app.post('/api/auth/email-verification', verifyUserToken, async (req, res) => {
     return res.json({ success: true, emailSent: true });
   } catch (error) {
     console.error('Email verification send error:', error);
+    const payload = getVerificationEmailErrorPayload(error);
     try {
       const uid = String(req.user?.uid || '').trim();
       if (!uid) throw new Error('Missing uid');
-      const msg = String(error?.message || 'Failed to send verification email').slice(0, 500);
+      const msg = String(payload.message || 'Failed to send verification email').slice(0, 500);
       await db.collection('users').doc(uid).set(
         {
           verificationEmailLastError: msg,
@@ -575,7 +603,7 @@ app.post('/api/auth/email-verification', verifyUserToken, async (req, res) => {
         { merge: true }
       );
     } catch (e) {}
-    return res.status(500).json({ error: error?.message || 'Failed to send verification email' });
+    return res.status(payload.status).json({ error: payload.message, code: payload.code });
   }
 });
 
@@ -846,7 +874,20 @@ app.post('/api/admin/users/:userId/send-verification-email', verifyAdminToken, a
     return res.json({ success: true, emailSent: true });
   } catch (error) {
     console.error('Admin email verification send error:', error);
-    return res.status(500).json({ error: error?.message || 'Failed to send verification email' });
+    const payload = getVerificationEmailErrorPayload(error);
+    try {
+      const userId = String(req.params?.userId || '').trim();
+      if (userId) {
+        await db.collection('users').doc(userId).set(
+          {
+            verificationEmailLastError: String(payload.message || 'Failed to send verification email').slice(0, 500),
+            verificationEmailLastErrorAt: admin.firestore.FieldValue.serverTimestamp()
+          },
+          { merge: true }
+        );
+      }
+    } catch (e) {}
+    return res.status(payload.status).json({ error: payload.message, code: payload.code });
   }
 });
 
