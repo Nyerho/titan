@@ -637,6 +637,7 @@ class FirebaseAuthService {
         lastName: userData.lastName || '',
         phone: user.phoneNumber || userData.phone || '',
         country: userData.country || '',
+        state: userData.state || '',
         dateOfBirth: userData.dateOfBirth || null,
         address: userData.address || ''
       },

@@ -39,6 +39,7 @@ function initializeAuthPage() {
 
     setupDemoLogin();
     setupAlternativeAuth();
+    setupLocationFields();
 }
 
 function setupAlternativeAuth() {
@@ -158,6 +159,99 @@ function setupAlternativeAuth() {
                 authPhoneVerifyBtn.disabled = false;
             }
         });
+    }
+}
+
+const stateListCache = new Map();
+
+function setupLocationFields() {
+    const countrySelect = document.getElementById('country');
+    if (countrySelect) {
+        populateCountrySelect(countrySelect);
+        countrySelect.addEventListener('change', () => {
+            updateCountryCode();
+        });
+    }
+    updateCountryCode();
+}
+
+function populateCountrySelect(selectEl) {
+    if (!selectEl) return;
+    if (typeof Intl === 'undefined' || typeof Intl.DisplayNames !== 'function' || typeof Intl.supportedValuesOf !== 'function') {
+        return;
+    }
+
+    const existingOptions = Array.from(selectEl.options || []);
+    if (existingOptions.length > 1) return;
+
+    const displayNames = new Intl.DisplayNames(['en'], { type: 'region' });
+    const regions = Intl.supportedValuesOf('region') || [];
+    const countries = regions
+        .map((code) => {
+            const name = displayNames.of(code);
+            if (!name || name === code) return null;
+            return { code, name };
+        })
+        .filter(Boolean)
+        .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+
+    selectEl.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Select Country';
+    selectEl.appendChild(placeholder);
+
+    for (const c of countries) {
+        const opt = document.createElement('option');
+        opt.value = c.code;
+        opt.textContent = c.name;
+        selectEl.appendChild(opt);
+    }
+}
+
+async function updateStateSuggestions(countryName) {
+    const datalist = document.getElementById('stateList');
+    const stateInput = document.getElementById('state');
+    if (!datalist) return;
+
+    datalist.innerHTML = '';
+    if (!countryName) return;
+
+    const cached = stateListCache.get(countryName);
+    if (Array.isArray(cached)) {
+        for (const state of cached) {
+            const opt = document.createElement('option');
+            opt.value = state;
+            datalist.appendChild(opt);
+        }
+        return;
+    }
+
+    try {
+        const resp = await fetch('https://countriesnow.space/api/v0.1/countries/states', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ country: countryName })
+        });
+        const payload = await resp.json().catch(() => ({}));
+        const states = Array.isArray(payload?.data?.states)
+            ? payload.data.states.map((s) => String(s?.name || '').trim()).filter(Boolean)
+            : [];
+
+        stateListCache.set(countryName, states);
+
+        for (const state of states) {
+            const opt = document.createElement('option');
+            opt.value = state;
+            datalist.appendChild(opt);
+        }
+    } catch (e) {
+        stateListCache.set(countryName, []);
+    } finally {
+        if (stateInput) {
+            const hasSuggestions = datalist.children.length > 0;
+            stateInput.placeholder = hasSuggestions ? 'Select or type your state/region' : 'Type your state/region';
+        }
     }
 }
 
@@ -467,6 +561,7 @@ function handleRegister(e) {
         password: formData.get('password'),
         phone: formData.get('phone'),
         country: formData.get('country'),
+        state: formData.get('state'),
         mirrorTradeCode: formData.get('mirrorTradeCode') || ''
     };
     
@@ -879,14 +974,26 @@ function updateCountryCode() {
     const countryCodeInput = document.getElementById('countryCode');
     const countryCodeGroup = document.getElementById('countryCodeGroup');
     
-    if (countrySelect.value) {
-        const countryCode = countryCodeMap[countrySelect.value];
-        countryCodeInput.value = countryCode;
-        countryCodeGroup.style.display = 'block';
-    } else {
-        countryCodeInput.value = '';
-        countryCodeGroup.style.display = 'none';
+    const countryValue = String(countrySelect?.value || '').trim();
+    const selectedName = countrySelect?.selectedOptions?.[0]?.textContent ? String(countrySelect.selectedOptions[0].textContent).trim() : '';
+
+    if (countryCodeInput && countryCodeGroup) {
+        if (countryValue) {
+            const countryCode = countryCodeMap[countryValue];
+            if (countryCode) {
+                countryCodeInput.value = countryCode;
+                countryCodeGroup.style.display = 'block';
+            } else {
+                countryCodeInput.value = '';
+                countryCodeGroup.style.display = 'none';
+            }
+        } else {
+            countryCodeInput.value = '';
+            countryCodeGroup.style.display = 'none';
+        }
     }
+
+    updateStateSuggestions(selectedName);
 }
 
 // Make functions globally accessible
