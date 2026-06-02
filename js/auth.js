@@ -175,25 +175,47 @@ function setupLocationFields() {
     updateCountryCode();
 }
 
-function populateCountrySelect(selectEl) {
+async function populateCountrySelect(selectEl) {
     if (!selectEl) return;
-    if (typeof Intl === 'undefined' || typeof Intl.DisplayNames !== 'function' || typeof Intl.supportedValuesOf !== 'function') {
-        return;
-    }
-
     const existingOptions = Array.from(selectEl.options || []);
     if (existingOptions.length > 1) return;
 
-    const displayNames = new Intl.DisplayNames(['en'], { type: 'region' });
-    const regions = Intl.supportedValuesOf('region') || [];
-    const countries = regions
-        .map((code) => {
-            const name = displayNames.of(code);
-            if (!name || name === code) return null;
-            return { code, name };
-        })
-        .filter(Boolean)
-        .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    let countries = [];
+
+    try {
+        if (typeof Intl !== 'undefined' && typeof Intl.DisplayNames === 'function' && typeof Intl.supportedValuesOf === 'function') {
+            const displayNames = new Intl.DisplayNames(['en'], { type: 'region' });
+            const regions = Intl.supportedValuesOf('region') || [];
+            countries = regions
+                .map((code) => {
+                    const name = displayNames.of(code);
+                    if (!name || name === code) return null;
+                    return { code, name };
+                })
+                .filter(Boolean)
+                .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+        }
+    } catch (e) {}
+
+    if (!countries.length) {
+        try {
+            const resp = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2', { method: 'GET' });
+            const payload = await resp.json().catch(() => []);
+            if (Array.isArray(payload)) {
+                countries = payload
+                    .map((item) => {
+                        const code = String(item?.cca2 || '').trim().toUpperCase();
+                        const name = String(item?.name?.common || '').trim();
+                        if (!code || code.length !== 2 || !name) return null;
+                        return { code, name };
+                    })
+                    .filter(Boolean)
+                    .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+            }
+        } catch (e) {}
+    }
+
+    if (!countries.length) return;
 
     selectEl.innerHTML = '';
     const placeholder = document.createElement('option');
@@ -201,12 +223,14 @@ function populateCountrySelect(selectEl) {
     placeholder.textContent = 'Select Country';
     selectEl.appendChild(placeholder);
 
+    const frag = document.createDocumentFragment();
     for (const c of countries) {
         const opt = document.createElement('option');
         opt.value = c.code;
         opt.textContent = c.name;
-        selectEl.appendChild(opt);
+        frag.appendChild(opt);
     }
+    selectEl.appendChild(frag);
 }
 
 async function updateStateSuggestions(countryName) {
