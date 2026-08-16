@@ -180,6 +180,35 @@ async function populateCountrySelect(selectEl) {
     const existingOptions = Array.from(selectEl.options || []);
     if (existingOptions.length > 1) return;
 
+    try {
+        const mapEntries = Object.entries(countryCodeMap);
+        let displayNames = null;
+        try { displayNames = (typeof Intl !== 'undefined' && typeof Intl.DisplayNames === 'function') ? new Intl.DisplayNames(['en'], { type: 'region' }) : null; } catch (e) {}
+        const SHORT_NAMES = { AF:'Afghanistan', AL:'Albania', DZ:'Algeria', AR:'Argentina', AU:'Australia', AT:'Austria', BD:'Bangladesh', BE:'Belgium', BR:'Brazil', BG:'Bulgaria', CA:'Canada', CL:'Chile', CN:'China', CO:'Colombia', CR:'Costa Rica', HR:'Croatia', CZ:'Czech Republic', DK:'Denmark', EG:'Egypt', EE:'Estonia', FI:'Finland', FR:'France', DE:'Germany', GH:'Ghana', GR:'Greece', HK:'Hong Kong', HU:'Hungary', IS:'Iceland', IN:'India', ID:'Indonesia', IE:'Ireland', IL:'Israel', IT:'Italy', JP:'Japan', KE:'Kenya', KR:'South Korea', LV:'Latvia', LT:'Lithuania', MY:'Malaysia', MX:'Mexico', NL:'Netherlands', NZ:'New Zealand', NG:'Nigeria', NO:'Norway', PK:'Pakistan', PE:'Peru', PH:'Philippines', PL:'Poland', PT:'Portugal', RO:'Romania', RU:'Russia', SA:'Saudi Arabia', SG:'Singapore', SK:'Slovakia', SI:'Slovenia', ZA:'South Africa', ES:'Spain', LK:'Sri Lanka', SE:'Sweden', CH:'Switzerland', TW:'Taiwan', TH:'Thailand', TR:'Turkey', UA:'Ukraine', AE:'UAE', GB:'United Kingdom', US:'United States', VE:'Venezuela', VN:'Vietnam' };
+        const fallbackCountries = mapEntries
+            .map(([code]) => {
+                let name = null;
+                try { if (displayNames) name = displayNames.of(code); } catch (e) {}
+                if (!name || name === code) name = SHORT_NAMES[code] || code;
+                return { code, name };
+            })
+            .filter(Boolean)
+            .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+        if (fallbackCountries && fallbackCountries.length) {
+            selectEl.innerHTML = '';
+            const ph = document.createElement('option');
+            ph.value = ''; ph.textContent = 'Select Country';
+            selectEl.appendChild(ph);
+            const frag = document.createDocumentFragment();
+            for (const c of fallbackCountries) {
+                const opt = document.createElement('option');
+                opt.value = c.code; opt.textContent = c.name;
+                frag.appendChild(opt);
+            }
+            selectEl.appendChild(frag);
+        }
+    } catch (e) {}
+
     let countries = [];
 
     try {
@@ -199,7 +228,9 @@ async function populateCountrySelect(selectEl) {
 
     if (!countries.length) {
         try {
-            const resp = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2', { method: 'GET' });
+            const fetchOpts = { method: 'GET' };
+            try { if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') fetchOpts.signal = AbortSignal.timeout(5000); } catch (e) {}
+            const resp = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2', fetchOpts);
             const payload = await resp.json().catch(() => []);
             if (Array.isArray(payload)) {
                 countries = payload
@@ -215,8 +246,7 @@ async function populateCountrySelect(selectEl) {
         } catch (e) {}
     }
 
-    if (!countries.length) return;
-
+    if (countries.length) {
     selectEl.innerHTML = '';
     const placeholder = document.createElement('option');
     placeholder.value = '';
@@ -231,6 +261,7 @@ async function populateCountrySelect(selectEl) {
         frag.appendChild(opt);
     }
     selectEl.appendChild(frag);
+    }
 }
 
 async function updateStateSuggestions(countryName) {
