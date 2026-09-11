@@ -75,6 +75,10 @@ body:has(.hero-landing) .assets-content,
 body:has(.hero-landing) .presence-content,
 body:has(.hero-landing) .news-section,
 body:has(.hero-landing) .achievements-section { background: var(--preview-panel); border: 1px solid var(--preview-line); border-radius: 24px; box-shadow: 0 24px 70px rgba(0,0,0,.24); }
+body:has(.hero-landing) .presence-text h2,
+body:has(.hero-landing) .presence-text .stat-value { color: #f5f9fc !important; }
+body:has(.hero-landing) .presence-text p,
+body:has(.hero-landing) .presence-text .stat-label { color: #c6d5e2 !important; }
 body:has(.hero-landing) .highlight { color: var(--preview-teal) !important; }
 body:has(.hero-landing) .section-badge { color: var(--preview-lime); letter-spacing: .18em; }
 body:has(.hero-landing) .market-data-panel { background: linear-gradient(145deg,#102638,#0b1a28); border: 1px solid rgba(33,212,194,.22); border-radius: 18px; }
@@ -84,6 +88,18 @@ body:has(.hero-landing) .ticker-item-compact .symbol { color: #e8f1f7; }
 body:has(.hero-landing) .ticker-item-compact .price { color: #5ce8d9; }
 body:has(.hero-landing) .ticker-item-compact .change { color: #b5c7d6; }
 body:has(.hero-landing) .stat-box { background: var(--preview-panel-2); border: 1px solid var(--preview-line); border-radius: 16px; }
+body:has(.hero-landing) .footer { background: #050f19 !important; color: #d5e1eb !important; border-top: 1px solid var(--preview-line); }
+body:has(.hero-landing) .footer .footer-section p { color: #c6d5e2 !important; opacity: 1; }
+body:has(.hero-landing) .footer .footer-section h4 { color: #73ecd8 !important; }
+body:has(.hero-landing) .footer .footer-section ul li a,
+body:has(.hero-landing) .footer .footer-links a { color: #d5e1eb !important; opacity: 1; }
+body:has(.hero-landing) .footer .footer-section ul li a:hover,
+body:has(.hero-landing) .footer .footer-links a:hover { color: #c8f36b !important; }
+body:has(.hero-landing) .footer .footer-logo span { color: #f5f9fc !important; }
+body:has(.hero-landing) .footer .social-links a { background: rgba(33,212,194,.12) !important; color: #73ecd8 !important; border: 1px solid rgba(33,212,194,.3); }
+body:has(.hero-landing) .footer .social-links a:hover { background: #21d4c2 !important; color: #07131f !important; }
+body:has(.hero-landing) .footer .footer-bottom,
+body:has(.hero-landing) .footer .footer-bottom p { color: #9fb1c4 !important; }
 
 /* Dashboard: command center / dense professional workspace */
 body.dashboard-page { background: #07131f !important; color: var(--preview-ink); }
