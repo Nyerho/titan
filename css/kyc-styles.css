@@ -1281,3 +1281,46 @@
     background: rgba(220, 53, 69, 0.1);
     border-radius: 8px;
 }
+
+
+/* TitanTrades identity verification refresh */
+:root {
+  --kyc-primary: #087f8c;
+  --kyc-secondary: #102a43;
+  --kyc-success: #0f9d78;
+  --kyc-warning: #c98a00;
+  --kyc-danger: #c2414b;
+  --kyc-dark: #ffffff;
+  --kyc-light: #f4f7fb;
+  --kyc-border: #d9e2ec;
+  --kyc-text: #102a43;
+  --kyc-text-muted: #52606d;
+}
+body:has(.kyc-header) { background: #f4f7fb; font-family: Inter, system-ui, sans-serif; }
+.kyc-header { background: linear-gradient(120deg, #102a43 0%, #087f8c 100%); padding: 1.35rem 0; }
+.header-title h1 { font-size: 2rem; letter-spacing: -.04em; }
+.back-btn { border-radius: 10px; background: rgba(255,255,255,.1); }
+.kyc-main { padding: 2.25rem 0 4rem; }
+.kyc-status-card, .benefits-section, .requirements-section { border-radius: 18px; box-shadow: 0 12px 30px rgba(16,42,67,.06); }
+.status-icon, .benefit-icon, .requirement-icon { background: linear-gradient(135deg, #087f8c, #102a43); }
+.progress-fill { background: linear-gradient(90deg, #087f8c, #0f9d78); }
+.badge.pending { background: #fff7df; color: #8a6100; border-color: #e7c46b; }
+.badge.verified { background: #e5f7f0; color: #08734f; border-color: #9ddbc5; }
+.badge.unverified { background: #eef2f6; color: #52606d; border-color: #c9d6e2; }
+.requirement-item { align-items: flex-start; }
+.requirement-content .container { padding: 0; margin: 1.25rem 0 0; max-width: none; }
+.requirement-content .card { background: #f8fafc !important; border: 1px solid #d9e2ec !important; border-radius: 14px; }
+.requirement-content .card-header { background: transparent; }
+.requirement-content input[type="file"] { width: 100%; padding: .8rem; border: 1px dashed #9fb3c8; border-radius: 10px; background: #fff; color: #52606d; }
+.requirement-content input[type="file"]:focus { outline: 3px solid rgba(8,127,140,.16); border-color: #087f8c; }
+#idFrontFileName, #idBackFileName { color: #087f8c !important; font-size: .8rem; }
+#submitVerificationBtn { min-width: 220px; justify-content: center; }
+#submitVerificationBtn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+#submitVerificationBtn.btn-ready { box-shadow: 0 8px 18px rgba(8,127,140,.22); }
+#start-kyc-btn { margin-right: .5rem; }
+
+@media (max-width: 600px) {
+  .header-title h1 { font-size: 1.65rem; }
+  .requirement-content .container { margin-top: 1rem; }
+  #start-kyc-btn { margin: 0 0 .5rem; }
+}

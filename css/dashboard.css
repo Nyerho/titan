@@ -1670,3 +1670,48 @@ body {
 .mt-3 { margin-top: 1.5rem; }
 .hidden { display: none; }
 .visible { display: block; }
+
+
+/* TitanTrades rebrand: calm, trustworthy trading workspace */
+:root {
+  --bg-primary: #f4f7fb;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #eef5f7;
+  --bg-hover: #e8f2f3;
+  --text-primary: #102a43;
+  --text-secondary: #52606d;
+  --text-tertiary: #829ab1;
+  --primary-color: #087f8c;
+  --primary-hover: #05636d;
+  --success-color: #0f9d78;
+  --border-color: #d9e2ec;
+  --border-light: #e6edf2;
+}
+
+.dashboard-page { background: #f4f7fb; color: #102a43; }
+.centraltradehub-header {
+  background: rgba(255,255,255,.94);
+  border-bottom: 1px solid #d9e2ec;
+  box-shadow: 0 8px 28px rgba(16,42,67,.06);
+  backdrop-filter: blur(16px);
+}
+.centraltradehub-header .brand-logo { color: #102a43; letter-spacing: -.04em; }
+.centraltradehub-header .brand-tagline { color: #087f8c; font-weight: 600; }
+.centraltradehub-header .dashboard-logo { border-radius: 12px; box-shadow: 0 4px 12px rgba(8,127,140,.18); }
+.centraltradehub-header .kyc-badge { background: #e8f6f3; color: #087f8c; border-color: #b7e3da; }
+.centraltradehub-header .logout-btn { background: #102a43; border-radius: 10px; }
+.dashboard-sidebar { background: #102a43; border-radius: 18px; box-shadow: 0 14px 32px rgba(16,42,67,.12); }
+.dashboard-sidebar .nav-item { color: #c9d6e2; border-radius: 10px; margin: 4px 10px; }
+.dashboard-sidebar .nav-item:hover, .dashboard-sidebar .nav-item.active { color: #fff; background: #087f8c; }
+.trading-interface, .crypto-portfolio-section, .leaderboard-section, .market-news-section { border: 1px solid #d9e2ec; box-shadow: 0 10px 30px rgba(16,42,67,.06); border-radius: 18px; }
+.wallet-balance-section { background: linear-gradient(135deg,#102a43 0%,#087f8c 100%); color: #fff; border-radius: 16px; }
+.balance-title, .amount-large, .currency-large { color: #fff; }
+.trading-tabs .tab-btn.active, .timeframe-btn.active, .export-btn { background: #087f8c; border-color: #087f8c; }
+.trading-tabs .tab-btn:hover, .timeframe-btn:hover { color: #087f8c; border-color: #087f8c; }
+.connect-wallet-btn, .buy-crypto-btn { border-radius: 10px; font-weight: 700; }
+.buy-crypto-btn { background: #087f8c; }
+
+@media (max-width: 768px) {
+  .dashboard-sidebar { border-radius: 14px; }
+  .trading-interface, .crypto-portfolio-section, .leaderboard-section { border-radius: 14px; }
+}

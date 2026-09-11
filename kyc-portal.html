@@ -3,20 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KYC Verification Portal - Mirror Trade</title>
+    <title>Identity verification | TitanTrades</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/kyc-styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/kyc-styles.css">
-    <!-- Expose KYC storage helpers to window for use in kyc-portal.js -->
-    <script type="module">
-      import { uploadKyc, getUserKycList } from "./js/kyc-storage.js";
-      window.uploadKyc = uploadKyc;
-      window.getUserKycList = getUserKycList;
-    </script>
 </head>
 <body>
     <!-- Navigation Header -->
@@ -158,8 +150,8 @@
                                       </div>
                               
                                       <div class="d-flex justify-content-end">
-                                        <button id="submitVerificationBtn" type="button" class="btn btn-primary" disabled onclick="submitVerification()">
-                                          Submit for Verification
+                                        <button id="submitVerificationBtn" type="button" class="btn btn-primary" disabled>
+                                          <i class="fas fa-lock"></i> Submit for verification
                                         </button>
                                       </div>
                                     </div>
@@ -168,10 +160,6 @@
                               </div>
                             </div>
                             
-                              <!-- Remove duplicate button block -->
-                              <!-- <div class="actions" style="margin-top:16px;">
-                                <button id="submitVerificationBtn" type="button" disabled onclick="submitVerification()">Submit for Verification</button>
-                              </div> -->
                             </div>
                         </div>
                         <div class="requirement-status" id="docStatus1">
@@ -185,7 +173,7 @@
             <div class="action-section">
                 <div class="action-buttons">
                     <!-- Replace inline onclick with an id-only button -->
-                    <button id="start-kyc-btn" type="button">Start KYC Verification</button>
+                    <button id="start-kyc-btn" type="button" class="btn btn-primary btn-large"><i class="fas fa-arrow-down"></i> Start KYC verification</button>
                     <button class="btn btn-secondary" id="continueVerificationBtn" onclick="continueKYCVerification()" style="display: none;">
                         <i class="fas fa-arrow-right"></i>
                         <span>Continue Verification</span>
@@ -236,4 +224,3 @@
     </body>
     </html>
     
-   
