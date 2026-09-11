@@ -111,6 +111,7 @@
             transform: translateY(-2px);
         }
     </style>
+    <link rel="stylesheet" href="css/titan-upgrade.css">
 </head>
 <body>
     <div class="support-container">
@@ -137,14 +138,14 @@
             <div class="support-card">
                 <h3><i class="fas fa-envelope"></i> Email Support</h3>
                 <p>Send us your questions via email</p>
-                <p><strong>support@centraltradekeplr.com</strong></p>
+                <p><strong>support@titantrades.com</strong></p>
                 <p>Response within 24 hours</p>
             </div>
             
             <div class="support-card">
                 <h3><i class="fas fa-comments"></i> Live Chat</h3>
                 <p>Chat with our support agents</p>
-                <button class="submit-btn" onclick="alert('Live chat feature coming soon!')">
+                <button class="submit-btn" type="button" onclick="if (window.smartsupp) { window.smartsupp('chat:open'); } else { window.location.href='mailto:support@titantrades.com'; }">
                     Start Chat
                 </button>
             </div>
@@ -207,7 +208,10 @@
     <script>
         function handleSupportForm(event) {
             event.preventDefault();
-            alert('Thank you for contacting us! We will respond within 24 hours.');
+            const data = new FormData(event.target);
+            const subject = encodeURIComponent(`[${data.get('category')}] TitanTrades support request`);
+            const body = encodeURIComponent(`Name: ${data.get('name')}\nEmail: ${data.get('email')}\n\n${data.get('message')}`);
+            window.location.href = `mailto:support@titantrades.com?subject=${subject}&body=${body}`;
             event.target.reset();
         }
     </script>

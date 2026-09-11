@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Identity verification | TitanTrades</title>
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/kyc-styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <link rel="stylesheet" href="css/titan-upgrade.css">
 </head>
 <body>
     <!-- Navigation Header -->
@@ -174,7 +175,7 @@
                 <div class="action-buttons">
                     <!-- Replace inline onclick with an id-only button -->
                     <button id="start-kyc-btn" type="button" class="btn btn-primary btn-large"><i class="fas fa-arrow-down"></i> Start KYC verification</button>
-                    <button class="btn btn-secondary" id="continueVerificationBtn" onclick="continueKYCVerification()" style="display: none;">
+                    <button class="btn btn-secondary" id="continueVerificationBtn" type="button" style="display: none;">
                         <i class="fas fa-arrow-right"></i>
                         <span>Continue Verification</span>
                     </button>
@@ -185,7 +186,7 @@
                 </div>
                 
                 <div class="help-section">
-                    <p><i class="fas fa-info-circle"></i> Need help? Contact our <a href="#" onclick="openSupportChat()">support team</a></p>
+                    <p><i class="fas fa-info-circle"></i> Need help? Contact our <a href="support.html">support team</a></p>
                 </div>
             </div>
 
@@ -194,7 +195,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3>KYC Verification Process</h3>
-                        <button class="modal-close" onclick="closeVerificationModal()">
+                        <button class="modal-close" type="button" onclick="document.getElementById('verificationModal').style.display='none'">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>

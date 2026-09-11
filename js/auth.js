@@ -1,5 +1,6 @@
 // Auth Page JavaScript
 import authManager from './auth-integration.js';
+import { db } from './firebase-config.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeAuthPage();
@@ -40,6 +41,10 @@ function initializeAuthPage() {
     setupDemoLogin();
     setupAlternativeAuth();
     setupLocationFields();
+
+    if (window.location.hash.toLowerCase() === '#register') {
+        document.querySelector('[data-tab="register"]')?.click();
+    }
 }
 
 function setupAlternativeAuth() {

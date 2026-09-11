@@ -33,6 +33,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <script type="module" src="js/firebase-config.js"></script>
     <script src="js/user-state.js"></script>
+    <link rel="stylesheet" href="css/titan-upgrade.css">
 </head>
 <body onload="checkUserState()">
     <header class="centraltradehub-header">
@@ -466,12 +467,19 @@
 
         function setButtonsBusy(selector, busy) {
             document.querySelectorAll(selector).forEach((btn) => {
-                btn.disabled = busy || btn.disabled;
+                if (busy) {
+                    btn.dataset.wasDisabled = String(btn.disabled);
+                    btn.disabled = true;
+                } else {
+                    btn.disabled = btn.dataset.wasDisabled === 'true';
+                    delete btn.dataset.wasDisabled;
+                }
             });
         }
 
         (function start() {
             let attempts = 0;
+            let clickHandlerBound = false;
 
             function showFirebaseInitMessage() {
                 els.grid.innerHTML = `
@@ -519,6 +527,8 @@
                         renderOwnedBots(userData);
                     });
 
+                    if (clickHandlerBound) return;
+                    clickHandlerBound = true;
                     document.addEventListener('click', async (e) => {
                         const btn = e.target?.closest?.('button[data-action]');
                         if (!btn) return;

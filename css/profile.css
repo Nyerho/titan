@@ -1,0 +1,7 @@
+/* TitanTrades profile page */
+.profile-container { max-width: 1120px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+.profile-container .profile-card, .profile-container .card, .profile-section { background: #fff; border: 1px solid #d9e2ec; border-radius: 18px; box-shadow: 0 16px 38px rgba(16,42,67,.08); }
+.profile-container input, .profile-container select, .profile-container textarea { border: 1px solid #c9d6e2; border-radius: 10px; padding: .75rem .9rem; width: 100%; color: #102a43; background: #fff; }
+.profile-container label { color: #52606d; font-weight: 700; font-size: .86rem; }
+.profile-container .btn-primary { background: linear-gradient(135deg,#087f8c,#05636d); border: 0; border-radius: 10px; }
+@media (max-width: 640px) { .profile-container { padding: 1rem .75rem 3rem; } }

@@ -149,6 +149,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("idFrontFileInput")?.scrollIntoView({ behavior: "smooth", block: "center" });
     document.getElementById("idFrontFileInput")?.focus({ preventScroll: true });
   });
+  document.getElementById("continueVerificationBtn")?.addEventListener("click", () => {
+    document.getElementById("idFrontFileInput")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
 });
 
 export default KYCPortal;

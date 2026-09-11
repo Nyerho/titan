@@ -17,14 +17,20 @@
     
     <!-- Firebase Scripts -->
     <link rel="stylesheet" href="css/market-notifications.css">
+    <script type="module">
+        import { auth } from './js/firebase-config.js';
+        import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        window.platformAuth = { auth, onAuthStateChanged, signOut };
+    </script>
+    <link rel="stylesheet" href="css/titan-upgrade.css">
 </head>
 <body class="platform-body">
     <!-- Authentication Protection -->
     <script>
         (function() {
             function checkAuth() {
-                if (typeof firebase !== 'undefined') {
-                    firebase.auth().onAuthStateChanged((user) => {
+                if (window.platformAuth) {
+                    window.platformAuth.onAuthStateChanged(window.platformAuth.auth, (user) => {
                         if (!user) {
                             alert('Please log in to access the trading platform.');
                             window.location.href = 'auth.html';
@@ -946,7 +952,8 @@
     document.getElementById('logout-btn').addEventListener('click', function(e) {
         e.preventDefault();
         if (confirm('Are you sure you want to logout?')) {
-            firebase.auth().signOut().then(() => {
+            if (!window.platformAuth) return;
+            window.platformAuth.signOut(window.platformAuth.auth).then(() => {
                 window.location.href = 'auth.html';
             }).catch((error) => {
                 console.error('Logout error:', error);
@@ -998,4 +1005,3 @@
     </style>
 </body>
 </html>
-

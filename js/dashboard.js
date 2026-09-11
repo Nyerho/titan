@@ -798,8 +798,8 @@ class DashboardManager {
     
             // Create a subtle vertical gradient for area fill
             const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, 'rgba(37, 99, 235, 0.18)');   // #2563eb @ 18%
-            gradient.addColorStop(1, 'rgba(37, 99, 235, 0.03)');   // fade to 3%
+            gradient.addColorStop(0, 'rgba(8, 127, 140, 0.20)');
+            gradient.addColorStop(1, 'rgba(8, 127, 140, 0.03)');
 
             this.marketChart = new Chart(ctx, {
                 type: 'line',
@@ -808,13 +808,13 @@ class DashboardManager {
                     datasets: [{
                         label: 'Price',
                         data: prices,
-                        borderColor: '#2563eb',
+                        borderColor: '#087f8c',
                         backgroundColor: gradient,
                         borderWidth: 2,
                         fill: true,
                         tension: 0.35,
                         cubicInterpolationMode: 'monotone',
-                        pointBackgroundColor: '#2563eb',
+                        pointBackgroundColor: '#087f8c',
                         pointBorderColor: '#ffffff',
                         pointBorderWidth: 1,
                         pointRadius: 0,
@@ -825,6 +825,10 @@ class DashboardManager {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: {
+                        duration: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 0 : 650,
+                        easing: 'easeOutQuart'
+                    },
                     plugins: {
                         legend: {
                             display: false

@@ -214,6 +214,7 @@
             transform: translateY(-2px);
         }
     </style>
+    <link rel="stylesheet" href="css/titan-upgrade.css">
 </head>
 <body>
     <div class="history-container">
@@ -526,7 +527,7 @@
                 
                 // Update tab buttons
                 document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                event.target.classList.add('active');
+                document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`)?.classList.add('active');
                 
                 // Update tab content
                 document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -610,41 +611,3 @@
     </style>
 </body>
 </html>
-
-<script>
-  window.switchTab = function(tabId) {
-    try {
-      // Toggle tab content
-      document.querySelectorAll('.history-tab').forEach(el => el.classList.remove('active'));
-      const selectedTab = document.getElementById(tabId);
-      if (selectedTab) selectedTab.classList.add('active');
-  
-      // Toggle nav active state
-      document.querySelectorAll('[data-tab]').forEach(el => el.classList.remove('active'));
-      const selectedNavItem = document.querySelector(`[data-tab="${tabId}"]`);
-      if (selectedNavItem) selectedNavItem.classList.add('active');
-  
-      // Delegate to profileManager if available
-      if (window.profileManager && typeof window.profileManager.switchTab === 'function') {
-        window.profileManager.switchTab(tabId);
-      } else if (window.profileManager) {
-        if (tabId === 'transaction-history' && typeof window.profileManager.loadTransactionHistory === 'function') {
-          window.profileManager.loadTransactionHistory();
-        } else if (tabId === 'trading-history' && typeof window.profileManager.loadTradingHistory === 'function') {
-          window.profileManager.loadTradingHistory();
-        }
-      }
-    } catch (err) {
-      console.error('switchTab error:', err);
-    }
-  };
-
-  // Initialize on load and show transactions by default
-  document.addEventListener('DOMContentLoaded', () => {
-    // Make sure profile-manager.js is included in this page
-    if (window.profileManager && typeof window.profileManager.loadTransactionHistory === 'function') {
-      // Default to transaction-history tab
-      window.switchTab('transaction-history');
-    }
-  });
-</script>

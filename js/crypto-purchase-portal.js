@@ -291,17 +291,16 @@ class CryptoPurchasePortal {
                 return;
             }
 
-            // Process the purchase through crypto service
+            const fee = amount * 0.01;
+            const total = amount + fee;
+            if (total > this.userBalance) {
+                alert('Insufficient balance for this purchase.');
+                return;
+            }
+
+            // Validate balance before writing the portfolio or transaction.
             const result = await cryptoService.buyCrypto(user.uid, this.selectedCrypto.id, amount);
-            
             if (result.success) {
-                // Update user balance
-                const fee = amount * 0.01;
-                const total = amount + fee;
-                if (total > this.userBalance) {
-                    alert('Insufficient balance for this purchase.');
-                    return;
-                }
                 const newBalance = this.userBalance - total;
 
                 if (FirebaseDatabaseService?.updateUserBalance) {
