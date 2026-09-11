@@ -34,16 +34,8 @@ class KYCPortal {
         const file = input.files?.[0];
         if (name) name.textContent = file ? `${file.name} · ${this.formatBytes(file.size)}` : "No file selected";
         if (preview) {
-          if (preview.dataset.objectUrl) URL.revokeObjectURL(preview.dataset.objectUrl);
           preview.removeAttribute("src");
-          delete preview.dataset.objectUrl;
           preview.style.display = "none";
-          if (file && ACCEPTED_TYPES.has(file.type)) {
-            const objectUrl = URL.createObjectURL(file);
-            preview.src = objectUrl;
-            preview.dataset.objectUrl = objectUrl;
-            preview.style.display = "block";
-          }
         }
         this.checkSubmitButton();
       };
@@ -93,7 +85,7 @@ class KYCPortal {
     }
     if (title) title.textContent = labels[normalized] || "Verification status";
     if (description) description.textContent = message || copy[normalized] || copy.unverified;
-    if (icon) icon.className = normalized === "verified" ? "fas fa-shield-halved" : normalized === "pending" ? "fas fa-hourglass-half" : normalized === "rejected" ? "fas fa-triangle-exclamation" : "fas fa-shield-halved";
+    if (icon) icon.className = normalized === "verified" ? "fas fa-shield-check" : normalized === "pending" ? "fas fa-hourglass-half" : normalized === "rejected" ? "fas fa-triangle-exclamation" : "fas fa-shield-halved";
   }
 
   subscribeToStatus(uid) {
