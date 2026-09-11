@@ -114,8 +114,8 @@ export async function renderAdminKyc(containerOrId = "kycAdminContainer") {
       const data = d.data() || {};
       const uid = data.uid || d.id;
       const status = data.status || "pending";
-      const frontUrl = data.idFrontUrl || "";
-      const backUrl = data.idBackUrl || "";
+      const frontUrl = data.files?.idFrontUrl || data.idFrontUrl || "";
+      const backUrl = data.files?.idBackUrl || data.idBackUrl || "";
       fragments.push(`
         <div class="card mb-3">
           <div class="card-body">
