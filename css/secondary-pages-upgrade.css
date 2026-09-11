@@ -1,0 +1,140 @@
+/* TitanTrades secondary-page upgrade: visual-only layer for auth, account, funding, trading tools and admin pages. */
+:root {
+  --tt2-bg: #07131f;
+  --tt2-surface: #0d1d2b;
+  --tt2-surface-2: #102638;
+  --tt2-line: rgba(173,203,224,.15);
+  --tt2-text: #f3f8fb;
+  --tt2-muted: #b8c9d7;
+  --tt2-teal: #21d4c2;
+  --tt2-lime: #c8f36b;
+}
+body:not(.dashboard-page):not(:has(.hero-landing)) {
+  background: var(--tt2-bg) !important;
+  color: var(--tt2-text);
+}
+body:not(.dashboard-page):not(:has(.hero-landing)) .navbar,
+body:not(.dashboard-page):not(:has(.hero-landing)) .centraltradehub-header,
+body:not(.dashboard-page):not(:has(.hero-landing)) .platform-nav {
+  background: rgba(7,19,31,.9) !important;
+  color: var(--tt2-text) !important;
+  border-bottom: 1px solid var(--tt2-line);
+  box-shadow: 0 12px 34px rgba(0,0,0,.2);
+  backdrop-filter: blur(16px);
+}
+body:not(.dashboard-page):not(:has(.hero-landing)) .logo-text,
+body:not(.dashboard-page):not(:has(.hero-landing)) .brand-logo,
+body:not(.dashboard-page):not(:has(.hero-landing)) .navbar a,
+body:not(.dashboard-page):not(:has(.hero-landing)) .nav-link,
+body:not(.dashboard-page):not(:has(.hero-landing)) .nav-left,
+body:not(.dashboard-page):not(:has(.hero-landing)) .nav-right { color: var(--tt2-text) !important; }
+body:not(.dashboard-page):not(:has(.hero-landing)) .nav-link:hover,
+body:not(.dashboard-page):not(:has(.hero-landing)) .nav-link.active { color: var(--tt2-teal) !important; }
+body:not(.dashboard-page):not(:has(.hero-landing)) main,
+body:not(.dashboard-page):not(:has(.hero-landing)) .main-content,
+body:not(.dashboard-page):not(:has(.hero-landing)) .page-container,
+body:not(.dashboard-page):not(:has(.hero-landing)) .content-container { color: var(--tt2-text); }
+body:not(.dashboard-page):not(:has(.hero-landing)) .card,
+body:not(.dashboard-page):not(:has(.hero-landing)) .panel,
+body:not(.dashboard-page):not(:has(.hero-landing)) .section,
+body:not(.dashboard-page):not(:has(.hero-landing)) .form-card,
+body:not(.dashboard-page):not(:has(.hero-landing)) .method-card,
+body:not(.dashboard-page):not(:has(.hero-landing)) .summary-card,
+body:not(.dashboard-page):not(:has(.hero-landing)) .modal-content,
+body:not(.dashboard-page):not(:has(.hero-landing)) .table-container {
+  background: var(--tt2-surface) !important;
+  color: var(--tt2-text) !important;
+  border-color: var(--tt2-line) !important;
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.2);
+}
+body:not(.dashboard-page):not(:has(.hero-landing)) h1,
+body:not(.dashboard-page):not(:has(.hero-landing)) h2,
+body:not(.dashboard-page):not(:has(.hero-landing)) h3,
+body:not(.dashboard-page):not(:has(.hero-landing)) h4,
+body:not(.dashboard-page):not(:has(.hero-landing)) h5,
+body:not(.dashboard-page):not(:has(.hero-landing)) .section-title { color: #f7fbfd !important; }
+body:not(.dashboard-page):not(:has(.hero-landing)) p,
+body:not(.dashboard-page):not(:has(.hero-landing)) label,
+body:not(.dashboard-page):not(:has(.hero-landing)) .text-muted,
+body:not(.dashboard-page):not(:has(.hero-landing)) .text-secondary,
+body:not(.dashboard-page):not(:has(.hero-landing)) .description,
+body:not(.dashboard-page):not(:has(.hero-landing)) small { color: var(--tt2-muted) !important; }
+body:not(.dashboard-page):not(:has(.hero-landing)) input,
+body:not(.dashboard-page):not(:has(.hero-landing)) select,
+body:not(.dashboard-page):not(:has(.hero-landing)) textarea {
+  background: #091a28 !important; color: #f7fbfd !important; border: 1px solid #2a4559 !important; border-radius: 10px;
+}
+body:not(.dashboard-page):not(:has(.hero-landing)) input::placeholder,
+body:not(.dashboard-page):not(:has(.hero-landing)) textarea::placeholder { color: #8fa7b9 !important; }
+body:not(.dashboard-page):not(:has(.hero-landing)) .btn-primary,
+body:not(.dashboard-page):not(:has(.hero-landing)) .button-primary,
+body:not(.dashboard-page):not(:has(.hero-landing)) .action-button:not(.secondary) {
+  background: var(--tt2-lime) !important; color: #07131f !important; border-color: var(--tt2-lime) !important;
+}
+body:not(.dashboard-page):not(:has(.hero-landing)) .btn-secondary,
+body:not(.dashboard-page):not(:has(.hero-landing)) .btn-outline,
+body:not(.dashboard-page):not(:has(.hero-landing)) .action-button.secondary {
+  background: transparent !important; color: var(--tt2-text) !important; border: 1px solid #587185 !important;
+}
+body:not(.dashboard-page):not(:has(.hero-landing)) .btn-primary:hover,
+body:not(.dashboard-page):not(:has(.hero-landing)) .btn-secondary:hover,
+body:not(.dashboard-page):not(:has(.hero-landing)) .btn-outline:hover { transform: translateY(-2px); filter: brightness(1.08); }
+body:not(.dashboard-page):not(:has(.hero-landing)) .table,
+body:not(.dashboard-page):not(:has(.hero-landing)) table { color: var(--tt2-text); border-color: var(--tt2-line); }
+body:not(.dashboard-page):not(:has(.hero-landing)) th { color: #9fe9df !important; background: rgba(33,212,194,.08) !important; }
+body:not(.dashboard-page):not(:has(.hero-landing)) td { color: #d6e4ed !important; border-color: var(--tt2-line) !important; }
+body:not(.dashboard-page):not(:has(.hero-landing)) .sidebar,
+body:not(.dashboard-page):not(:has(.hero-landing)) .left-sidebar,
+body:not(.dashboard-page):not(:has(.hero-landing)) .right-sidebar { background: var(--tt2-surface) !important; border-color: var(--tt2-line) !important; }
+body:not(.dashboard-page):not(:has(.hero-landing)) .status-badge,
+body:not(.dashboard-page):not(:has(.hero-landing)) .badge { border-radius: 999px; }
+body:not(.dashboard-page):not(:has(.hero-landing)) .progress-bar { background: #1b3447; }
+body:not(.dashboard-page):not(:has(.hero-landing)) .progress-fill { background: linear-gradient(90deg,var(--tt2-teal),var(--tt2-lime)); }
+body:not(.dashboard-page):not(:has(.hero-landing)) .tab-btn.active,
+body:not(.dashboard-page):not(:has(.hero-landing)) .nav-item.active { color: #07131f !important; background: var(--tt2-teal) !important; border-color: var(--tt2-teal) !important; }
+body:not(.dashboard-page):not(:has(.hero-landing)) .chart-container,
+body:not(.dashboard-page):not(:has(.hero-landing)) .chart-card { background: var(--tt2-surface) !important; border-color: var(--tt2-line) !important; }
+body:has(.kyc-header) { background: var(--tt2-bg) !important; }
+body:has(.kyc-header) .kyc-main { background: var(--tt2-bg) !important; color: var(--tt2-text); }
+body:has(.kyc-header) .kyc-status-card,
+body:has(.kyc-header) .benefits-section,
+body:has(.kyc-header) .documents-section,
+body:has(.kyc-header) .requirements-section,
+body:has(.kyc-header) .upload-section { background: var(--tt2-surface) !important; border-color: var(--tt2-line) !important; }
+body:has(.kyc-header) .status-info h2,
+body:has(.kyc-header) .section-title,
+body:has(.kyc-header) .benefit-card h3,
+body:has(.kyc-header) .benefit-content h4,
+body:has(.kyc-header) .document-card h4,
+body:has(.kyc-header) .upload-title { color: #f7fbfd !important; }
+body:has(.kyc-header) .status-info p,
+body:has(.kyc-header) .benefit-card p,
+body:has(.kyc-header) .benefit-content p,
+body:has(.kyc-header) .document-card p,
+body:has(.kyc-header) .requirements-section p,
+body:has(.kyc-header) .upload-description,
+body:has(.kyc-header) .step-label { color: var(--tt2-muted) !important; }
+body:has(.kyc-header) .benefit-item,
+body:has(.kyc-header) .requirement-item,
+body:has(.kyc-header) .upload-section,
+body:has(.kyc-header) .upload-area,
+body:has(.kyc-header) .upload-placeholder { background: var(--tt2-surface-2) !important; border-color: var(--tt2-line) !important; }
+body:has(.kyc-header) .benefit-item:hover { background: #173449 !important; }
+body:has(.kyc-header) .benefit-content h4,
+body:has(.kyc-header) .requirement-content h4,
+body:has(.kyc-header) .upload-header h5 { color: #f7fbfd !important; }
+body:has(.kyc-header) .requirement-content p,
+body:has(.kyc-header) .upload-placeholder p,
+body:has(.kyc-header) .upload-placeholder small { color: var(--tt2-muted) !important; }
+body:has(.kyc-header) .progress-bar { background: #20394b !important; }
+body:has(.kyc-header) .step-circle { background: #183042 !important; color: #d6e4ed !important; }
+@media (max-width: 700px) {
+  body:not(.dashboard-page):not(:has(.hero-landing)) .card,
+  body:not(.dashboard-page):not(:has(.hero-landing)) .panel,
+  body:not(.dashboard-page):not(:has(.hero-landing)) .modal-content { border-radius: 14px; }
+  body:not(.dashboard-page):not(:has(.hero-landing)) .table-responsive { overflow-x: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body:not(.dashboard-page):not(:has(.hero-landing)) *, body:not(.dashboard-page):not(:has(.hero-landing)) *::before, body:not(.dashboard-page):not(:has(.hero-landing)) *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
