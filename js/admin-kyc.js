@@ -12,6 +12,30 @@ import {
   setDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+async function loadPrivateDocument(url) {
+  const token = await auth.currentUser?.getIdToken(true);
+  if (!token) throw new Error("Admin authentication required");
+  const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  if (!response.ok) throw new Error("Unable to load KYC document");
+  return URL.createObjectURL(await response.blob());
+}
+
+async function hydratePrivateDocuments(container) {
+  const items = [...container.querySelectorAll("[data-private-url]")];
+  for (const item of items) {
+    try {
+      const objectUrl = await loadPrivateDocument(item.dataset.privateUrl);
+      item.src = objectUrl;
+      item.dataset.objectUrl = objectUrl;
+      const download = container.querySelector(`[data-download-url="${CSS.escape(item.dataset.privateUrl)}"]`);
+      if (download) download.href = objectUrl;
+    } catch (error) {
+      item.alt = "Unable to load protected document";
+      item.replaceWith(Object.assign(document.createElement("div"), { className: "text-danger", textContent: error.message }));
+    }
+  }
+}
+
 async function renderKycRequests() {
     const container = document.getElementById('kyc-admin-list');
     if (!container) return;
@@ -122,8 +146,8 @@ export async function renderAdminKyc(containerOrId = "kycAdminContainer") {
             <h5 class="card-title">User: ${uid}</h5>
             <p class="card-text">Status: <strong>${status}</strong></p>
             <div class="d-flex gap-3 flex-wrap">
-              ${frontUrl ? `<img src="${frontUrl}" alt="ID Front" class="img-thumbnail" style="max-width:200px;">` : ""}
-              ${backUrl ? `<img src="${backUrl}" alt="ID Back" class="img-thumbnail" style="max-width:200px;">` : ""}
+              ${frontUrl ? `<div><img src="" data-private-url="${frontUrl}" alt="ID Front" class="img-thumbnail" style="max-width:200px;max-height:200px;"><br><a data-download-url="${frontUrl}" class="btn btn-sm btn-success mt-2" download="id-front">Download front</a></div>` : ""}
+              ${backUrl ? `<div><img src="" data-private-url="${backUrl}" alt="ID Back" class="img-thumbnail" style="max-width:200px;max-height:200px;"><br><a data-download-url="${backUrl}" class="btn btn-sm btn-success mt-2" download="id-back">Download back</a></div>` : ""}
             </div>
             <div class="mt-3 d-flex gap-2">
               <button class="btn btn-success" data-action="approve" data-id="${d.id}">Approve</button>
@@ -135,6 +159,7 @@ export async function renderAdminKyc(containerOrId = "kycAdminContainer") {
     });
 
     container.innerHTML = fragments.join("");
+    await hydratePrivateDocuments(container);
 
     // Bind approve/reject
     container.querySelectorAll("button[data-action]").forEach(btn => {

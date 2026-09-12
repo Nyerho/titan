@@ -57,14 +57,13 @@ pids
 *.seed
 *.pid.lock
 
-# Build outputs
-dist/
-build/
-
 # Temporary files
 tmp/
 temp/
 
-# Jupyter Notebook files (since you have some in assets)
+# Jupyter Notebook checkpoints
 *.ipynb_checkpoints
 .vercel
+
+# Private KYC documents — store outside the public web root
+private-kyc/

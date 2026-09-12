@@ -5912,7 +5912,7 @@ EnhancedAdminDashboard.prototype.deleteTransactionRecord = async function(transa
 // KYC Admin: Load and render pending requests
 EnhancedAdminDashboard.prototype.loadKYCRequests = async function() {
     try {
-        const q = query(collection(this.db, 'users'), where('kycStatus', '==', 'pending'));
+        const q = query(collection(this.db, 'kycRequests'), where('status', '==', 'pending'));
         const snapshot = await getDocs(q);
 
         this.kycRequests = [];
@@ -5922,10 +5922,10 @@ EnhancedAdminDashboard.prototype.loadKYCRequests = async function() {
                 id: docSnap.id,
                 email: data.email || '',
                 displayName: data.displayName || '',
-                kycStatus: data.kycStatus || 'pending',
-                kycSubmittedAt: data.kycSubmittedAt || null,
-                kycDocuments: data.kycDocuments || null,
-                documentsUploaded: data.documentsUploaded || null
+                kycStatus: data.status || 'pending',
+                kycSubmittedAt: data.submittedAt || null,
+                kycDocuments: data.files || null,
+                documentsUploaded: { id: data.files?.idFrontName || 'id-front', idBack: data.files?.idBackName || 'id-back' }
             });
         });
 
@@ -5978,13 +5978,13 @@ EnhancedAdminDashboard.prototype.openKYCReview = function(userId) {
         if (url) {
             const isImage = url.includes('image') || /\.(png|jpg|jpeg)$/i.test(url);
             const content = isImage
-                ? `<img src="${url}" alt="Preview" class="img-fluid rounded mb-2" style="max-height:200px;" />`
+                ? `<img src="" data-private-url="${url}" alt="Preview" class="img-fluid rounded mb-2" style="max-height:200px;" />`
                 : `<a href="${url}" target="_blank" class="btn btn-sm btn-outline-info mb-2">Open Document</a>`;
 
             container.innerHTML = `
                 ${content}
                 <div>
-                    <a href="${url}" target="_blank" class="btn btn-sm btn-outline-secondary me-2">View</a>
+                    <a href="" data-private-link="${url}" class="btn btn-sm btn-outline-secondary me-2">View</a>
                     <button class="btn btn-sm btn-success" onclick="adminDashboard.downloadKYCFile('${url}', '${fallbackName || 'document'}')">Download</button>
                 </div>
             `;
@@ -6001,9 +6001,10 @@ EnhancedAdminDashboard.prototype.openKYCReview = function(userId) {
     const docs = req.kycDocuments || {};
     const names = req.documentsUploaded || {};
 
-    renderDoc('kycDocId', docs.idUrl || null, names.id || 'id');
-    renderDoc('kycDocAddress', docs.addressUrl || null, names.proofOfAddress || 'address');
+    renderDoc('kycDocId', docs.idFrontUrl || null, names.id || 'id-front');
+    renderDoc('kycDocAddress', docs.idBackUrl || null, names.idBack || 'id-back');
     renderDoc('kycDocSelfie', docs.selfieUrl || null, names.selfie || 'selfie');
+    this.hydratePrivateKycDocuments();
 
     // Wire approve/reject
     const modal = document.getElementById('kycReviewModal');
@@ -6022,8 +6023,29 @@ EnhancedAdminDashboard.prototype.openKYCReview = function(userId) {
     }
 };
 
+EnhancedAdminDashboard.prototype.hydratePrivateKycDocuments = async function() {
+    const token = await this.currentUser?.getIdToken(true);
+    if (!token) return;
+    for (const node of document.querySelectorAll('[data-private-url]')) {
+        try {
+            const url = node.getAttribute('data-private-url');
+            const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+            if (!response.ok) throw new Error('Unable to load protected document');
+            const objectUrl = URL.createObjectURL(await response.blob());
+            node.src = objectUrl;
+            const link = document.querySelector(`[data-private-link="${CSS.escape(url)}"]`);
+            if (link) link.href = objectUrl;
+        } catch (error) {
+            node.alt = error.message;
+        }
+    }
+};
+
 EnhancedAdminDashboard.prototype.approveKYCRequest = async function(userId) {
     try {
+        await updateDoc(doc(this.db, 'kycRequests', userId), {
+            status: 'approved', reviewedAt: serverTimestamp(), reviewerUid: this.currentUser?.uid || 'admin'
+        });
         await updateDoc(doc(this.db, 'users', userId), {
             kycStatus: 'verified',
             kycApprovedAt: serverTimestamp(),
@@ -6041,6 +6063,9 @@ EnhancedAdminDashboard.prototype.approveKYCRequest = async function(userId) {
 
 EnhancedAdminDashboard.prototype.rejectKYCRequest = async function(userId) {
     try {
+        await updateDoc(doc(this.db, 'kycRequests', userId), {
+            status: 'rejected', reviewedAt: serverTimestamp(), reviewerUid: this.currentUser?.uid || 'admin'
+        });
         await updateDoc(doc(this.db, 'users', userId), {
             kycStatus: 'rejected',
             kycRejectedAt: serverTimestamp(),
@@ -6058,7 +6083,8 @@ EnhancedAdminDashboard.prototype.rejectKYCRequest = async function(userId) {
 
 EnhancedAdminDashboard.prototype.downloadKYCFile = async function(url, filename) {
     try {
-        const res = await fetch(url);
+        const token = await this.currentUser?.getIdToken(true);
+        const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
         const blob = await res.blob();
         const a = document.createElement('a');
         const objectUrl = URL.createObjectURL(blob);

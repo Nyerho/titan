@@ -3,6 +3,7 @@ const admin = require('firebase-admin');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');
 const dotenv = require('dotenv');
 const nodemailer = require('nodemailer');
 const https = require('https');
@@ -88,6 +89,24 @@ app.use(express.json());
 
 const auth = admin.auth();
 const db = admin.firestore();
+
+// KYC files are kept outside the public web root. Firestore stores only metadata and protected API paths.
+const KYC_DIR = path.resolve(__dirname, '../private-kyc');
+fs.mkdirSync(KYC_DIR, { recursive: true });
+const kycUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, KYC_DIR),
+    filename: (req, file, cb) => {
+      const safeUid = String(req.user.uid).replace(/[^a-zA-Z0-9_-]/g, '');
+      const ext = path.extname(file.originalname || '').toLowerCase() || '.bin';
+      cb(null, `${safeUid}_${Date.now()}_${file.fieldname}${ext}`);
+    }
+  }),
+  limits: { files: 2, fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    cb(null, /^image\/(jpeg|png|webp)$/i.test(String(file.mimetype || '')));
+  }
+});
 
 app.get('/', (req, res) => {
   res.json({
@@ -399,6 +418,51 @@ async function verifyUserToken(req, res, next) {
     res.status(401).json({ error: 'Invalid token' });
   }
 }
+
+app.post('/api/kyc/upload', verifyUserToken, (req, res) => {
+  kycUpload.fields([
+    { name: 'idFront', maxCount: 1 },
+    { name: 'idBack', maxCount: 1 }
+  ])(req, res, async (error) => {
+    if (error) {
+      const message = error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE'
+        ? 'Each KYC image must be smaller than 10 MB.'
+        : 'Upload failed. Please provide JPG, PNG, or WEBP images.';
+      return res.status(400).json({ error: message });
+    }
+
+    const files = req.files || {};
+    const front = files.idFront?.[0];
+    const back = files.idBack?.[0];
+    if (!front || !back) {
+      [front, back].filter(Boolean).forEach((file) => fs.rmSync(file.path, { force: true }));
+      return res.status(400).json({ error: 'Both front and back ID images are required.' });
+    }
+
+    return res.status(201).json({
+      uid: req.user.uid,
+      files: {
+        idFrontUrl: `/api/kyc/files/${encodeURIComponent(req.user.uid)}/${encodeURIComponent(front.filename)}`,
+        idBackUrl: `/api/kyc/files/${encodeURIComponent(req.user.uid)}/${encodeURIComponent(back.filename)}`,
+        idFrontName: front.originalname,
+        idBackName: back.originalname
+      }
+    });
+  });
+});
+
+app.get('/api/kyc/files/:uid/:filename', verifyAdminToken, (req, res) => {
+  const uid = String(req.params.uid || '');
+  const filename = path.basename(String(req.params.filename || ''));
+  if (!uid || !filename || !filename.startsWith(`${uid}_`)) {
+    return res.status(403).json({ error: 'Invalid KYC file reference' });
+  }
+  const filePath = path.join(KYC_DIR, filename);
+  if (!filePath.startsWith(`${KYC_DIR}${path.sep}`) || !fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'KYC document not found' });
+  }
+  return res.sendFile(filePath, { headers: { 'Cache-Control': 'private, no-store' } });
+});
 
 // API Routes
 
