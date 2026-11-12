@@ -138,3 +138,15 @@ body:has(.kyc-header) .step-circle { background: #183042 !important; color: #d6e
 @media (prefers-reduced-motion: reduce) {
   body:not(.dashboard-page):not(:has(.hero-landing)) *, body:not(.dashboard-page):not(:has(.hero-landing)) *::before, body:not(.dashboard-page):not(:has(.hero-landing)) *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Admin active navigation must retain readable foreground on its teal fill. */
+body.admin-body .admin-sidebar .nav-link.active,
+body.admin-body .admin-sidebar .nav-link.active:hover,
+body.admin-body .admin-sidebar .nav-link.active:focus-visible {
+  color: #07131f !important;
+  background: #21d4c2 !important;
+}
+body.admin-body .admin-sidebar .nav-link.active:hover,
+body.admin-body .admin-sidebar .nav-link.active:focus-visible {
+  background: #49e2d2 !important;
+}

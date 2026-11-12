@@ -1715,3 +1715,42 @@ body {
   .dashboard-sidebar { border-radius: 14px; }
   .trading-interface, .crypto-portfolio-section, .leaderboard-section { border-radius: 14px; }
 }
+
+/* Keep dashboard chart controls readable on light surfaces. */
+.dashboard-page .timeframe-btn {
+    background: #ffffff;
+    color: #334155;
+    border-color: #cbd5e1;
+}
+
+.dashboard-page .timeframe-btn:hover {
+    background: #eef2ff;
+    color: #312e81;
+}
+
+.dashboard-page .timeframe-btn.active {
+    background: #5b21b6;
+    color: #ffffff;
+    border-color: #5b21b6;
+}
+
+@media (max-width: 768px) {
+    .dashboard-page .dashboard-sidebar .nav-item {
+        color: #e2e8f0;
+    }
+
+    .dashboard-page .dashboard-sidebar .nav-item:hover {
+        color: #ffffff;
+        background: #263449;
+    }
+
+    .dashboard-page .dashboard-sidebar .nav-item.active {
+        color: #07131f;
+        background: #49e2d2;
+    }
+}
+
+/* Status text uses darker hues to remain legible on pale success/error chips. */
+.dashboard-page .positive { color: #087443; }
+.dashboard-page .negative { color: #b42318; }
+.dashboard-page .dashboard-sidebar .nav-item.active { color: #07131f; }

@@ -1829,3 +1829,117 @@ canvas#userActivityChart {
 .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
   transform: rotate(45deg) translate(-5px, -6px);
 }
+
+/* Admin contrast and navigation accessibility fixes */
+.admin-body {
+    background: #07131f;
+    color: #f3f8fb;
+}
+
+.admin-body .admin-header {
+    background: #07131f;
+    color: #f7fbfd;
+    border-bottom: 1px solid #294052;
+}
+
+.admin-body .admin-header .navbar-brand,
+.admin-body .admin-header .navbar-nav > .nav-item > button,
+.admin-body .admin-header .navbar-nav > .nav-item > a,
+.admin-body .admin-header .navbar-nav > .nav-item > span:not(.badge) {
+    color: #f3f8fb;
+}
+
+.admin-body .admin-header .sidebar-toggle {
+    color: #f3f8fb;
+}
+
+.admin-body .admin-sidebar {
+    background: #0d1d2b;
+    color: #f3f8fb;
+    border-right: 1px solid #294052;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.22);
+}
+
+.admin-body .admin-sidebar .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #d6e4ed;
+    border-left: 3px solid transparent;
+    border-radius: 0 8px 8px 0;
+    margin: 2px 10px 2px 0;
+    padding: 0.8rem 1rem;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-body .admin-sidebar .nav-link:hover,
+.admin-body .admin-sidebar .nav-link:focus-visible {
+    color: #ffffff;
+    background: #173449;
+    border-left-color: #21d4c2;
+}
+
+.admin-body .admin-sidebar .nav-link.active {
+    color: #07131f;
+    background: #21d4c2;
+    border-left-color: #c8f36b;
+    font-weight: 700;
+}
+
+.admin-body .admin-sidebar .nav-link.active:hover,
+.admin-body .admin-sidebar .nav-link.active:focus-visible {
+    color: #07131f;
+    background: #49e2d2;
+}
+
+.admin-body .admin-main {
+    background: #07131f;
+    color: #f3f8fb;
+}
+
+.admin-body .section-header h1,
+.admin-body .section-header h2,
+.admin-body .section-header h3,
+.admin-body .admin-main h1,
+.admin-body .admin-main h2,
+.admin-body .admin-main h3,
+.admin-body .admin-main h4 {
+    color: #f7fbfd;
+}
+
+.admin-body .section-header p,
+.admin-body .admin-main .text-muted,
+.admin-body .admin-main .form-text,
+.admin-body .admin-main small {
+    color: #b8c9d7;
+}
+
+.admin-body .admin-main .form-label,
+.admin-body .admin-main label {
+    color: #e3edf3;
+}
+
+.admin-body .admin-main input,
+.admin-body .admin-main select,
+.admin-body .admin-main textarea {
+    background: #091a28;
+    color: #f7fbfd;
+    border-color: #486174;
+}
+
+.admin-body .admin-main input::placeholder,
+.admin-body .admin-main textarea::placeholder {
+    color: #a9bdcb;
+    opacity: 1;
+}
+
+.admin-body .admin-sidebar .nav-link:focus-visible,
+.admin-body .admin-header button:focus-visible,
+.admin-body .admin-main button:focus-visible,
+.admin-body .admin-main a:focus-visible,
+.admin-body .admin-main input:focus-visible,
+.admin-body .admin-main select:focus-visible,
+.admin-body .admin-main textarea:focus-visible {
+    outline: 3px solid #21d4c2;
+    outline-offset: 2px;
+}
