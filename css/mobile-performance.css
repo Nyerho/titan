@@ -12,7 +12,6 @@
     .auth-content,
     .floating-icon {
         backdrop-filter: none !important;
-        background: #ffffff !important;
     }
     
     /* Simplify animations */
@@ -33,7 +32,6 @@
     
     /* Optimize hero section: keep image hero visible on mobile */
     .hero:not(.hero-landing) {
-        background: #ffffff !important;
         min-height: auto !important;
     }
     .hero-landing {
@@ -96,7 +94,6 @@
     
     /* Simplify navigation */
     .nav-menu {
-        background: #ffffff !important;
         box-shadow: none !important;
     }
 }

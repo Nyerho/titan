@@ -171,9 +171,15 @@ const stateListCache = new Map();
 
 function setupLocationFields() {
     const countrySelect = document.getElementById('country');
+    const manualCountryInput = document.getElementById('manualCountry');
     if (countrySelect) {
         populateCountrySelect(countrySelect);
         countrySelect.addEventListener('change', () => {
+            updateCountryCode();
+        });
+    }
+    if (manualCountryInput) {
+        manualCountryInput.addEventListener('change', () => {
             updateCountryCode();
         });
     }
@@ -267,6 +273,11 @@ async function populateCountrySelect(selectEl) {
     }
     selectEl.appendChild(frag);
     }
+
+    const otherOption = document.createElement('option');
+    otherOption.value = '__other__';
+    otherOption.textContent = 'My country is not listed';
+    selectEl.appendChild(otherOption);
 }
 
 async function updateStateSuggestions(countryName) {
@@ -620,7 +631,9 @@ function handleRegister(e) {
         email: formData.get('email'),
         password: formData.get('password'),
         phone: formData.get('phone'),
-        country: formData.get('country'),
+        country: formData.get('country') === '__other__'
+            ? String(formData.get('manualCountry') || '').trim()
+            : formData.get('country'),
         state: formData.get('state'),
         mirrorTradeCode: formData.get('mirrorTradeCode') || ''
     };
@@ -1033,12 +1046,23 @@ function updateCountryCode() {
     const countrySelect = document.getElementById('country');
     const countryCodeInput = document.getElementById('countryCode');
     const countryCodeGroup = document.getElementById('countryCodeGroup');
+    const manualCountryGroup = document.getElementById('manualCountryGroup');
+    const manualCountryInput = document.getElementById('manualCountry');
     
     const countryValue = String(countrySelect?.value || '').trim();
-    const selectedName = countrySelect?.selectedOptions?.[0]?.textContent ? String(countrySelect.selectedOptions[0].textContent).trim() : '';
+    const isOtherCountry = countryValue === '__other__';
+    const selectedName = isOtherCountry
+        ? String(manualCountryInput?.value || '').trim()
+        : (countrySelect?.selectedOptions?.[0]?.textContent ? String(countrySelect.selectedOptions[0].textContent).trim() : '');
+
+    if (manualCountryGroup) manualCountryGroup.style.display = isOtherCountry ? 'block' : 'none';
+    if (manualCountryInput) {
+        manualCountryInput.disabled = !isOtherCountry;
+        manualCountryInput.required = isOtherCountry;
+    }
 
     if (countryCodeInput && countryCodeGroup) {
-        if (countryValue) {
+        if (countryValue && !isOtherCountry) {
             const countryCode = countryCodeMap[countryValue];
             if (countryCode) {
                 countryCodeInput.value = countryCode;
