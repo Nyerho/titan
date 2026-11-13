@@ -1774,3 +1774,128 @@ body.auth-body {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* Final auth contrast pass: keep login and registration surfaces readable in the dark theme. */
+body.auth-body {
+    background: #07131f !important;
+    color: #f3f8fb !important;
+}
+
+.auth-body .auth-header.navbar {
+    background: rgba(7, 19, 31, 0.94) !important;
+    border-bottom-color: rgba(173, 203, 224, 0.18) !important;
+}
+
+.auth-body .auth-header .navbar-brand,
+.auth-body .auth-header .nav-link,
+.auth-body .auth-header .brand-text {
+    color: #f3f8fb !important;
+}
+
+.auth-body .auth-header .nav-link:hover {
+    color: #21d4c2 !important;
+}
+
+.auth-body .auth-card {
+    background: #0d1d2b !important;
+    border: 1px solid rgba(173, 203, 224, 0.16) !important;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+}
+
+.auth-body .auth-tabs {
+    background: #091a28 !important;
+}
+
+.auth-body .auth-tab {
+    color: #b8c9d7 !important;
+}
+
+.auth-body .auth-tab.active {
+    background: #173449 !important;
+    color: #f7fbfd !important;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+}
+
+.auth-body .auth-header h2,
+.auth-body .auth-form-container .auth-header h2 {
+    color: #f7fbfd !important;
+}
+
+.auth-body .auth-header p,
+.auth-body .strength-text,
+.auth-body .checkbox-container,
+.auth-body .auth-divider {
+    color: #b8c9d7 !important;
+}
+
+.auth-body .auth-form .form-group label,
+.auth-body .auth-form-container .form-group label {
+    color: #e3edf3 !important;
+}
+
+.auth-body .auth-form .form-group input,
+.auth-body .auth-form .form-group select,
+.auth-body .auth-form-container .form-group input,
+.auth-body .auth-form-container .form-group select,
+.auth-body .form-group input,
+.auth-body .form-group select {
+    background: #091a28 !important;
+    color: #f7fbfd !important;
+    -webkit-text-fill-color: #f7fbfd !important;
+    border-color: #486174 !important;
+}
+
+.auth-body .auth-form .form-group input:focus,
+.auth-body .auth-form .form-group select:focus,
+.auth-body .auth-form-container .form-group input:focus,
+.auth-body .auth-form-container .form-group select:focus,
+.auth-body .form-group input:focus,
+.auth-body .form-group select:focus {
+    background: #102638 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    border-color: #21d4c2 !important;
+    box-shadow: 0 0 0 4px rgba(33, 212, 194, 0.16) !important;
+}
+
+.auth-body .auth-form .form-group input::placeholder,
+.auth-body .auth-form-container .form-group input::placeholder,
+.auth-body .form-group input::placeholder {
+    color: #9fb1c4 !important;
+    -webkit-text-fill-color: #9fb1c4 !important;
+    opacity: 1 !important;
+}
+
+.auth-body .password-toggle {
+    color: #b8c9d7 !important;
+}
+
+.auth-body .auth-btn.secondary,
+.auth-body .social-btn {
+    background: #102638 !important;
+    color: #f3f8fb !important;
+    border-color: #486174 !important;
+}
+
+.auth-body .auth-btn.secondary:hover,
+.auth-body .social-btn:hover {
+    background: #173449 !important;
+    border-color: #21d4c2 !important;
+    color: #ffffff !important;
+}
+
+.auth-body .auth-divider span {
+    background: #0d1d2b !important;
+    color: #b8c9d7 !important;
+}
+
+.auth-body .forgot-link,
+.auth-body .terms-link,
+.auth-body .auth-link {
+    color: #73ecd8 !important;
+}
+
+.auth-body .checkmark {
+    border-color: #486174 !important;
+}

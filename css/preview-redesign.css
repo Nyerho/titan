@@ -38,7 +38,10 @@ body:has(.hero-landing) .navbar .btn-primary { background: var(--preview-lime) !
 body:has(.hero-landing) .navbar .btn-secondary { border-color: rgba(255,255,255,.3) !important; color: #fff !important; }
 body:has(.hero-landing) .hero-landing {
   min-height: 94vh; display: flex; align-items: center; position: relative; overflow: hidden;
-  background: radial-gradient(circle at 78% 26%, rgba(33,212,194,.16), transparent 28%), radial-gradient(circle at 12% 80%, rgba(200,243,107,.08), transparent 25%), #07131f;
+  background: linear-gradient(90deg, rgba(3, 9, 26, .88) 0%, rgba(3, 9, 26, .58) 48%, rgba(3, 9, 26, .3) 100%), radial-gradient(circle at 78% 26%, rgba(33,212,194,.16), transparent 28%), url('../assets/images/titantrades-hero-bg.jpg');
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
 }
 body:has(.hero-landing) .hero-landing::after {
   content: ""; position: absolute; width: 760px; height: 760px; right: -220px; top: 12%; border: 1px solid rgba(33,212,194,.18); border-radius: 50%; box-shadow: 0 0 0 54px rgba(33,212,194,.035), 0 0 0 110px rgba(33,212,194,.022); pointer-events: none;
