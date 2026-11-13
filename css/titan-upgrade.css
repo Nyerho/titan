@@ -53,3 +53,52 @@ img, canvas, svg { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+
+/* Final interaction contrast pass: never let hover, focus, or autofill wash out text. */
+.btn-secondary:hover,
+.btn-outline-light:hover,
+.btn-outline-info:hover,
+.auth-btn.secondary:hover,
+.social-btn:hover,
+.action-button.secondary:hover,
+.button-secondary:hover,
+button:not(.btn-primary):not(.auth-btn.primary):not(.btn-success):not(.btn-danger):hover {
+  background: #173449 !important;
+  color: #f8fafc !important;
+  border-color: #486174 !important;
+  -webkit-text-fill-color: #f8fafc !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.form-control:focus,
+.form-select:focus {
+  background-color: #091a28 !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  border-color: #21d4c2 !important;
+  caret-color: #ffffff !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+select:-webkit-autofill,
+textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #091a28 inset !important;
+  box-shadow: 0 0 0 1000px #091a28 inset !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  color: #f8fafc !important;
+  caret-color: #ffffff !important;
+  transition: background-color 9999s ease-out 0s !important;
+}
+
+input::selection,
+select::selection,
+textarea::selection {
+  background: rgba(33, 212, 194, 0.38) !important;
+  color: #ffffff !important;
+}
