@@ -322,10 +322,11 @@ body {
 
 .hero-landing {
     background:
-      linear-gradient(180deg, rgba(15,23,42,0.55), rgba(15,23,42,0.55)),
-      url('../assets/images/PixVerse_Image_Effect_prompt_forex broker char (1).jpg');
+      linear-gradient(90deg, rgba(3, 9, 26, 0.9) 0%, rgba(3, 9, 26, 0.62) 46%, rgba(3, 9, 26, 0.3) 100%),
+      linear-gradient(180deg, rgba(3, 9, 26, 0.22), rgba(3, 9, 26, 0.52)),
+      url('../assets/images/titantrades-hero-bg.jpg');
     background-size: cover;
-    background-position: center;
+    background-position: center right;
     background-repeat: no-repeat;
     color: #ffffff;
 }

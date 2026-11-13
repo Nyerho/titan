@@ -1084,6 +1084,34 @@ canvas#userActivityChart {
     opacity: 1;
 }
 
+/* Keep wallet details readable against the dark admin cards on every viewport. */
+#depositAddressBTC,
+#depositAddressETH,
+#depositAddressUSDT {
+    background-color: rgba(15, 23, 42, 0.86) !important;
+    border-color: rgba(148, 163, 184, 0.42) !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    box-shadow: none !important;
+}
+
+#depositAddressBTC:focus,
+#depositAddressETH:focus,
+#depositAddressUSDT:focus {
+    background-color: rgba(15, 23, 42, 0.96) !important;
+    border-color: #00d4ff !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2) !important;
+}
+
+#depositAddressBTC::placeholder,
+#depositAddressETH::placeholder,
+#depositAddressUSDT::placeholder {
+    color: rgba(226, 232, 240, 0.62) !important;
+    -webkit-text-fill-color: rgba(226, 232, 240, 0.62) !important;
+}
+
 /* Laptop/Desktop optimizations */
 @media (min-width: 769px) and (max-width: 1200px) {
   .admin-main {
@@ -1942,4 +1970,123 @@ canvas#userActivityChart {
 .admin-body .admin-main textarea:focus-visible {
     outline: 3px solid #21d4c2;
     outline-offset: 2px;
+
+/* TitanTrades dark admin shell: keep navigation, sections, and controls visually consistent. */
+body {
+    background: #08111f !important;
+    color: #e5eef7 !important;
+}
+
+.admin-header,
+.admin-main {
+    background: #08111f !important;
+    color: #e5eef7 !important;
+}
+
+.admin-header {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+}
+
+.admin-sidebar {
+    background: #0b1426 !important;
+    border-right: 1px solid rgba(148, 163, 184, 0.16);
+    box-shadow: 8px 0 28px rgba(0, 0, 0, 0.18);
+}
+
+.admin-sidebar .nav-item {
+    color: #b8c6d8;
+}
+
+.admin-sidebar .nav-item:hover,
+.admin-sidebar .nav-item.active {
+    color: #ffffff;
+    background: linear-gradient(135deg, #8b5cf6, #22d3ee);
+    border-right-color: #22d3ee;
+}
+
+.admin-main .card,
+.admin-main .chart-container,
+.admin-main .recent-activity,
+.admin-main .table-container,
+.admin-main .content-card,
+.admin-main .modal-content,
+.admin-main .cot-form {
+    background: #0f1b2d !important;
+    color: #e5eef7 !important;
+    border-color: rgba(148, 163, 184, 0.22) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.admin-main .card-header,
+.admin-main .card-footer,
+.admin-main .card-body {
+    background: transparent !important;
+    color: #e5eef7;
+    border-color: rgba(148, 163, 184, 0.18) !important;
+}
+
+.admin-main .section-header h1,
+.admin-main .section-header h2,
+.admin-main .section-header h3,
+.admin-main .card-title,
+.admin-main .card h1,
+.admin-main .card h2,
+.admin-main .card h3,
+.admin-main .card h4,
+.admin-main .card h5 {
+    color: #f8fafc;
+}
+
+.admin-main .section-header p,
+.admin-main .stat-info p,
+.admin-main .content-card p {
+    color: #a8b8cc;
+}
+
+.admin-main .admin-table th,
+.admin-main .admin-table td,
+.admin-main .table {
+    color: #e5eef7;
+    border-color: rgba(148, 163, 184, 0.18);
+}
+
+.admin-main .admin-table th,
+.admin-main .table thead th {
+    background: #13243a !important;
+    color: #f8fafc;
+}
+
+.admin-main .form-control,
+.admin-main .form-select,
+.admin-main textarea,
+.admin-main input,
+.admin-main select {
+    background-color: #101d31 !important;
+    border-color: rgba(148, 163, 184, 0.32) !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+}
+
+.admin-main .form-control:focus,
+.admin-main .form-select:focus,
+.admin-main textarea:focus,
+.admin-main input:focus,
+.admin-main select:focus {
+    background-color: #13243a !important;
+    border-color: #22d3ee !important;
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2) !important;
+}
+
+.admin-main .form-control::placeholder,
+.admin-main textarea::placeholder,
+.admin-main input::placeholder {
+    color: rgba(226, 232, 240, 0.62) !important;
+    -webkit-text-fill-color: rgba(226, 232, 240, 0.62) !important;
+}
+
+.admin-main .chart-placeholder {
+    background: #13243a;
+    color: #a8b8cc;
+    border: 1px solid rgba(148, 163, 184, 0.18);
 }
